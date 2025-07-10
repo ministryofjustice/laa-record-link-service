@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: LAA Record Link Service
