@@ -1,4 +1,8 @@
-README.md
+# Environment files
+.env
+venv/
+env/
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
