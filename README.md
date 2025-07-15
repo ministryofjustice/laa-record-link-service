@@ -38,14 +38,8 @@ Edit this `README.md` file to document your project accurately. Take the time to
 ### Update Repository Description
 Change the description that appears at the top of your repository's main page to provide an overview of your project.
 
-### Grant Team Permissions
-Assign permissions to the appropriate Ministry of Justice teams. Ensure at least one team is granted Admin permissions. Whenever possible, assign permissions to teams rather than individual users.
-
 ### Add Branch Protection rules
 Ensure branch protection is set up on the `main` branch.
-
-### Update CODEOWNERS
-(Optional) Modify the `CODEOWNERS` file to specify the teams or users authorized to approve pull requests.
 
 ### Configure Dependabot
 Change all `uk.gov.laa.springboot.microservice.*` package references to `uk.gov.laa.{application-package-name}.*`.
