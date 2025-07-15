@@ -35,9 +35,6 @@ Once you've created your repository using this template, perform the following s
 ### Update README
 Edit this `README.md` file to document your project accurately. Take the time to create a clear, engaging, and informative`README.md` file. Include information such as what your project does, how to install and run it, how to contribute, and any other pertinent details.
 
-### Update Repository Description
-Change the description that appears at the top of your repository's main page to provide an overview of your project.
-
 ### Add Branch Protection rules
 Ensure branch protection is set up on the `main` branch.
 
