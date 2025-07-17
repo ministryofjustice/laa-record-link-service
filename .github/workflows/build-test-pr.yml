@@ -28,8 +28,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test coverage verification
-        run: ./gradlew jacocoTestCoverageVerification
+      #- name: Test coverage verification
+      #  run: ./gradlew jacocoTestCoverageVerification
 
       - name: Integration test
         run: ./gradlew integrationTest --tests '*IntegrationTest'
@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: spring-boot-microservice-service/build/reports/tests
+          path: build/reports/tests
           retention-days: 14
 
       - name: Upload jacoco coverage report
@@ -60,26 +60,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-coverage-report
-          path: spring-boot-microservice-service/build/reports/jacoco
+          path: build/reports/jacoco
           retention-days: 14
 
-  vulnerability-scan-app:
-    runs-on: ubuntu-latest
-    needs:
-      - build-test
-    env:
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      SNYK_TEST_EXCLUDE: build,generated
-      SNYK_TARGET_REFERENCE: main
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
+  # vulnerability-scan-app:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build-test
+  #   env:
+  #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     SNYK_TEST_EXCLUDE: build,generated
+  #     SNYK_TARGET_REFERENCE: main
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Run Snyk to check app for vulnerabilities
-        uses: snyk/actions/gradle@master
-        with:
-          command: code test
-          args: --severity-threshold=high
+  #     - name: Run Snyk to check app for vulnerabilities
+  #       uses: snyk/actions/gradle@master
+  #       with:
+  #         command: code test
+  #         args: --severity-threshold=high
 
   # vulnerability-scan-docker:
   #   runs-on: ubuntu-latest

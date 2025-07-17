@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: LAA Record Link Service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_DB_ADDRESS}:5432/${POSTGRES_DB_NAME}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate

@@ -1,12 +1,14 @@
-README.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-.DS_Store
+# Environment files
+.env
+venv/
+env/
 
-spring-boot-microservice-api/generated
+# Java/Gradle
+.gradle/
+build/
+out/
+*.war
+*.ear
 
 ### IntelliJ IDEA ###
 .idea
@@ -19,3 +21,18 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Build artifacts
+dist/
+target/
+
+# Checksum files
+*.sha256
+
+*.class
+**/bin/**
+.DS_STORE

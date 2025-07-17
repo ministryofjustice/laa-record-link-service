@@ -11,14 +11,7 @@ pluginManagement {
         maven { url = "https://plugins.gradle.org/m2/" }
         gradlePluginPortal()
     }
-
-    plugins {
-        id 'uk.gov.laa.ccms.springboot.laa-ccms-spring-boot-gradle-plugin' version '0.0.32'
-    }
 }
 
-rootProject.name = 'laa-spring-boot-microservice-template'
-
-include 'spring-boot-microservice-api'
-include 'spring-boot-microservice-service'
+rootProject.name = 'laa-record-link-service'
 

@@ -5,11 +5,7 @@
 This template is still under development and features may be added or subject to change.
 
 ## Overview
-
-Template GitHub repository used for Spring Boot Java microservice projects.
-
-The project uses the `laa-ccms-spring-boot-gradle-plugin` Gradle plugin which provides
-sensible defaults for the following plugins:
+  The Laa Record Linking Service is used to link user with LASSIE id to their old CCMS user id 
 
 - [Checkstyle](https://docs.gradle.org/current/userguide/checkstyle_plugin.html)
 - [Dependency Management](https://plugins.gradle.org/plugin/io.spring.dependency-management)
@@ -23,11 +19,6 @@ sensible defaults for the following plugins:
 The plugin is provided by -  [laa-ccms-spring-boot-common](https://github.com/ministryofjustice/laa-ccms-spring-boot-common), where you can find
 more information regarding setup and usage.
 
-### Project Structure
-Includes the following subprojects:
-
-- `spring-boot-microservice-api` - example OpenAPI specification used for generating API stub interfaces and documentation.
-- `spring-boot-microservice-service` - example REST API service with CRUD operations interfacing a JPA repository with an in-memory database.
 
 ## Setup Instructions
 Once you've created your repository using this template, perform the following steps:
