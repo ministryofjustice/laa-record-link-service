@@ -62,7 +62,7 @@ public final class LinkedRequest extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Staus status;
+    private Status status;
 
     @Column(name = "additional_info")
     private String additionalInfo;

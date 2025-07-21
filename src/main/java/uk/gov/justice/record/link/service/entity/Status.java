@@ -1,7 +1,7 @@
 package uk.gov.justice.record.link.service.entity;
 
 
-public enum Staus {
+public enum Status {
     OPEN,
     APPROVED,
     REJECTED,
