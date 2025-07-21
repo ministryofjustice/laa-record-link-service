@@ -16,8 +16,10 @@ public class LoginControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldReturnHelloViewWithMessage() throws Exception {
-        mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"));
+    void shouldLoadHomePageSuccessfully() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("index"));
     }
 
 }
