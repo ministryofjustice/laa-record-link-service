@@ -3,7 +3,7 @@
       title=~{::title},
       mainContent=~{::#main-content},
       pageCategory=${'login'},
-      breadcrumbs=~{::#breadcrumbs})}" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+      breadcrumbs=~{::#breadcrumbs})}" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <title>User Details</title>
@@ -21,22 +21,16 @@
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
     <div class="govuk-hint govuk-heading-l">
-        Request account access
+        Create a transfer request
     </div>
-    <div class="moj-page-header-actions">
-        <div class="moj-page-header-actions__title">
-            <h1 class="govuk-heading-l">Accessing CCMS</h1>
-        </div>
-    </div>
-
     <div class="govuk-form-group">
         <h1 class="govuk-label-wrapper">
             <label class="govuk-label govuk-label--l">
-                Enter your old login ID
+                What was your CCMS login ID
             </label>
         </h1>
-        <div id="event-name-hint" class="govuk-hint">
-            Your Login ID could be username or email whatever you needed to access CCMS
+        <div class="govuk-hint" id="event-name-hint">
+            This may have been a username or email
         </div>
         <input class="govuk-input govuk-!-width-one-half" type="text">
     </div>
@@ -46,14 +40,14 @@
                 Additional Information (Optional)
             </label>
         </h2>
-        <div id="more-detail-hint" class="govuk-hint">
-            This be anything that will help us match your record
+        <div class="govuk-hint" id="more-detail-hint">
+            Give any information that will help link to your old account
         </div>
-        <textarea class="govuk-textarea" id="more-detail" name="moreDetail" rows="5"
-                  aria-describedby="more-detail-hint"></textarea>
+        <textarea aria-describedby="more-detail-hint" class="govuk-textarea" id="more-detail" name="moreDetail"
+                  rows="5"></textarea>
     </div>
     <div class="govuk-button-group">
-        <button type="submit" class="govuk-button" data-module="govuk-button">
+        <button class="govuk-button" data-module="govuk-button" type="submit">
             Continue
         </button>
         <a class="govuk-link" href="#">Cancel</a>
