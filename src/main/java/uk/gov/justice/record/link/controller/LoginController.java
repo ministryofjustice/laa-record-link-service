@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.service;
+package uk.gov.justice.record.link.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class LoginController {
 
-  @GetMapping("/")
-  public String login() {
-    return "index";
-  }
+    @GetMapping("/")
+    public String login() {
+        return "index";
+    }
 
-  @GetMapping("/login")
-  public String link() {
-    return "link-user";
-  }
+    @GetMapping("/login")
+    public String link() {
+        return "link-user";
+    }
 }
