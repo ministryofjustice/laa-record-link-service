@@ -32,7 +32,7 @@ public class CcmsUser extends BaseEntity {
     @Column(name = "email")
     private String email;
 
-    @OneToMany(mappedBy = "ccms_user", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "ccmsUser", cascade = CascadeType.PERSIST)
     private Set<LinkedRequest> linkedRequests;
 
 }
