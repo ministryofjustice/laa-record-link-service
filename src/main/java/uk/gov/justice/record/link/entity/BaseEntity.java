@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.service.entity;
+package uk.gov.justice.record.link.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;

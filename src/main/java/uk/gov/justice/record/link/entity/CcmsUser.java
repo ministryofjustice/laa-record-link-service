@@ -1,14 +1,15 @@
-package uk.gov.justice.record.link.service.entity;
+package uk.gov.justice.record.link.entity;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
+import java.util.Set;
 
 @Entity
 @Table(name = "ccms_user")
@@ -31,7 +32,7 @@ public class CcmsUser extends BaseEntity {
     @Column(name = "email")
     private String email;
 
-
-
+    @OneToMany(mappedBy = "ccms_user", cascade = CascadeType.PERSIST)
+    private Set<LinkedRequest> linkedRequests;
 
 }

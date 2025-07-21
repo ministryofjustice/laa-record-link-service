@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.service.entity;
+package uk.gov.justice.record.link.entity;
 
 
 public enum Status {

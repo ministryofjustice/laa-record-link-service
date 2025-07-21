@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.service.entity;
+package uk.gov.justice.record.link.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -29,7 +29,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 public final class LinkedRequest extends BaseEntity {
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "ccms_user_id", foreignKey = @ForeignKey(name = "FK_link_request_ccms_user_id"))
     private CcmsUser ccmsUser;
 

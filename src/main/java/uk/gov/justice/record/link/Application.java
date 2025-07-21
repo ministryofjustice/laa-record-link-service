@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.service;
+package uk.gov.justice.record.link;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
