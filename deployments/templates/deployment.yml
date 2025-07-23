@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laa-record-linking-service 
+  labels:
+    app: laa-record-linking-service 
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: laa-record-linking-service # this should match the selector in service.yml
+  template:
+    metadata:
+      labels:
+        app: laa-record-linking-service  # this should match the selector in service.yml
+    spec:
+      containers:
+        - name: laa-record-linking-service
+          image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "1200Mi"
+              cpu: "300m"
+            limits:
+              memory: "3000Mi"
+              cpu: "1"
+
+          env:
+            - name: AZURE_TENANT_ID
+              value: "${AZURE_TENANT_ID}"
+            - name: AZURE_CLIENT_ID
+              value: "${AZURE_CLIENT_ID}"
+            - name: AZURE_CLIENT_SECRET
+              value: "${AZURE_CLIENT_SECRET}"
+            - name: SENTRY_ENABLED
+              value: "${SENTRY_ENABLED}"
+            - name: SENTRY_AUTH_TOKEN
+              value: "${SENTRY_AUTH_TOKEN}"
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rds-postgresql-instance-output
+                  key: database_username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rds-postgresql-instance-output
+                  key: database_password
+            - name: POSTGRES_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: rds-postgresql-instance-output
+                  key: database_name
+            - name: POSTGRES_DB_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: rds-postgresql-instance-output
+                  key: rds_instance_address
+            - name: POSTGRES_DB_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: rds-postgresql-instance-output
+                  key: rds_instance_endpoint
