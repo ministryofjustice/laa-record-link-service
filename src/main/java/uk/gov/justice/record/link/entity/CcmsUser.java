@@ -29,6 +29,9 @@ public class CcmsUser extends BaseEntity {
     @Column(name = "firm_name")
     private String firmName;
 
+    @Column(name = "firm_code")
+    private String firmCode;
+
     @Column(name = "email")
     private String email;
 
