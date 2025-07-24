@@ -42,6 +42,12 @@ public final class LinkedRequest extends BaseEntity {
     @Column(name = "idam_last_name", nullable = false)
     private String idamLastName;
 
+    @Column(name = "idam_firm_name")
+    private String idamFirmName;
+
+    @Column(name = "idam_firm_code")
+    private String idamFirmCode;
+
     @Column(name = "idam_email", nullable = false, unique = true)
     private String idamEmail;
 
