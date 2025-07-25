@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'login'},
+      breadcrumbs=~{::#breadcrumbs})}" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Preview Details</title>
+</head>
+
+<body>
+<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+<nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link" th:href="@{/login}">
+                < Back</a>
+        </li>
+    </ol>
+</nav>
+<main class="govuk-main-wrapper" id="main-content">
+    <div class="govuk-hint govuk-heading-l">
+        Create a transfer request
+    </div>
+    <div class="govuk-form-group">
+        <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--l">
+                Check your answers
+            </label>
+        </h1>
+    </div>
+    <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                CCMS username
+            </dt>
+            <dd class="govuk-summary-list__value">
+                <span th:text="${user.oldLogin}"></span>
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a class="govuk-link" href="/login">Change</a>
+            </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                Additional Information
+            </dt>
+            <dd class="govuk-summary-list__value">
+                <span th:text="${user.additionalInfo}"></span>
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a class="govuk-link" href="/login">Change</a>
+            </dd>
+        </div>
+    </dl>
+    <div class="govuk-button-group">
+        <button class="govuk-button" data-module="govuk-button" type="submit">
+            Confirm and send
+        </button>
+        <a class="govuk-link" href="#">Cancel</a>
+    </div>
+</main>
+</body>
+</html>
