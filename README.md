@@ -94,24 +94,13 @@ In the above workflow files, change all occurrences of the `spring-boot-microser
 The *.sql scripts in  `src/main/resources` have been included to provide an example database for demonstration purposes only and should be removed for your application.
 
 ## Build And Run Application
-Ensure that all environment variables from `.env` set
-
-`export $(grep -v '^#' .env | xargs)`
-
-Once the environment variables are set, you can run must first start the database:
-
-### Starting the Database  
-1. Ensure Docker is installed, running & you are signed in with a **licensed** Docker account (see prerequisites above).
-2. Navigate to the root of the repository
-3. Using the Terminal, run `docker-compose up -d` - this will start the database container using Docker.
-4. To create database schema, run `./gradlew flywayMigrate`
 
 ### Build application
 `./gradlew clean build`
 
 ### Run integration tests
 `./gradlew integrationTest`
-### Starting Databse
+
 ### Run application
 `./gradlew bootRun`
 
