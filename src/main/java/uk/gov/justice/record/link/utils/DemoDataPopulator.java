@@ -42,26 +42,21 @@ public class DemoDataPopulator {
 
     private void populateDummyData() {
         try {
-            List<CcmsUser> result = ccmsUserRepository.findCcmsUserByLoginId("jsmith001");
-            if (result.isEmpty()) {
-                creatUserWithApprovedRequest();
+            CcmsUser result = ccmsUserRepository.findByLoginId("jsmith001");
+            if (result == null) {
                 createUserWithMultipleRequests();
-                createUserWithAssignedRequests();
                 System.out.println("Dummy Data Populated!!");
             }
             if (!internalUserPrincipals.isEmpty()) {
                 internalUserPrincipals.forEach(
-                        username -> {
-                            if (username.contains(":") && username.split(":").length == 6) {
-                                String[] split = username.split(":");
-                                if (ccmsUserRepository.findCcmsUserByLoginId(split[0]).isEmpty()) {
-                                    CcmsUser ccmsUser = createCcmsUser(split[0], split[1], split[2], split[3], split[4], split[5]);
-                                    ccmsUser = ccmsUserRepository.save(ccmsUser);
-                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam1@gmail.com", split[3], split[4], Status.APPROVED, null, null);
-                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam2@gmail.com", split[3], split[4], Status.REJECTED, null, null);
-                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam3@gmail.com", split[3], split[4], Status.OPEN, null, null);
-                                    System.out.println("Dummy internal users Populated!!");
-                                }
+                        email -> {
+                            if (ccmsUserRepository.findByEmail(email) == null) {
+                                CcmsUser ccmsUser = createCcmsUser("123", "Internal", "Principal", "Internal Firm", "F123", email);
+                                ccmsUser = ccmsUserRepository.save(ccmsUser);
+                                createLinkedRequest(ccmsUser, "Idam", "Name", "idam1@gmail.com", "Idam Firm 1", "IF1", Status.APPROVED, null, null);
+                                createLinkedRequest(ccmsUser, "Idam", "Name", "idam2@gmail.com", "Idam Firm 2", "IF2", Status.REJECTED, null, null);
+                                createLinkedRequest(ccmsUser, "Idam", "Name", "idam3@gmail.com", "Idam Firm 3", "IF3", Status.OPEN, null, null);
+                                System.out.println("Dummy internal users Populated!!");
                             }
                         });
             }
@@ -72,16 +67,6 @@ public class DemoDataPopulator {
         }
     }
 
-    private void createUserWithAssignedRequests() {
-        CcmsUser user3 = createCcmsUser("rbrown003", "Robert", "Brown", "Brown & Partners", "BP003", "robert.brown@brownpartners.co.uk");
-        user3 = ccmsUserRepository.save(user3);
-
-        createLinkedRequest(user3, "Frank", "Anderson", "frank.anderson@example.com", "Anderson Law", "AL001", Status.OPEN, null, null);
-        LinkedRequest assignedRequest = createLinkedRequest(user3, "Grace", "Thomas", "grace.thomas@example.com", "Thomas & Partners", "TP001", Status.OPEN, "laa.admin2", "Under review");
-        assignedRequest = assignedRequest.toBuilder().assignedDate(LocalDateTime.now().minusDays(2)).build();
-        linkedRequestRepository.save(assignedRequest);
-    }
-
     private void createUserWithMultipleRequests() {
         CcmsUser user2 = createCcmsUser("mjones002", "Mary", "Jones", "Jones Legal Services", "JLS002", "mary.jones@joneslaw.co.uk");
         user2 = ccmsUserRepository.save(user2);
@@ -89,14 +74,6 @@ public class DemoDataPopulator {
         createLinkedRequest(user2, "Carol", "Davis", "carol.davis@example.com", "Davis Law Firm", "DLF001", Status.OPEN, null, null);
         createLinkedRequest(user2, "David", "Miller", "david.miller@example.com", "Miller & Associates", "MA001", Status.APPROVED, "laa.admin1", "Verified identity and firm details");
         createLinkedRequest(user2, "Emma", "Taylor", "emma.taylor@example.com", "Taylor Legal Services", "TLS001", Status.REJECTED, "laa.admin3", "Unable to verify firm association");
-    }
-
-    private void creatUserWithApprovedRequest() {
-        CcmsUser user1 = createCcmsUser("jsmith001", "John", "Smith", "Smith & Associates", "SA001", "john.smith@smithlaw.co.uk");
-        user1 = ccmsUserRepository.save(user1);
-
-        createLinkedRequest(user1, "Alice", "Johnson", "alice.johnson@example.com", "Johnson & Co", "JC001", Status.APPROVED, "laa.admin1", "Verified identity and firm details");
-        createLinkedRequest(user1, "Bob", "Wilson", "bob.wilson@example.com", "Wilson Legal", "WL001", Status.REJECTED, "laa.admin2", "Unable to verify firm association");
     }
 
     private CcmsUser createCcmsUser(String loginId, String firstName, String lastName, String firmName, String firmCode, String email) {
@@ -110,7 +87,7 @@ public class DemoDataPopulator {
                 .build();
     }
 
-    private LinkedRequest createLinkedRequest(CcmsUser ccmsUser, String idamFirstName, String idamLastName, 
+    private void createLinkedRequest(CcmsUser ccmsUser, String idamFirstName, String idamLastName,
                                            String idamEmail, String idamFirmName, String idamFirmCode, 
                                            Status status, String laaAssignee, String additionalInfo) {
         LocalDateTime now = LocalDateTime.now();
@@ -136,7 +113,7 @@ public class DemoDataPopulator {
                     .build();
         }
 
-        return linkedRequestRepository.save(request);
+        linkedRequestRepository.save(request);
     }
 
 }

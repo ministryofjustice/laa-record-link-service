@@ -7,5 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CcmsUserRepository extends JpaRepository<CcmsUser, UUID> {
-    List<CcmsUser> findCcmsUserByLoginId(String loginId);
+    CcmsUser findByLoginId(String loginId);
+
+    CcmsUser findByEmail(String email);
 }
