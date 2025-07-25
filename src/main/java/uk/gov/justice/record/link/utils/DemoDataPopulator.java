@@ -14,6 +14,7 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -22,6 +23,9 @@ public class DemoDataPopulator {
 
     @Value("${app.populate.dummy-data}")
     private boolean populateDummyData;
+
+    @Value("${app.test.internal.userPrincipals}")
+    private Set<String> internalUserPrincipals;
 
     @Autowired
     private CcmsUserRepository ccmsUserRepository;
@@ -44,6 +48,23 @@ public class DemoDataPopulator {
                 createUserWithMultipleRequests();
                 createUserWithAssignedRequests();
                 System.out.println("Dummy Data Populated!!");
+            }
+            if (!internalUserPrincipals.isEmpty()) {
+                    internalUserPrincipals.forEach(
+                        username -> {
+                            if (username.contains(":") && username.split(":").length == 6) {
+                                String[] split = username.split(":");
+                                if (ccmsUserRepository.findCcmsUserByLoginId(split[0]).isEmpty()) {
+                                    CcmsUser ccmsUser = createCcmsUser(split[0], split[1], split[2], split[3], split[4], split[5]);
+                                    ccmsUser = ccmsUserRepository.save(ccmsUser);
+                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam1@gmail.com", split[3], split[4], Status.APPROVED, null, null);
+                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam2@gmail.com", split[3], split[4], Status.REJECTED, null, null);
+                                    createLinkedRequest(ccmsUser, "first name", "last name", "idam3@gmail.com", split[3], split[4], Status.OPEN, null, null);
+                                    System.out.println("Dummy internal users Populated!!");
+                                }
+                            }
+                        }
+                    );
             }
         } catch (Exception ex) {
             System.err.println("Error populating dummy data!!");

@@ -16,11 +16,16 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DemoDataPopulatorTest {
@@ -40,6 +45,7 @@ class DemoDataPopulatorTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(demoDataPopulator, "populateDummyData", true);
+        ReflectionTestUtils.setField(demoDataPopulator, "internalUserPrincipals", Collections.emptySet());
     }
 
     @Test
@@ -138,6 +144,76 @@ class DemoDataPopulatorTest {
 
         verify(ccmsUserRepository, times(3)).save(any(CcmsUser.class));
         verify(linkedRequestRepository, atLeast(2)).save(any(LinkedRequest.class));
+    }
+
+
+    @Test
+    void shouldCreateInternalUsers_whenInternalUserPrincipalsProvided() {
+        Set<String> internalUsers = Set.of(
+                "user1:John:Doe:Firm1:F001:john@firm1.com",
+                "user2:Jane:Smith:Firm2:F002:jane@firm2.com"
+        );
+        ReflectionTestUtils.setField(demoDataPopulator, "internalUserPrincipals", internalUsers);
+
+        when(ccmsUserRepository.findCcmsUserByLoginId("jsmith001")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.findCcmsUserByLoginId("user1")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.findCcmsUserByLoginId("user2")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.save(any(CcmsUser.class))).thenReturn(createMockCcmsUser());
+        when(linkedRequestRepository.save(any(LinkedRequest.class))).thenReturn(createMockLinkedRequest());
+
+        demoDataPopulator.appReady(applicationReadyEvent);
+
+        verify(ccmsUserRepository, times(5)).save(any(CcmsUser.class));
+        verify(linkedRequestRepository, atLeast(13)).save(any(LinkedRequest.class));
+    }
+
+    @Test
+    void shouldNotCreateInternalUsers_whenInternalUserAlreadyExists() {
+        Set<String> internalUsers = Set.of("user1:John:Doe:Firm1:F001:john@firm1.com");
+        ReflectionTestUtils.setField(demoDataPopulator, "internalUserPrincipals", internalUsers);
+
+        when(ccmsUserRepository.findCcmsUserByLoginId("jsmith001")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.findCcmsUserByLoginId("user1")).thenReturn(List.of(createMockCcmsUser()));
+        when(ccmsUserRepository.save(any(CcmsUser.class))).thenReturn(createMockCcmsUser());
+        when(linkedRequestRepository.save(any(LinkedRequest.class))).thenReturn(createMockLinkedRequest());
+
+        demoDataPopulator.appReady(applicationReadyEvent);
+
+        verify(ccmsUserRepository, times(3)).save(any(CcmsUser.class));
+        verify(linkedRequestRepository, atLeast(7)).save(any(LinkedRequest.class));
+    }
+
+    @Test
+    void shouldIgnoreInvalidInternalUserFormat() {
+        Set<String> internalUsers = Set.of(
+                "invalidformat",
+                "user1:only:three:parts",
+                "user2:John:Doe:Firm1:F001:john@firm1.com"
+        );
+        ReflectionTestUtils.setField(demoDataPopulator, "internalUserPrincipals", internalUsers);
+
+        when(ccmsUserRepository.findCcmsUserByLoginId("jsmith001")).thenReturn(List.of(createMockCcmsUser()));
+        when(ccmsUserRepository.findCcmsUserByLoginId("user2")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.save(any(CcmsUser.class))).thenReturn(createMockCcmsUser());
+
+        demoDataPopulator.appReady(applicationReadyEvent);
+
+        verify(ccmsUserRepository, times(1)).save(any(CcmsUser.class));
+        verify(linkedRequestRepository, atLeast(3)).save(any(LinkedRequest.class));
+    }
+
+    @Test
+    void shouldHandleEmptyInternalUserPrincipals() {
+        ReflectionTestUtils.setField(demoDataPopulator, "internalUserPrincipals", Collections.emptySet());
+
+        when(ccmsUserRepository.findCcmsUserByLoginId("jsmith001")).thenReturn(Collections.emptyList());
+        when(ccmsUserRepository.save(any(CcmsUser.class))).thenReturn(createMockCcmsUser());
+        when(linkedRequestRepository.save(any(LinkedRequest.class))).thenReturn(createMockLinkedRequest());
+
+        demoDataPopulator.appReady(applicationReadyEvent);
+
+        verify(ccmsUserRepository, times(3)).save(any(CcmsUser.class));
+        verify(linkedRequestRepository, atLeast(7)).save(any(LinkedRequest.class));
     }
 
     private CcmsUser createMockCcmsUser() {
