@@ -6,7 +6,7 @@
       breadcrumbs=~{::#breadcrumbs})}" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>User Details</title>
+    <title>Transfer User</title>
 </head>
 
 <body>
@@ -23,35 +23,39 @@
     <div class="govuk-hint govuk-heading-l">
         Create a transfer request
     </div>
-    <div class="govuk-form-group">
-        <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--l">
-                What was your CCMS login ID
-            </label>
-        </h1>
-        <div class="govuk-hint" id="event-name-hint">
-            This may have been a username or email
+    <form th:action="@{/check-answers}" th:method="post" th:object="${user}">
+        <div class="govuk-form-group">
+            <h1 class="govuk-label-wrapper">
+                <label class="govuk-label govuk-label--l">
+                    What was your CCMS login ID
+                </label>
+            </h1>
+            <div class="govuk-hint" id="event-name-hint">
+                This may have been a username or email
+            </div>
+            <input class="govuk-input govuk-!-width-one-half" id="old-login" name="oldLogin" th:value="*{oldLogin}"
+                   type="text">
         </div>
-        <input class="govuk-input govuk-!-width-one-half" type="text">
-    </div>
-    <div class="govuk-form-group">
-        <h2 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--l" for="more-detail">
-                Additional Information (Optional)
-            </label>
-        </h2>
-        <div class="govuk-hint" id="more-detail-hint">
-            Give any information that will help link to your old account
+        <div class="govuk-form-group">
+            <h2 class="govuk-label-wrapper">
+                <label class="govuk-label govuk-label--l" for="additionalInfo">
+                    Additional Information (Optional)
+                </label>
+            </h2>
+            <div class="govuk-hint" id="more-detail-hint">
+                Give any information that will help link to your old account
+            </div>
+            <textarea aria-describedby="more-detail-hint" class="govuk-textarea" id="additionalInfo"
+                      name="additionalInfo"
+                      rows="5" th:field="*{additionalInfo}"></textarea>
         </div>
-        <textarea aria-describedby="more-detail-hint" class="govuk-textarea" id="more-detail" name="moreDetail"
-                  rows="5"></textarea>
-    </div>
-    <div class="govuk-button-group">
-        <button class="govuk-button" data-module="govuk-button" type="submit">
-            Continue
-        </button>
-        <a class="govuk-link" href="#">Cancel</a>
-    </div>
+        <div class="govuk-button-group">
+            <button class="govuk-button" data-module="govuk-button" href="/check-answers">
+                Continue
+            </button>
+            <a class="govuk-link" href="#">Cancel</a>
+        </div>
+    </form>
 </main>
 </body>
 
