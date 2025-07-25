@@ -50,7 +50,7 @@ public class DemoDataPopulator {
                 System.out.println("Dummy Data Populated!!");
             }
             if (!internalUserPrincipals.isEmpty()) {
-                    internalUserPrincipals.forEach(
+                internalUserPrincipals.forEach(
                         username -> {
                             if (username.contains(":") && username.split(":").length == 6) {
                                 String[] split = username.split(":");
@@ -63,8 +63,7 @@ public class DemoDataPopulator {
                                     System.out.println("Dummy internal users Populated!!");
                                 }
                             }
-                        }
-                    );
+                        });
             }
         } catch (Exception ex) {
             System.err.println("Error populating dummy data!!");
