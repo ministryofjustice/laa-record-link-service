@@ -12,6 +12,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
+    defer-datasource-initialization: true
 
   flyway:
     enabled: true
