@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -15,6 +16,7 @@ import java.util.Set;
 @Table(name = "ccms_user")
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
+@Getter
 public class CcmsUser extends BaseEntity {
 
     @Column(name = "login_id", nullable = false)

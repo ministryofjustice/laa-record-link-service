@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -28,6 +29,7 @@ import lombok.experimental.SuperBuilder;
 })
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
+@Getter
 public final class LinkedRequest extends BaseEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "ccms_user_id", foreignKey = @ForeignKey(name = "FK_link_request_ccms_user_id"))
