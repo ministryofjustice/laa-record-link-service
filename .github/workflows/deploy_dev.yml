@@ -1,28 +1,28 @@
 name: Deploy Development
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
   push:
     branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false   
+  cancel-in-progress: false
 
 jobs:
   ecr:
     runs-on: ubuntu-latest
     environment: development
     permissions:
-      id-token: write # 
-      contents: read # 
+      id-token: write 
+      contents: read 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+      - uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
         with:
           role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
           aws-region: ${{ vars.ECR_REGION }}
-      - uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+      - uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
         id: login-ecr
 
       - name: Set up JDK
@@ -39,14 +39,63 @@ jobs:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
-      - run: |
+      - name: Build and Push Application Docker Image
+        run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
-      - run: |
+
+      - name: Build and Push Flyway CLI Docker Image
+        run: |
+          FLYWAY_REPOSITORY_NAME="${{ vars.ECR_REPOSITORY }}-flyway-cli
+          FLYWAY_IMAGE_TAG="${{ github.sha }}"
+          docker build -f Dockerfile.flyway -t $REGISTRY/$FLYWAY_REPOSITORY_NAME:$FLYWAY_IMAGE_TAG .
+          docker push $REGISTRY/$FLYWAY_REPOSITORY_NAME:$FLYWAY_IMAGE_TAG
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+      - name: Generate Flyway Job Manifest
+        id: generate_job_manifest
+        run: |
+          CURRENT_TIME=$(date +%s)
+          JOB_NAME="laa-record-linking-service-flyway-migration-${CURRENT_TIME}"
+          cat deployments/templates/flyway-job.yml | \
+          sed "s|name: laa-record-linking-service-flyway-migration-.*|name: ${JOB_NAME}|" | \
+          envsubst > deployments/flyway-job.yml
+          echo "job_name=${JOB_NAME}" >> $GITHUB_OUTPUT # Output the generated job name
+        env:
+          FLYWAY_REPOSITORY_NAME: "${{ vars.ECR_REPOSITORY }}-flyway-cli"
+          FLYWAY_IMAGE_TAG: ${{ github.sha }}
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          POSTGRES_DB_ADDRESS: placeholder
+          POSTGRES_DB_NAME: placeholder
+          POSTGRES_USERNAME: placeholder
+          POSTGRES_PASSWORD: placeholder
+
+
+      - name: Apply Flyway Migration Job
+        run: |
+          echo "${{ secrets.KUBE_CERT }}" > ca.crt
+          kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
+          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${KUBE_NAMESPACE}
+          kubectl config use-context ${KUBE_CLUSTER}
+          kubectl -n ${KUBE_NAMESPACE} apply -f deployments/flyway-job.yml
+        env:
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+
+      - name: Wait for Flyway Job Completion
+        run: |
+          kubectl wait --for=condition=complete job/${{ steps.generate_job_manifest.outputs.job_name }} --timeout=5m -n ${{ secrets.KUBE_NAMESPACE }}
+        env:
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+
+      - name: Generate Application Deployment Manifests
+        run: |
           cat deployments/templates/deployment.yml | envsubst > deployments/deployment.yml
           cat deployments/templates/ingress.yml | envsubst > deployments/ingress.yml
           cat deployments/templates/service.yml | envsubst > deployments/service.yml
@@ -54,8 +103,10 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-          NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
-      - run: |
+          NAMESPACE: ${{ secrets.KUBE_NAMESPACE }} # Needed if used in the deployment.yml template
+
+      - name: Apply Application Deployment
+        run: |
           echo "${{ secrets.KUBE_CERT }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}

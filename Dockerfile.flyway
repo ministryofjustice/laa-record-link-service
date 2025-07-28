@@ -1,0 +1,15 @@
+FROM openjdk:21-slim-buster
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && rm -rf /var/lib/apt/lists/*
+
+ENV FLYWAY_VERSION 9.22.3
+
+RUN curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz | tar xz \
+    && mv flyway-${FLYWAY_VERSION} /opt/flyway
+
+COPY src/main/resources/db/migration /opt/flyway/sql/
+
+WORKDIR /opt/flyway
+
+# Set entrypoint to Flyway CLI
+ENTRYPOINT ["/opt/flyway/flyway"]
