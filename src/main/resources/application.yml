@@ -12,20 +12,3 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
-
----
-spring:
-  config:
-    activate:
-      on-profile: local
-  flyway:
-    locations: classpath:db/migration,classpath:db/migration-local
-
----
-spring:
-  config:
-    activate:
-      on-profile: production
-  flyway:
-    locations: classpath:db/migration
-

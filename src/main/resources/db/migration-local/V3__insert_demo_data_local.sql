@@ -1,4 +1,4 @@
--- replace email with your email if needed?
+-- replace line 10 with your email if needed
 INSERT INTO ccms_user (id, login_id, first_name, last_name, firm_name, firm_code, email)
 VALUES (
            gen_random_uuid(),
