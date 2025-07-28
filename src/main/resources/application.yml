@@ -12,3 +12,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    org:
+      flywaydb: DEBUG
