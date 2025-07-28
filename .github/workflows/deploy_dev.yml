@@ -50,7 +50,7 @@ jobs:
 
       - name: Build and Push Flyway CLI Docker Image
         run: |
-          FLYWAY_REPOSITORY_NAME="${{ vars.ECR_REPOSITORY }}-flyway-cli
+          FLYWAY_REPOSITORY_NAME="${{ vars.ECR_REPOSITORY }}-flyway-cli"
           FLYWAY_IMAGE_TAG="${{ github.sha }}"
           docker build -f Dockerfile.flyway -t $REGISTRY/$FLYWAY_REPOSITORY_NAME:$FLYWAY_IMAGE_TAG .
           docker push $REGISTRY/$FLYWAY_REPOSITORY_NAME:$FLYWAY_IMAGE_TAG
