@@ -104,7 +104,10 @@ Once the environment variables are set, you can run must first start the databas
 1. Ensure Docker is installed, running & you are signed in with a **licensed** Docker account (see prerequisites above).
 2. Navigate to the root of the repository
 3. Using the Terminal, run `docker-compose up -d` - this will start the database container using Docker.
-4. To create database schema, run `./gradlew flywayMigrate`
+4. To create database schema, run `./gradlew flywayMigrate` 
+5. To add demo data for local:
+   - update V3__insert_demo_data_local.sql to include your email 
+   - run `INCLUDE_DEMO_DATA=true ./gradlew flywayMigrate` or set INCLUDE_DEMO_DATA to true in your .env file and run `./gradlew flywayMigrate`
 
 ### Build application
 `./gradlew clean build`

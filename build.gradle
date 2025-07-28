@@ -42,6 +42,12 @@ dependencies {
 }
 
 
+flyway {
+    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ? 
+        ['classpath:db/migration', 'classpath:db/migration-local'] : 
+        ['classpath:db/migration']
+}
+
 test {
     useJUnitPlatform()
    // finalizedBy jacocoTestReport
