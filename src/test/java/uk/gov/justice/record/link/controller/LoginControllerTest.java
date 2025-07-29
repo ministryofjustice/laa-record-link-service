@@ -1,5 +1,7 @@
 package uk.gov.justice.record.link.controller;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -26,17 +28,38 @@ public class LoginControllerTest {
                 .andExpect(view().name("index"));
     }
 
-    @Test
-    void shouldRenderPreviewPageWithUserData() throws Exception {
-        MvcResult result = mockMvc.perform(post("/check-answers")
-                        .param("oldLogin", "Alice")
-                        .param("additionalInfo", "My surname has changed due to marriage."))
-                .andExpect(status().isOk())
-                .andExpect(view().name("check-answers"))
-                .andExpect(model().attributeExists("user"))
-                .andReturn();
-        String html = result.getResponse().getContentAsString();
+    @Nested
+    class checkAnswer {
+        @DisplayName("Should render preview with user data")
+        @Test
+        void shouldRenderPreviewPageWithUserData() throws Exception {
+            MvcResult result = mockMvc.perform(post("/check-answers")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("check-answers"))
+                    .andExpect(model().attributeExists("user"))
+                    .andReturn();
+            String html = result.getResponse().getContentAsString();
 
-        assertTrue(html.contains("My surname has changed due to marriage."));
+            assertTrue(html.contains("Alice"));
+            assertTrue(html.contains("My surname has changed due to marriage."));
+        }
     }
+
+    @Nested
+    class linkUserRequest {
+        @DisplayName("Should render link user form")
+        @Test
+        void shouldRenderLinkUserForm() throws Exception {
+            mockMvc.perform(get("/login")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("link-user"))
+                    .andExpect(model().attributeExists("user"))
+                    .andReturn();
+        }
+    }
+
 }
