@@ -6,7 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import uk.gov.justice.record.link.model.TransferUser;
+import uk.gov.justice.record.link.model.UserTransferRequest;
 
 import java.util.Objects;
 
@@ -23,16 +23,16 @@ public class LoginController {
 
     @GetMapping("/login")
     public String transferRequest(Model model, HttpSession session) {
-        TransferUser user = (TransferUser) session.getAttribute("user");
+        UserTransferRequest user = (UserTransferRequest) session.getAttribute("user");
         if (Objects.isNull(user)) {
-            user = new TransferUser();
+            user = new UserTransferRequest();
         }
         model.addAttribute("user", user);
         return "link-user";
     }
 
     @PostMapping("/check-answers")
-    public String addUserCheckAnswers(@ModelAttribute TransferUser user, Model model, HttpSession session) {
+    public String addUserCheckAnswers(@ModelAttribute UserTransferRequest user, Model model, HttpSession session) {
         model.addAttribute("user", user);
         session.setAttribute("user", user);
         return "check-answers";
