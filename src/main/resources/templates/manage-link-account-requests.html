@@ -1,0 +1,79 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en" th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'login'})}" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Homepage</title>
+</head>
+
+<body>
+<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+<main class="govuk-main-wrapper" id="main-content">
+
+    <div class="moj-page-header-actions">
+        <div class="moj-page-header-actions__title">
+            <h1 class="govuk-heading-xl">Manage link account</h1>
+        </div>
+    </div>
+    <table class="govuk-table" data-module="moj-sortable-table">
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th aria-sort="none" class="govuk-table__header" scope="col">Login Id</th>
+            <th aria-sort="none" class="govuk-table__header" scope="col">Requesting User Id</th>
+            <th aria-sort="none" class="govuk-table__header" scope="col">Requesting Firm Id</th>
+            <th aria-sort="ascending" class="govuk-table__header" scope="col">Request Date</th>
+            <th aria-sort="none" class="govuk-table__header govuk-table__header--numeric" scope="col">Status</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
+                <td class="govuk-table__cell" th:text="${request.ccmsUser.loginId}">Login Id</td>
+                <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
+                <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
+                <td class="govuk-table__cell" th:text="${#temporals.format(request.createdDate, 'dd/MM/yyyy')}">Request Date</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                    <span class="moj-badge moj-badge--green" th:if="${request.status.name() == 'APPROVED'}" th:text="${request.status}">Status</span>
+                    <span class="moj-badge moj-badge--red" th:if="${request.status.name() == 'REJECTED'}" th:text="${request.status}">Status</span>
+                    <span class="moj-badge moj-badge--blue" th:if="${request.status.name() == 'OPEN'}" th:text="${request.status}">Status</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${pagedRequest.totalPages > 1}">
+        <ul class="moj-pagination__list">
+            <li class="moj-pagination__item moj-pagination__item--prev" th:if="${pagedRequest.hasPrevious}">
+                <a class="moj-pagination__link"
+                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">Previous<span
+                        class="govuk-visually-hidden"> page</span></a>
+            </li>
+
+            <th:block th:each="i : ${#numbers.sequence(1, pagedRequest.totalPages)}">
+                <li class="moj-pagination__item" 
+                    th:classappend="${i == pagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
+                    <a class="moj-pagination__link"
+                       th:href="@{/manage-linking-account(page=${i}, size=${pagedRequest.pageSize})}"
+                       th:aria-label="'Page ' + ${i} + ' of ' + ${pagedRequest.totalPages}"
+                       th:aria-current="${i == pagedRequest.currentPage ? 'page' : null}"
+                       th:text="${i}"></a>
+                </li>
+            </th:block>
+
+            <li class="moj-pagination__item moj-pagination__item--next" th:if="${pagedRequest.hasNext}">
+                <a class="moj-pagination__link"
+                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}">Next<span
+                        class="govuk-visually-hidden"> page</span></a>
+            </li>
+        </ul>
+
+        <p class="moj-pagination__results">
+            Showing <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + 1}"></b>
+            to <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + pagedRequest.linkedRequests.size()}"></b>
+            of <b th:text="${pagedRequest.totalItems}"></b> results
+        </p>
+    </nav>
+</main>
+</body>
+</html>
