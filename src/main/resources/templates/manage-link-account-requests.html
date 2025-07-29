@@ -29,7 +29,7 @@
         </tr>
         </thead>
         <tbody class="govuk-table__body">
-            <tr class="govuk-table__row" th:each="request : ${linkedRequests}">
+            <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
                 <td class="govuk-table__cell" th:text="${request.ccmsUser.loginId}">Login Id</td>
                 <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
                 <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
@@ -42,36 +42,36 @@
             </tr>
         </tbody>
     </table>
-    <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${totalPages > 1}">
+    <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${pagedRequest.totalPages > 1}">
         <ul class="moj-pagination__list">
-            <li class="moj-pagination__item moj-pagination__item--prev" th:if="${hasPrevious}">
+            <li class="moj-pagination__item moj-pagination__item--prev" th:if="${pagedRequest.hasPrevious}">
                 <a class="moj-pagination__link"
-                   th:href="@{/manage-linking-account(page=${currentPage - 1}, size=${pageSize})}">Previous<span
+                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">Previous<span
                         class="govuk-visually-hidden"> page</span></a>
             </li>
 
-            <th:block th:each="i : ${#numbers.sequence(1, totalPages)}">
+            <th:block th:each="i : ${#numbers.sequence(1, pagedRequest.totalPages)}">
                 <li class="moj-pagination__item" 
-                    th:classappend="${i == currentPage ? 'moj-pagination__item--active' : ''}">
+                    th:classappend="${i == pagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
                     <a class="moj-pagination__link"
-                       th:href="@{/manage-linking-account(page=${i}, size=${pageSize})}"
-                       th:aria-label="'Page ' + ${i} + ' of ' + ${totalPages}"
-                       th:aria-current="${i == currentPage ? 'page' : null}" 
+                       th:href="@{/manage-linking-account(page=${i}, size=${pagedRequest.pageSize})}"
+                       th:aria-label="'Page ' + ${i} + ' of ' + ${pagedRequest.totalPages}"
+                       th:aria-current="${i == pagedRequest.currentPage ? 'page' : null}"
                        th:text="${i}"></a>
                 </li>
             </th:block>
 
-            <li class="moj-pagination__item moj-pagination__item--next" th:if="${hasNext}">
+            <li class="moj-pagination__item moj-pagination__item--next" th:if="${pagedRequest.hasNext}">
                 <a class="moj-pagination__link"
-                   th:href="@{/manage-linking-account(page=${currentPage + 1}, size=${pageSize})}">Next<span
+                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}">Next<span
                         class="govuk-visually-hidden"> page</span></a>
             </li>
         </ul>
 
         <p class="moj-pagination__results">
-            Showing <b th:text="${(pageSize * (currentPage - 1)) + 1}"></b>
-            to <b th:text="${(pageSize * (currentPage - 1)) + linkedRequests.size()}"></b>
-            of <b th:text="${totalItems}"></b> results
+            Showing <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + 1}"></b>
+            to <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + pagedRequest.linkedRequests.size()}"></b>
+            of <b th:text="${pagedRequest.totalItems}"></b> results
         </p>
     </nav>
 </main>

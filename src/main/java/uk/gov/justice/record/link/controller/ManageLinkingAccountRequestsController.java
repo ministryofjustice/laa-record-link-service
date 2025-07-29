@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.justice.record.link.entity.LinkedRequest;
+import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 @Controller
@@ -23,14 +24,17 @@ public class ManageLinkingAccountRequestsController {
 
         Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getAllLinkingRequests(page, size);
 
-        model.addAttribute("linkedRequests", linkedRequestsPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", linkedRequestsPage.getTotalPages());
-        model.addAttribute("totalItems", linkedRequestsPage.getTotalElements());
-        model.addAttribute("pageSize", size);
-        model.addAttribute("hasPrevious", linkedRequestsPage.hasPrevious());
-        model.addAttribute("hasNext", linkedRequestsPage.hasNext());
-        
+        PagedUserRequest pagedRequest = new PagedUserRequest(
+                linkedRequestsPage.getContent(),
+                size,
+                linkedRequestsPage.getTotalPages(),
+                linkedRequestsPage.getTotalElements(),
+                page,
+                linkedRequestsPage.hasNext(),
+                linkedRequestsPage.hasPrevious()
+        );
+
+        model.addAttribute("pagedRequest", pagedRequest);
         return "manage-link-account-requests";
     }
 }
