@@ -29,7 +29,7 @@ public class LoginControllerTest {
     }
 
     @Nested
-    class checkAnswer {
+    class CheckAnswer {
         @DisplayName("Should render preview with user data")
         @Test
         void shouldRenderPreviewPageWithUserData() throws Exception {
@@ -48,7 +48,7 @@ public class LoginControllerTest {
     }
 
     @Nested
-    class linkUserRequest {
+    class LinkUserRequest {
         @DisplayName("Should render link user form")
         @Test
         void shouldRenderLinkUserForm() throws Exception {
