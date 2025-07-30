@@ -20,6 +20,7 @@
     </ol>
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
+    <form th:action="@{/login}" th:method="get">
     <div class="govuk-hint govuk-heading-l">
         Create a transfer request
     </div>
@@ -58,7 +59,7 @@
         <button class="govuk-button" data-module="govuk-button" type="submit">
             Confirm and send
         </button>
-        <a class="govuk-link" href="#">Cancel</a>
+        <a class="govuk-link" href="/login">Cancel</a>
     </div>
 </main>
 </body>
