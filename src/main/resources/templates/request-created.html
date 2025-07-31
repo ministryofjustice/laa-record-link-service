@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en" th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'users'})}" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Request Created</title>
+</head>
+
+<body>
+<main class="govuk-main-wrapper govuk-width-container" id="main-content">
+    <script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+
+    <div class="govuk-!-width-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">Transfer request created</h1>
+            <div class="govuk-panel__body">
+                for
+                <span class="govuk-!-font-weight-bold" th:text="*{userTransferRequest.oldLogin}"></span>
+            </div>
+        </div>
+        <h2 class=" govuk-heading-m govuk-!-padding-top-3">What happens next</h2>
+        <p class="govuk-body govuk-!-padding-top-3">Your request will be reviewed.
+        </p>
+        <p class="govuk-body govuk-!-padding-top-3">
+            If approved, cases from the CCMS account will be transferred the designated account in 3 working days.
+        </p>
+        <p class="govuk-body govuk-!-padding-top-3">See the status of your request in the
+            <a href='/cancel'>manage transfer requests </a> &nbsp dashboard.
+        </p>
+        <p class="govuk-body govuk-!-padding-top-3">You can: <br>
+            <a href='/cancel'> Create a new link request </a>
+            <br></p>
+    </div>
+</main>
+<footer th:replace="~{partials/footer :: footer}"></footer>
+</body>
+</html>

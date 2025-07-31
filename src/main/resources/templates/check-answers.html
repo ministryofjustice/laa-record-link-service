@@ -14,53 +14,58 @@
 <nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
     <ol class="govuk-breadcrumbs__list">
         <li class="govuk-breadcrumbs__list-item">
-            <a class="govuk-breadcrumbs__link" th:href="@{/login}">
+            <a class="govuk-breadcrumbs__link" th:href="@{/homepage}">
                 < Back</a>
         </li>
     </ol>
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
-    <form th:action="@{/login}" th:method="get">
-    <div class="govuk-hint govuk-heading-l">
-        Create a transfer request
-    </div>
-    <div class="govuk-form-group">
-        <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--l">
-                Check your answers
-            </label>
-        </h1>
-    </div>
-    <dl class="govuk-summary-list">
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                CCMS username
-            </dt>
-            <dd class="govuk-summary-list__value">
-                <span th:text="${user.oldLogin}"></span>
-            </dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" href="/login">Change</a>
-            </dd>
+    <form th:action="@{/request-confirmation}" th:method="get">
+        <div class="govuk-hint govuk-heading-l">
+            Create a transfer request
         </div>
-        <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">
-                Additional Information
-            </dt>
-            <dd class="govuk-summary-list__value">
-                <span th:text="${user.additionalInfo}"></span>
-            </dd>
-            <dd class="govuk-summary-list__actions">
-                <a class="govuk-link" href="/login">Change</a>
-            </dd>
+        <div class="govuk-form-group">
+            <h1 class="govuk-label-wrapper">
+                <label class="govuk-label govuk-label--l">
+                    Check your answers
+                </label>
+            </h1>
         </div>
-    </dl>
-    <div class="govuk-button-group">
-        <button class="govuk-button" data-module="govuk-button" type="submit">
-            Confirm and send
-        </button>
-        <a class="govuk-link" href="/">Cancel</a>
-    </div>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    CCMS username
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <span th:text="${userTransferRequest.oldLogin}"></span>
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/user-transfer-request">Change</a>
+                </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                    Additional Information
+                </dt>
+                <dd class="govuk-summary-list__value">
+                    <span th:text="${userTransferRequest.additionalInfo}"></span>
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    <a class="govuk-link" href="/user-transfer-request">Change</a>
+                </dd>
+            </div>
+        </dl>
+        <h2 class="govuk-heading-m">Confirm and send your request</h2>
+        <p class="govuk-body">By submitting this request, you
+            confirm that the relevant cases in CCMS are owned by [name].
+        </p>
+        <div class="govuk-button-group">
+            <button class="govuk-button" data-module="govuk-button" type="submit">
+                Confirm and send
+            </button>
+            <a class="govuk-link" href="/cancel">Cancel</a>
+        </div>
+    </form>
 </main>
 </body>
 </html>

@@ -23,18 +23,37 @@
     <div class="govuk-hint govuk-heading-l">
         Create a transfer request
     </div>
-    <form th:action="@{/check-answers}" th:method="post" th:object="${user}">
+    <form th:action="@{/check-answers}" th:method="post" th:object="${userTransferRequest}">
+        <div th:if="${#fields.hasErrors()}">
+            <div class="govuk-error-summary" data-module="govuk-error-summary"
+                 role="alert">
+                <h2 class="govuk-error-summary__title">
+                    There is a problem
+                </h2>
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li>
+                            <a href="#old-login">Enter your CCMS username</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
         <div class="govuk-form-group">
             <h1 class="govuk-label-wrapper">
                 <label class="govuk-label govuk-label--l">
                     What was your CCMS login ID
                 </label>
             </h1>
-            <div class="govuk-hint" id="event-name-hint">
+            <p class="govuk-hint">
                 This may have been a username or email
+            </p>
+            <div class="govuk-error-message" th:if="${#fields.hasErrors('oldLogin')}">
+                <p th:each="err : ${#fields.errors('oldLogin')}" th:text="${err}"></p>
             </div>
-            <input class="govuk-input govuk-!-width-one-half" id="old-login" name="oldLogin" th:value="*{oldLogin}"
-                   type="text">
+            <input class="govuk-input govuk-!-width-one-half" id="old-login" name="oldLogin"
+                   th:classappend="${#fields.hasErrors('oldLogin')} ? 'govuk-input--error'"
+                   th:value="*{oldLogin}" type="text">
         </div>
         <div class="govuk-form-group">
             <h2 class="govuk-label-wrapper">
@@ -50,10 +69,10 @@
                       rows="5" th:field="*{additionalInfo}"></textarea>
         </div>
         <div class="govuk-button-group">
-            <button class="govuk-button" data-module="govuk-button" href="/check-answers">
+            <button class="govuk-button" data-module="govuk-button">
                 Continue
             </button>
-            <a class="govuk-link" href="#">Cancel</a>
+            <a class="govuk-link" href="/cancel">Cancel</a>
         </div>
     </form>
 </main>

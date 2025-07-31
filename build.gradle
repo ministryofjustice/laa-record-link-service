@@ -41,16 +41,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
 }
 
 
 flyway {
-    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ? 
-        ['classpath:db/migration', 'classpath:db/migration-local'] : 
-        ['classpath:db/migration']
+    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ?
+            ['classpath:db/migration', 'classpath:db/migration-local'] :
+            ['classpath:db/migration']
 }
 
 test {
     useJUnitPlatform()
-   // finalizedBy jacocoTestReport
+    // finalizedBy jacocoTestReport
 }
