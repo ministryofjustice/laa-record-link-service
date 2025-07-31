@@ -55,14 +55,11 @@ public class UserTransferServiceTest {
                 .createdDate(LocalDateTime.now())
                 .build();
 
-        when(ccmsUserRepository.save(ccmsUser)).thenReturn(ccmsUser);
-        when(linkedRequestRepository.save(linkedRequest)).thenReturn(linkedRequest);
+        when(ccmsUserRepository.findByLoginId(transferRequest.getOldLogin())).thenReturn(ccmsUser);
 
         userTransferService.save(transferRequest);
 
-        verify(ccmsUserRepository).save(any(CcmsUser.class));
-        verify(ccmsUserRepository, times(1)).save(any(CcmsUser.class));
-        verify(linkedRequestRepository).save(any(LinkedRequest.class));
-        verify(linkedRequestRepository, times(1)).save(any(LinkedRequest.class));
+        verify(ccmsUserRepository).findByLoginId(transferRequest.getOldLogin());
+        verify(ccmsUserRepository, times(1)).findByLoginId(transferRequest.getOldLogin());
     }
 }

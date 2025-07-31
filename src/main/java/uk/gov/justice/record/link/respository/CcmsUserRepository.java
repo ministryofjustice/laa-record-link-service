@@ -5,4 +5,6 @@ import uk.gov.justice.record.link.entity.CcmsUser;
 
 
 public interface CcmsUserRepository extends JpaRepository<CcmsUser, String> {
+
+    CcmsUser findByLoginId(String name);
 }

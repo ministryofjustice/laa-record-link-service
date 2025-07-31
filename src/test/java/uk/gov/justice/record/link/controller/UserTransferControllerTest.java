@@ -103,9 +103,7 @@ public class UserTransferControllerTest {
                     .idamEmail(StringUtils.randomAlphanumeric(6))
                     .createdDate(LocalDateTime.now())
                     .build();
-
-            when(userTransferService.save(any(UserTransferRequest.class))).thenReturn(linkedRequest);
-
+            
             mockMvc.perform(get("/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
