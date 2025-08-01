@@ -20,7 +20,7 @@
     </ol>
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
-    <form th:action="@{/request-confirmation}" th:method="get">
+    <form th:action="@{/request-confirmation}" th:method="post" th:object="${userTransferRequest}">
         <div class="govuk-hint govuk-heading-l">
             Create a transfer request
         </div>
@@ -42,6 +42,7 @@
                 <dd class="govuk-summary-list__actions">
                     <a class="govuk-link" href="/user-transfer-request">Change</a>
                 </dd>
+                <input  type="hidden" id="oldLogin" name="oldLogin" th:value="*{oldLogin}">
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">
@@ -53,6 +54,7 @@
                 <dd class="govuk-summary-list__actions">
                     <a class="govuk-link" href="/user-transfer-request">Change</a>
                 </dd>
+                <input class="govuk-input govuk-!-width-one-half" type="hidden" id="additionalInfo" name="additionalInfo" th:value="*{additionalInfo}">
             </div>
         </dl>
         <h2 class="govuk-heading-m">Confirm and send your request</h2>
