@@ -41,7 +41,9 @@ public class CsvCcmsDataImportService {
             }
 
             String[] tokens = line.split(",");
-            if (tokens.length < 3) continue;
+            if (tokens.length < 3) {
+                continue;
+            }
 
             String firmName = tokens[1].trim();
             String firmCode = tokens[2].trim();

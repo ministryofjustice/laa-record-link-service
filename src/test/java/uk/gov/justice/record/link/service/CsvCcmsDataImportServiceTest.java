@@ -29,9 +29,9 @@ public class CsvCcmsDataImportServiceTest {
     @Test
     void testImportCsv() throws Exception {
 
-        String csvData = " CCMS_PROVIDERFIRM_ID,PROVIDER_FIRM_NAME,CWA_FIRM_CODE,CCMS_USER_ID,USER_LOGIN_ID,EMAIL_ADDRESS,SURNAME_FIRSTNAME\n" +
-                "10000,Schaefer & Co,20000,50000,cynthiawardthomas,cynthiawardthomas@schaeferandco.com,\"Ward-Thomas, Cynthia\" \n" +
-                "10001,Pierce Associates,20001,50008,jenniferbass@pierceassociates.com,jenniferbass@pierceassociates.com,\"Bass, Jennifer\"\n";
+        String csvData = " CCMS_PROVIDERFIRM_ID,PROVIDER_FIRM_NAME,CWA_FIRM_CODE,CCMS_USER_ID,USER_LOGIN_ID,EMAIL_ADDRESS,SURNAME_FIRSTNAME\n"
+                + "10000,Schaefer & Co,20000,50000,cynthiawardthomas,cynthiawardthomas@schaeferandco.com,\"Ward-Thomas, Cynthia\" \n"
+                + "10001,Pierce Associates,20001,50008,jenniferbass@pierceassociates.com,jenniferbass@pierceassociates.com,\"Bass, Jennifer\"\n";
 
         InputStream inputStream = new ByteArrayInputStream(csvData.getBytes());
 
