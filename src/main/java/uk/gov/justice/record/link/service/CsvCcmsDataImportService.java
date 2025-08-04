@@ -26,7 +26,7 @@ public class CsvCcmsDataImportService {
             importCsv(inputStream);
 
         } catch (Exception e) {
-            System.err.println("Error while reading ccms_dummy_data.csv");
+            System.err.println("Error while reading ccms_dummy_data.csv " + e.getMessage());
         }
     }
 
@@ -62,6 +62,7 @@ public class CsvCcmsDataImportService {
 
             if (ccmsUserRepository.findByLoginId(user.getLoginId()) != null) {
                 System.out.println(userLogin + " already exists");
+                break;
             }
             ccmsUserRepository.save(user);
         }
