@@ -43,7 +43,7 @@ public class UserTransferController {
     public String userTransferRequest(@Valid @ModelAttribute UserTransferRequest userTransferRequest,
                                       BindingResult result, Model model, HttpSession session) {
 
-        if (result.hasErrors()) {
+        if (result.hasErrors() && result.getAllErrors().stream().anyMatch(er -> er.getDefaultMessage().equals("Enter CCMS username"))) {
             return "user-transfer-request";
         }
         model.addAttribute("userTransferRequest", userTransferRequest);
@@ -52,12 +52,15 @@ public class UserTransferController {
         return "check-answers";
     }
 
-    @GetMapping("/request-confirmation")
-    public String userLinked(Model model, HttpSession session) {
-        UserTransferRequest userTransferRequest = (UserTransferRequest) session.getAttribute("userTransferRequest");
+    @PostMapping("/request-confirmation")
+    public String userLinked(@Valid @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result, Model model, HttpSession session) {
+        if (result.hasErrors() && result.getAllErrors().stream().anyMatch(er -> er.getDefaultMessage().equals("Invalid Request"))) {
+            return "request_rejected";
+        }
         if (Objects.isNull(userTransferRequest)) {
             userTransferRequest = new UserTransferRequest();
         }
+
         model.addAttribute("userTransferRequest", userTransferRequest);
         userTransferService.save(userTransferRequest);
         return "request-created";

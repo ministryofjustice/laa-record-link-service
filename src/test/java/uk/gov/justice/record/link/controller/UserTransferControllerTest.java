@@ -1,9 +1,6 @@
 package uk.gov.justice.record.link.controller;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,15 +14,16 @@ import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.UserTransferRequest;
+import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +41,8 @@ public class UserTransferControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private UserTransferService userTransferService;
+    @MockitoBean
+    private LinkedRequestRepository mockLinkedRequestRepository;
 
     @Test
     void shouldRenderHomePage() throws Exception {
@@ -67,6 +67,21 @@ public class UserTransferControllerTest {
 
             assertTrue(html.contains("Alice"));
             assertTrue(html.contains("My surname has changed due to marriage."));
+        }
+
+        @DisplayName("User transfer form with empty CCMS login id")
+        @Test
+        void givenEmptyUsername_shouldTriggerPatternViolation() throws Exception {
+            MvcResult result = mockMvc.perform(post("/check-answers")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("user-transfer-request"))
+                    .andExpect(model().hasErrors())
+                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "oldLogin"))
+                    .andReturn();
+
+            String html = result.getResponse().getContentAsString();
+            assertTrue(html.contains("Enter CCMS username"));
         }
     }
 
@@ -103,9 +118,10 @@ public class UserTransferControllerTest {
                     .idamEmail(StringUtils.randomAlphanumeric(6))
                     .createdDate(LocalDateTime.now())
                     .build();
-            
-            mockMvc.perform(get("/request-confirmation")
-                            .param("oldLogin", "Alice")
+
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
+
+            mockMvc.perform(post("/request-confirmation")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
@@ -115,19 +131,29 @@ public class UserTransferControllerTest {
             verify(userTransferService, times(1)).save(any(UserTransferRequest.class));
         }
 
-        @DisplayName("User transfer form with empty CCMS login id")
+        @DisplayName("Should return request rejected for login id in OPEN or APPROVED status")
         @Test
-        void givenEmptyUsername_shouldTriggerPatternViolation() throws Exception {
-
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            validator = factory.getValidator();
-
-            UserTransferRequest transferRequest = new UserTransferRequest();
-            transferRequest.setAdditionalInfo("My surname has changed due to marriage.");
-            Set<ConstraintViolation<UserTransferRequest>> violations = validator.validate(transferRequest);
-            assertThat(violations).extracting(ConstraintViolation::getMessage)
-                    .contains("Enter CCMS username",
-                            "Enter CCMS username");
+        void shouldReturnRequestRejectedForLoginIdInOpenOrApprovedStatus() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            var results = mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
         }
+
+        @DisplayName("Should return request accepted when login id not OPEN or APPROVED status")
+        @Test
+        void shouldReturnSuccessForLoginIdNotInOpenOrApprovedStatus() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
+            var results = mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request-created"))
+                    .andReturn();
+        }
+
     }
 }
