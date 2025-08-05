@@ -16,11 +16,13 @@ import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.UserTransferRequest;
+import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +50,8 @@ public class UserTransferControllerTest {
     private UserTransferService userTransferService;
     @MockitoBean
     private LinkedRequestRepository mockLinkedRequestRepository;
+    @MockitoBean
+    private CcmsUserRepository mockCcmsUserRepository;
     @Captor
     private ArgumentCaptor<UserTransferRequest> userTransferRequestCaptor;
     @Captor
@@ -112,11 +116,6 @@ public class UserTransferControllerTest {
         @DisplayName("Complete user transfer form")
         @Test
         void shouldCompleteUserTransferRequest() throws Exception {
-            CcmsUser ccmsUser = CcmsUser.builder()
-                    .loginId("Alice")
-                    .firstName("Alison")
-                    .lastName("Doe")
-                    .build();
 
             LinkedRequest linkedRequest = new LinkedRequest().toBuilder()
                     .additionalInfo("My surname has changed due to marriage.")
@@ -129,9 +128,11 @@ public class UserTransferControllerTest {
                     .createdDate(LocalDateTime.now())
                     .build();
 
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
 
             mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
@@ -145,6 +146,7 @@ public class UserTransferControllerTest {
         @Test
         void shouldReturnRequestRejectedForLoginIdInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/request-confirmation")
@@ -166,6 +168,51 @@ public class UserTransferControllerTest {
         @Test
         void shouldReturnSuccessForLoginIdNotInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request-created"))
+                    .andReturn();
+
+            verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+        }
+
+
+        @DisplayName("Should return request rejected when login id does not exist in CCMS_USER")
+        @Test
+        void shouldReturnRequestRejectedWhenLoginIdIsNotValid() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+            mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "invalidLoginId")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                    .isEqualTo(Arrays.asList("invalidLoginId", "My surname has changed due to marriage."));
+
+            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
+        }
+
+        @DisplayName("Should return request accepted when login id exist in CCMS_USER")
+        @Test
+        void shouldReturnRequestAcceptedWhenLoginIdIsValid() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
             mockMvc.perform(post("/request-confirmation")
@@ -184,4 +231,10 @@ public class UserTransferControllerTest {
         }
 
     }
+
+    private  CcmsUser ccmsUser = CcmsUser.builder()
+            .loginId("Alice")
+            .firstName("Alison")
+            .lastName("Doe")
+            .build();
 }

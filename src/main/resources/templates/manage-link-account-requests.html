@@ -30,7 +30,7 @@
         </thead>
         <tbody class="govuk-table__body">
             <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
-                <td class="govuk-table__cell" th:text="${request.ccmsUser.loginId}">Login Id</td>
+                <td class="govuk-table__cell" th:text="${request.oldLoginId}">Login Id</td>
                 <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
                 <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
                 <td class="govuk-table__cell" th:text="${#temporals.format(request.createdDate, 'dd/MM/yyyy')}">Request Date</td>

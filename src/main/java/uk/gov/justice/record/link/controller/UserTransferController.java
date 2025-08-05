@@ -11,6 +11,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import uk.gov.justice.record.link.constants.ValidationConstants;
 import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.service.UserTransferService;
 
@@ -58,10 +59,11 @@ public class UserTransferController {
 
     @PostMapping("/request-confirmation")
     public String userLinked(@Valid @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result, Model model, HttpSession session) {
-
-        final List<String> expectedErrorMessages = List.of("Login processed");
+        log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
+        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.INVALID_STATUS_MESSAGE);
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                  .filter(expectedErrorMessages::contains).toList();
+
         if (!errors.isEmpty()) {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
             userTransferService.rejectRequest(userTransferRequest, errors.getFirst());
@@ -73,6 +75,7 @@ public class UserTransferController {
 
         model.addAttribute("userTransferRequest", userTransferRequest);
         userTransferService.save(userTransferRequest);
+        log.info("User transfer request created with login id: {}", userTransferRequest.getOldLogin());
         return "request-created";
     }
 
