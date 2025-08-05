@@ -48,6 +48,7 @@ dependencies {
     testImplementation('org.testcontainers:postgresql')
     testImplementation('org.testcontainers:junit-jupiter')
     testImplementation('org.springframework.boot:spring-boot-testcontainers')
+    testImplementation 'org.jmockit:jmockit:1.49'
 
 }
 
@@ -59,6 +60,7 @@ flyway {
 }
 
 test {
+    jvmArgs "-javaagent:${classpath.find { it.name.contains("jmockit") }.absolutePath}"
     useJUnitPlatform()
    // finalizedBy jacocoTestReport
 }

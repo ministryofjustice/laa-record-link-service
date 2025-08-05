@@ -4,14 +4,14 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.justice.record.link.validation.LinkedRequestConstraint;
+import uk.gov.justice.record.link.validation.InvalidStatus;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class UserTransferRequest {
 
-    @LinkedRequestConstraint
+    @InvalidStatus
     @NotEmpty(message = "Enter CCMS username")
     private String oldLogin;
     private String additionalInfo;

@@ -22,13 +22,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class LinkRequestValidatorTest {
+public class InvalidStatusValidatorTest {
     @Mock
     private LinkedRequestRepository mockLinkedRequestRepository;
     @Mock
     private ConstraintValidatorContext mockConstraintValidatorContext;
     @InjectMocks
-    private LinkRequestValidator linkRequestValidator;
+    private InvalidStatusValidator inValidStatusValidator;
     @Captor
     private ArgumentCaptor<String> loginIdCaptor;
     @Captor
@@ -42,7 +42,7 @@ public class LinkRequestValidatorTest {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(eq("user2"),  anyList()))
                     .thenReturn(0);
 
-            var actualResult = linkRequestValidator.isValid("user2", mockConstraintValidatorContext);
+            var actualResult = inValidStatusValidator.isValid("user2", mockConstraintValidatorContext);
 
             assertThat(actualResult).isTrue();
             verify(mockLinkedRequestRepository).countByCcmsUser_LoginIdAndStatusIn(loginIdCaptor.capture(), statusCaptor.capture());
@@ -56,7 +56,7 @@ public class LinkRequestValidatorTest {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(eq("user1"),  anyList()))
                     .thenReturn(1);
 
-            var actualResult = linkRequestValidator.isValid("user1", mockConstraintValidatorContext);
+            var actualResult = inValidStatusValidator.isValid("user1", mockConstraintValidatorContext);
 
             assertThat(actualResult).isFalse();
             verify(mockLinkedRequestRepository).countByCcmsUser_LoginIdAndStatusIn(loginIdCaptor.capture(), statusCaptor.capture());
