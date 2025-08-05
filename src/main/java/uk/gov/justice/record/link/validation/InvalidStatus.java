@@ -10,11 +10,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target({ ElementType.FIELD})
-@Constraint(validatedBy = LinkRequestValidator.class)
+@Constraint(validatedBy = InvalidStatusValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface LinkedRequestConstraint {
-    String message() default "Invalid Request";
+public @interface InvalidStatus {
+    String message() default "Login processed";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

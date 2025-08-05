@@ -4,6 +4,8 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -18,12 +20,15 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +48,11 @@ public class UserTransferControllerTest {
     private UserTransferService userTransferService;
     @MockitoBean
     private LinkedRequestRepository mockLinkedRequestRepository;
+    @Captor
+    private ArgumentCaptor<UserTransferRequest> userTransferRequestCaptor;
+    @Captor
+    private ArgumentCaptor<String> reasonCaptor;
+
 
     @Test
     void shouldRenderHomePage() throws Exception {
@@ -135,24 +145,42 @@ public class UserTransferControllerTest {
         @Test
         void shouldReturnRequestRejectedForLoginIdInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
-            var results = mockMvc.perform(post("/request-confirmation")
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+            mockMvc.perform(post("/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
                     .andReturn();
+
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                            .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+
+            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request accepted when login id not OPEN or APPROVED status")
         @Test
         void shouldReturnSuccessForLoginIdNotInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            var results = mockMvc.perform(post("/request-confirmation")
+            doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            mockMvc.perform(post("/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
                     .andReturn();
+
+            verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
         }
 
     }

@@ -11,12 +11,12 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class LinkRequestValidator implements ConstraintValidator<LinkedRequestConstraint, String> {
+public class InvalidStatusValidator implements ConstraintValidator<InvalidStatus, String> {
 
     private final LinkedRequestRepository linkedRequestRepository;
 
     @Override
-    public void initialize(LinkedRequestConstraint linkedRequestConstraint) {
+    public void initialize(InvalidStatus linkedRequestConstraint) {
     }
 
     @Override
