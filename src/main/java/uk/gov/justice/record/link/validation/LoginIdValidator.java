@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 
 @AllArgsConstructor
-public final class InvalidLoginIdValidator implements ConstraintValidator<InvalidLoginId, String>  {
+public final class LoginIdValidator implements ConstraintValidator<ValidLoginId, String>  {
     private final CcmsUserRepository ccmsUserRepository;
 
     @Override

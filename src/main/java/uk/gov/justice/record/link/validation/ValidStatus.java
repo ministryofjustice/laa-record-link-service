@@ -11,11 +11,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target({ ElementType.FIELD})
-@Constraint(validatedBy = InvalidLoginIdValidator.class)
+@Constraint(validatedBy = StatusValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface InvalidLoginId {
-    String message() default ValidationConstants.INVALID_LOGIN_ID_MESSAGE;
+public @interface ValidStatus {
+    String message() default ValidationConstants.INVALID_STATUS_MESSAGE;
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

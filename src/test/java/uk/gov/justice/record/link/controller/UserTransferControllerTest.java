@@ -97,6 +97,19 @@ public class UserTransferControllerTest {
             String html = result.getResponse().getContentAsString();
             assertTrue(html.contains("Enter CCMS username"));
         }
+
+        @DisplayName("Should not trigger any other validation from check answer page")
+        @Test
+        void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
+            mockMvc.perform(post("/check-answers")
+                            .param("oldLogin", "invalidLoginId")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            verify(mockLinkedRequestRepository, times(0)).countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList());
+            verify(mockCcmsUserRepository, times(0)).findByLoginId(anyString());
+        }
     }
 
     @Nested
@@ -228,6 +241,40 @@ public class UserTransferControllerTest {
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+        }
+
+        @DisplayName("Login id validation should take priority when both login id and status are invalid")
+        @Test
+        void shouldReturnRequestRejectedWhenLoginIdAndStatusAreInvalid() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+            mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "invalidLoginId")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
+        }
+
+        @DisplayName("Should validate status only after login iD is valid")
+        @Test
+        void shouldValidateStatusOnlyAfterLoginIdIsValid() throws Exception {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+            mockMvc.perform(post("/request-confirmation")
+                            .param("oldLogin", "invalidLoginId")
+                            .param("additionalInfo", "My surname has changed due to marriage."))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
         }
 
     }

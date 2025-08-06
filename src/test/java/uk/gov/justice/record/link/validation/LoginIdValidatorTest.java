@@ -21,13 +21,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class InvalidLoginIdValidatorTest {
+public class LoginIdValidatorTest {
     @Mock
     private CcmsUserRepository mockCcmsUserRepository;
     @Mock
     private ConstraintValidatorContext mockConstraintValidatorContext;
     @InjectMocks
-    private InvalidLoginIdValidator invalidLoginIdValidator;
+    private LoginIdValidator loginIdValidator;
     @Captor
     private ArgumentCaptor<String> loginIdCaptor;
 
@@ -38,7 +38,7 @@ public class InvalidLoginIdValidatorTest {
         void validLoginId() {
             when(mockCcmsUserRepository.findByLoginId(eq("loginId"))).thenReturn(Optional.of(createCcmsUser()));
 
-            var actualResult = invalidLoginIdValidator.isValid("loginId", mockConstraintValidatorContext);
+            var actualResult = loginIdValidator.isValid("loginId", mockConstraintValidatorContext);
 
             assertThat(actualResult).isTrue();
 
@@ -52,7 +52,7 @@ public class InvalidLoginIdValidatorTest {
         void invalidLoginId() {
             when(mockCcmsUserRepository.findByLoginId(eq("loginId"))).thenReturn(Optional.empty());
 
-            var actualResult = invalidLoginIdValidator.isValid("loginId", mockConstraintValidatorContext);
+            var actualResult = loginIdValidator.isValid("loginId", mockConstraintValidatorContext);
 
             assertThat(actualResult).isFalse();
         }
