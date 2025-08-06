@@ -22,12 +22,13 @@ public class UserTransferService {
 
     public void save(final UserTransferRequest userTransferRequest) {
 
-        CcmsUser ccmsUser = ccmsUserRepository.findByLoginId(userTransferRequest.getOldLogin());
+        CcmsUser ccmsUser = ccmsUserRepository.findByLoginId(userTransferRequest.getOldLogin()).get();
 
         // TODO Revisit in STB-2368
         LinkedRequest newUser = LinkedRequest.builder()
                 .additionalInfo(userTransferRequest.getAdditionalInfo())
                 .ccmsUser(ccmsUser)
+                .oldLoginId(userTransferRequest.getOldLogin())
                 .status(Status.OPEN)
                 .idamFirstName("TODO in STB-2368")
                 .idamLastName("TODO in STB-2368")
@@ -36,5 +37,29 @@ public class UserTransferService {
                 .createdDate(LocalDateTime.now())
                 .build();
         linkedRequestRepository.save(newUser);
+
     }
+
+    public void rejectRequest(final UserTransferRequest userTransferRequest, final String reason) {
+        CcmsUser ccmsUser = ccmsUserRepository.findByLoginId(userTransferRequest.getOldLogin()).orElse(null);
+
+        // TODO Revisit in STB-2368
+        LinkedRequest newUser = LinkedRequest.builder()
+                .additionalInfo(userTransferRequest.getAdditionalInfo())
+                .ccmsUser(ccmsUser)
+                .oldLoginId(userTransferRequest.getOldLogin())
+                .status(Status.REJECTED)
+                .decisionDate(LocalDateTime.now())
+                .decisionReason(reason)
+                .laaAssignee("System")
+                .idamFirstName("TODO in STB-2368")
+                .idamLastName("TODO in STB-2368")
+                .idamLegacyUserId(UUID.randomUUID())
+                .idamEmail(StringUtils.randomAlphanumeric(6))
+                .createdDate(LocalDateTime.now())
+                .build();
+        linkedRequestRepository.save(newUser);
+    }
+
+
 }

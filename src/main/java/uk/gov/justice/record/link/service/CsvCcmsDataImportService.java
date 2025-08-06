@@ -60,7 +60,7 @@ public class CsvCcmsDataImportService {
             user.setFirstName(firstName);
             user.setFirmCode(firmCode);
 
-            if (ccmsUserRepository.findByLoginId(user.getLoginId()) != null) {
+            if (ccmsUserRepository.findByLoginId(user.getLoginId()).isPresent()) {
                 System.out.println(userLogin + " already exists");
                 break;
             }
