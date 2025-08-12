@@ -20,6 +20,10 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 ---
 spring:
   config:
@@ -27,3 +31,18 @@ spring:
       on-profile: local
   flyway:
     locations: classpath:db/migration,classpath:db/migration-local
+  security:
+    oauth2:
+      client:
+        registration:
+          azure:
+            client-id: ${AZURE_CLIENT_ID}
+            client-secret: ${AZURE_CLIENT_SECRET}
+            scope: openid, profile, email
+            authorization-grant-type: authorization_code
+            redirect-uri: ${BASE_URL}/login/oauth2/code/azure
+        provider:
+          azure:
+            issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+            token-uri: https://login:microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+            user-info-uri: https://graph.microsoft.com/oidc/userinfo
