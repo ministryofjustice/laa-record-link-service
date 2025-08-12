@@ -26,6 +26,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
@@ -53,12 +55,12 @@ dependencies {
 
 
 flyway {
-    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ? 
-        ['classpath:db/migration', 'classpath:db/migration-local'] : 
-        ['classpath:db/migration']
+    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ?
+            ['classpath:db/migration', 'classpath:db/migration-local'] :
+            ['classpath:db/migration']
 }
 
 test {
     useJUnitPlatform()
-   // finalizedBy jacocoTestReport
+    // finalizedBy jacocoTestReport
 }
