@@ -54,13 +54,13 @@ dependencies {
 
 
 flyway {
-    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ? 
-        ['classpath:db/migration', 'classpath:db/migration-local'] : 
-        ['classpath:db/migration']
+    locations = System.getenv('INCLUDE_DEMO_DATA') == 'true' ?
+            ['classpath:db/migration', 'classpath:db/migration-local'] :
+            ['classpath:db/migration']
 }
 
 test {
     jvmArgs "-javaagent:${classpath.find { it.name.contains("jmockit") }.absolutePath}"
     useJUnitPlatform()
-   // finalizedBy jacocoTestReport
+    // finalizedBy jacocoTestReport
 }

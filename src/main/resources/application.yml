@@ -20,6 +20,10 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 ---
 spring:
   config:
