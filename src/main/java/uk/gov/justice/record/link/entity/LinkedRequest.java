@@ -1,22 +1,21 @@
 package uk.gov.justice.record.link.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Column;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "link_request", indexes = {
@@ -25,15 +24,19 @@ import lombok.experimental.SuperBuilder;
     @Index(name = "linked_request_created_date", columnList = "created_date"),
     @Index(name = "linked_request_decision_date", columnList = "decision_date"),
     @Index(name = "linked_request_laa_assignee", columnList = "laa_assignee"),
-    @Index(name = "linked_request_status", columnList = "status")
+    @Index(name = "linked_request_status", columnList = "status"),
+    @Index(name = "linked_request_provided_login_id", columnList = "provided_old_login_id")
 })
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 @Getter
 public final class LinkedRequest extends BaseEntity {
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ccms_user_id", foreignKey = @ForeignKey(name = "FK_link_request_ccms_user_id"))
     private CcmsUser ccmsUser;
+
+    @Column(name = "provided_old_login_id", nullable = false)
+    private String oldLoginId;
 
     @Column(name = "idam_legacy_user_id", nullable = false, unique = true)
     private UUID idamLegacyUserId;
