@@ -57,7 +57,6 @@ public class UserTransferControllerTest {
     @Captor
     private ArgumentCaptor<String> reasonCaptor;
 
-
     @Test
     void shouldRenderHomePage() throws Exception {
         mockMvc.perform(get("/"))
@@ -172,7 +171,7 @@ public class UserTransferControllerTest {
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
-                            .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
 
             verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
         }
@@ -279,9 +278,10 @@ public class UserTransferControllerTest {
 
     }
 
-    private  CcmsUser ccmsUser = CcmsUser.builder()
+    private final CcmsUser ccmsUser = CcmsUser.builder()
             .loginId("Alice")
             .firstName("Alison")
             .lastName("Doe")
+            .email("test@test.com")
             .build();
 }

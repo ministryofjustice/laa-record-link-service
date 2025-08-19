@@ -10,7 +10,7 @@ public final class LoginIdValidator implements ConstraintValidator<ValidLoginId,
     private final CcmsUserRepository ccmsUserRepository;
 
     @Override
-    public boolean isValid(final String oldLogin, final ConstraintValidatorContext context) {
+    public boolean isValid(final String oldLogin, final ConstraintValidatorContext context){
         return ccmsUserRepository.findByLoginId(oldLogin).isPresent();
     }
 }
