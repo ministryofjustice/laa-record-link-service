@@ -288,5 +288,6 @@ public class UserTransferControllerTest {
             .loginId("Alice")
             .firstName("Alison")
             .lastName("Doe")
+            .email("test@test.com")
             .build();
 }
