@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.justice.record.link.validation.ValidClosedAccount;
 import uk.gov.justice.record.link.validation.ValidLoginId;
 import uk.gov.justice.record.link.validation.ValidStatus;
 import uk.gov.justice.record.link.validation.groups.OnCreateRequest;
@@ -17,6 +18,7 @@ public class UserTransferRequest {
 
     @ValidLoginId(groups = OnSubmitRequestLoginId.class)
     @ValidStatus(groups = OnSubmitRequestStatus.class)
+    @ValidClosedAccount(groups = OnSubmitRequestLoginId.class)
     @NotEmpty(message = "Enter CCMS username", groups = OnCreateRequest.class)
     private String oldLogin;
     private String additionalInfo;
