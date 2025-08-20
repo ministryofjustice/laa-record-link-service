@@ -36,13 +36,11 @@ spring:
             scope: openid, profile, email
             redirect-uri: ${BASE_URL}/login/oauth2/code/azure
             authorization-grant-type: authorization_code
-            provider: azure
         provider:
           azure:
             issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
-
   config:
     activate:
-      on-profile: local
+      on-profile: local,dev
   flyway:
     locations: classpath:db/migration,classpath:db/migration-local

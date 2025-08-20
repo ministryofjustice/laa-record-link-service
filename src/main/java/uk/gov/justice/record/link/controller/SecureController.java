@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SecureController {
 
-    @GetMapping("/me")
+    @GetMapping("/test")
     public String getUserInfo(@AuthenticationPrincipal OidcUser oidcUser) {
         String email = oidcUser.getEmail();
         String name = oidcUser.getFullName();
-        Object appAccounts = oidcUser.getClaims().get("APP_ACCOUNTS");
+        Object appAccounts = oidcUser.getClaims();
 
-        return "Hello " + name + " (" + email + "), APP_ACCOUNTS: " + appAccounts;
+        return "Hello " + name + " (" + email + ") The custom claims " + appAccounts;
     }
 }
 
