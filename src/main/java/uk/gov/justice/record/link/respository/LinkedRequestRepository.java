@@ -15,9 +15,7 @@ public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UU
     int countByCcmsUser_LoginIdAndStatusIn(final String loginId, final Collection<Status> statuses);
 
     Page<LinkedRequest> findByOldLoginIdContainingAllIgnoreCase(@Nullable String oldLoginId, Pageable pageable);
-
-    Page<LinkedRequest> findByOldLoginIdContains(@Nullable String oldLoginId, Pageable pageable);
-
+    
 }
 
 
