@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,6 +41,11 @@ class LinkedRequestServiceTest {
 
     private List<LinkedRequest> mockLinkedRequests;
     private Page<LinkedRequest> mockPage;
+
+    @Captor
+    private ArgumentCaptor<String> oldLoginCaptor;
+    @Captor
+    private ArgumentCaptor<Pageable> pegeableCaptor;
 
     @Nested
     @DisplayName("ShouldReturnPagedResults")
@@ -220,5 +227,24 @@ class LinkedRequestServiceTest {
 
             return Arrays.asList(request1, request2, request3);
         }
+    }
+
+    @Nested
+    class GetLinkingRequestByOldLogin {
+        @DisplayName("Should call findOldLogin with right param")
+        @Test
+        void shouldCallFindOldLoginWithRightParam() {
+
+            linkedRequestService.getLinkingRequestByOldLogin("oldLoginId", 1, 10);
+
+            verify(linkedRequestRepository).findByOldLoginIdContainingAllIgnoreCase(oldLoginCaptor.capture(), pegeableCaptor.capture());
+
+            assertThat(oldLoginCaptor.getValue()).isEqualTo("oldLoginId");
+
+            assertThat(pegeableCaptor.getValue().getPageNumber()).isEqualTo(0);
+            assertThat(pegeableCaptor.getValue().getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
+            assertThat(pegeableCaptor.getValue().getPageSize()).isEqualTo(10);
+        }
+
     }
 }

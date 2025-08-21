@@ -3,12 +3,13 @@ package uk.gov.justice.record.link.controller;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
@@ -37,6 +38,10 @@ class ManageLinkingAccountRequestsControllerTest {
     @MockitoBean
     private LinkedRequestService linkedRequestService;
 
+    private ArgumentCaptor<String> oldLoginCaptor;
+    private ArgumentCaptor<Integer> pageCaptor;
+    private ArgumentCaptor<Integer> sizeCaptor;
+
     @Nested
     @DisplayName("ShouldReturnViewWithPaginatedData")
     class GetLinkingRequests {
@@ -46,7 +51,7 @@ class ManageLinkingAccountRequestsControllerTest {
             List<LinkedRequest> mockRequests = createMockLinkedRequests();
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
 
-            when(linkedRequestService.getAllLinkingRequests(1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
 
             mockMvc.perform(get("/manage-linking-account")
                             .param("page", "1")
@@ -70,7 +75,7 @@ class ManageLinkingAccountRequestsControllerTest {
             List<LinkedRequest> mockRequests = createMockLinkedRequests();
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(1, 5), 25);
 
-            when(linkedRequestService.getAllLinkingRequests(2, 5)).thenReturn(mockPage);
+            when(linkedRequestService.getLinkingRequestByOldLogin("",  2, 5)).thenReturn(mockPage);
 
             mockMvc.perform(get("/manage-linking-account")
                             .param("page", "2")
@@ -93,7 +98,7 @@ class ManageLinkingAccountRequestsControllerTest {
         void noLinkedRequestsExist() throws Exception {
             Page<LinkedRequest> emptyPage = new PageImpl<>(Arrays.asList(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getAllLinkingRequests(1, 10)).thenReturn(emptyPage);
+            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/manage-linking-account")
                             .param("page", "1")
@@ -117,7 +122,7 @@ class ManageLinkingAccountRequestsControllerTest {
             List<LinkedRequest> mockRequests = createMockLinkedRequests();
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(2, 10), 23);
 
-            when(linkedRequestService.getAllLinkingRequests(3, 10)).thenReturn(mockPage);
+            when(linkedRequestService.getLinkingRequestByOldLogin("", 3, 10)).thenReturn(mockPage);
 
             mockMvc.perform(get("/manage-linking-account")
                             .param("page", "3")
@@ -140,11 +145,37 @@ class ManageLinkingAccountRequestsControllerTest {
             List<LinkedRequest> mockRequests = createMockLinkedRequests();
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
 
-            when(linkedRequestService.getAllLinkingRequests(1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
 
             mockMvc.perform(get("/manage-linking-account")
                             .param("page", "1")
                             .param("size", "10"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("manage-link-account-requests"))
+                    .andExpect(model().attributeExists("pagedRequest"))
+                    .andExpect(result -> {
+                        PagedUserRequest<?> pagedRequest = (PagedUserRequest<?>) result.getModelAndView().getModel().get("pagedRequest");
+                        assertThat(pagedRequest.linkedRequests()).isNotNull();
+                        assertThat(pagedRequest.currentPage()).isNotNull();
+                        assertThat(pagedRequest.totalPages()).isNotNull();
+                        assertThat(pagedRequest.totalItems()).isNotNull();
+                        assertThat(pagedRequest.pageSize()).isNotNull();
+                        assertThat(pagedRequest.hasPrevious()).isNotNull();
+                        assertThat(pagedRequest.hasNext()).isNotNull();
+                    });
+        }
+
+        @DisplayName("Should call linked request service with right parameter")
+        @Test
+        void shouldCallLinkedRequestServiceWithRightParameter() throws Exception {
+            List<LinkedRequest> mockRequests = createMockLinkedRequests();
+            Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
+            when(linkedRequestService.getLinkingRequestByOldLogin("oldLogin", 1, 10)).thenReturn(mockPage);
+
+            mockMvc.perform(get("/manage-linking-account")
+                            .param("page", "1")
+                            .param("size", "10")
+                            .param("oldLoginId", "oldLogin"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("manage-link-account-requests"))
                     .andExpect(model().attributeExists("pagedRequest"))

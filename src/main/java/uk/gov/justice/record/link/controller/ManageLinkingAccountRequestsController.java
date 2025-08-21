@@ -20,9 +20,10 @@ public class ManageLinkingAccountRequestsController {
     public String manageRequests(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
             Model model) {
 
-        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getAllLinkingRequests(page, size);
+        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
 
         PagedUserRequest pagedRequest = new PagedUserRequest(
                 linkedRequestsPage.getContent(),
