@@ -26,14 +26,7 @@ spec:
             limits:
               memory: "3000Mi"
               cpu: "1"
-
           env:
-            - name: AZURE_TENANT_ID
-              value: "${AZURE_TENANT_ID}"
-            - name: AZURE_CLIENT_ID
-              value: "${AZURE_CLIENT_ID}"
-            - name: AZURE_CLIENT_SECRET
-              value: "${AZURE_CLIENT_SECRET}"
             - name: SENTRY_ENABLED
               value: "${SENTRY_ENABLED}"
             - name: SENTRY_AUTH_TOKEN
@@ -63,3 +56,23 @@ spec:
                 secretKeyRef:
                   name: rds-postgresql-instance-output
                   key: rds_instance_endpoint
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: laa-record-link-service-azure-client-id-k8s
+                  key: AZURE_CLIENT_ID
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: laa-record-link-service-azure-client-secret-k8s
+                  key: AZURE_CLIENT_SECRET
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: laa-record-link-service-azure-tenant-secret-k8s
+                  key: AZURE_TENANT_ID
+            - name: BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: laa-record-link-service-base-url-k8s
+                  key: BASE_URL
