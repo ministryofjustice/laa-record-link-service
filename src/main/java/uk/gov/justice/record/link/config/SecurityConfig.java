@@ -15,15 +15,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated()
-                )
+        http.authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(this.oidcUserService())
-                        )
-                );
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())));
         return http.build();
     }
 
