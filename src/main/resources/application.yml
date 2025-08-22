@@ -42,6 +42,6 @@ logging:
 spring:
   config:
     activate:
-      on-profile: local,dev
+      on-profile: local
   flyway:
     locations: classpath:db/migration,classpath:db/migration-local
