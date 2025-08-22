@@ -6,6 +6,20 @@ spring:
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
 
+  security:
+    oauth2:
+      client:
+        registration:
+          azure:
+            client-id: ${AZURE_CLIENT_ID}
+            client-secret: ${AZURE_CLIENT_SECRET}
+            scope: openid, profile, email
+            redirect-uri: ${BASE_URL}/login/oauth2/code/azure
+            authorization-grant-type: authorization_code
+        provider:
+          azure:
+            issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+
   jpa:
     properties:
       hibernate:
@@ -26,21 +40,8 @@ logging:
 
 ---
 spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          azure:
-            client-id: ${AZURE_CLIENT_ID}
-            client-secret: ${AZURE_CLIENT_SECRET}
-            scope: openid, profile, email
-            redirect-uri: ${BASE_URL}/login/oauth2/code/azure
-            authorization-grant-type: authorization_code
-        provider:
-          azure:
-            issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
   config:
     activate:
-      on-profile: local,dev
+      on-profile: local
   flyway:
     locations: classpath:db/migration,classpath:db/migration-local
