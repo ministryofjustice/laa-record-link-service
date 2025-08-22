@@ -19,6 +19,9 @@ spring:
         provider:
           azure:
             issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+            token-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+            user-info-uri: https://graph.microsoft.com/oidc/userinfo
+            jwk-set-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys
 
   jpa:
     properties:
