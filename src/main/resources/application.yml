@@ -42,6 +42,10 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
     org.springframework.web.client.RestTemplate: DEBUG
+    org.springframework.http.client: DEBUG
+    org.springframework.web.client.support: TRACE
+    org.apache.http.wire: DEBUG
+    org.apache.http.headers: DEBUG
 
 ---
 spring:
