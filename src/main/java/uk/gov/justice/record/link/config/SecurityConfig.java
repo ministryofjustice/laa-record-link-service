@@ -16,9 +16,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**", "/health/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())));
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=true"))
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.deny()));
         return http.build();
     }
 

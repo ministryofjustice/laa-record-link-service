@@ -16,9 +16,13 @@ spring:
             scope: openid, profile, email
             redirect-uri: ${BASE_URL}/login/oauth2/code/azure
             authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_basic
         provider:
           azure:
             issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+            token-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+            user-info-uri: https://graph.microsoft.com/oidc/userinfo
+            jwk-set-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys
 
   jpa:
     properties:
@@ -37,6 +41,12 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.springframework.http.client: DEBUG
+    org.springframework.web.client.support: TRACE
+    org.apache.http.wire: DEBUG
+    org.apache.http.headers: DEBUG
 
 ---
 spring:
