@@ -36,6 +36,7 @@ public class ManageLinkingAccountRequestsController {
         );
 
         model.addAttribute("pagedRequest", pagedRequest);
+        model.addAttribute("fragmentId", "all-cases");
         return "manage-link-account-requests";
     }
 }

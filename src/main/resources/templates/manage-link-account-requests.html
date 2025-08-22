@@ -22,91 +22,126 @@
             Assign next case
         </button>
     </div>
+    <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">
+            Contents
+        </h2>
+        <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item" th:fragment="open-cases">
+                <a class="govuk-tabs__tab" href="#open-cases">
+                    Open Cases
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected"  th:fragment="all-cases">
+                <a class="govuk-tabs__tab" href="#all-cases">
+                    All cases
+                </a>
+            </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="open-cases" >
+        </div>
+        <div class="govuk-tabs__panel" id="all-cases" >
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-one-half">
+                    <form method="get" th:action="@{/manage-linking-account}" role="search">
+                        <div class="moj-search">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
+                                    All cases
+                                </label>
+                                <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
+                                    Search requests by ID or firm
+                                </label>
+                                <input class="govuk-input govuk-!-width-full" id="oldLoginId" name="oldLoginId"
+                                       type="search" th:value="${param.oldLoginId}" autocomplete="off"/>
+                            </div>
+                            <button type="submit" class="govuk-button moj-search__button"
+                                    data-module="govuk-button">
+                                Search
+                            </button>
+                        </div> <br/>
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
+                                <b th:text="${pagedRequest.totalItems}"> </b> <b>case results</b>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-half">
-           <form method="get" th:action="@{/manage-linking-account}" role="search">
-               <div class="moj-search">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
-                            All cases
-                        </label>
-                        <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
-                            Search requests by ID or firm
-                        </label>
-                        <input class="govuk-input govuk-!-width-full" id="oldLoginId" name="oldLoginId"
-                                                               type="search" th:value="${param.oldLoginId}" autocomplete="off"/>
-                    </div>
-                       <button type="submit" class="govuk-button moj-search__button"
-                            data-module="govuk-button">
-                        Search
-                       </button>
-               </div> <br/>
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
-                             <b th:text="${pagedRequest.totalItems}"> </b> <b>case results</b>
-                         </label>
-                    </div>
-           </form>
+            <table class="govuk-table" data-module="moj-sortable-table">
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Login Id</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requesting User Id</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requesting Firm Id</th>
+                    <th aria-sort="ascending" class="govuk-table__header" scope="col">Request Date</th>
+                    <th aria-sort="none" class="govuk-table__header govuk-table__header--numeric" scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
+                    <td class="govuk-table__cell" th:text="${request.oldLoginId}">Login Id</td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
+                    <td class="govuk-table__cell" th:text="${#temporals.format(request.createdDate, 'dd/MM/yyyy')}">Request Date</td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                        <span class="moj-badge moj-badge--green" th:if="${request.status.name() == 'APPROVED'}" th:text="${request.status}">Status</span>
+                        <span class="moj-badge moj-badge--red" th:if="${request.status.name() == 'REJECTED'}" th:text="${request.status}">Status</span>
+                        <span class="moj-badge moj-badge--blue" th:if="${request.status.name() == 'OPEN'}" th:text="${request.status}">Status</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${pagedRequest.totalPages > 1}">
+                <ul class="moj-pagination__list">
+
+                    <li class="moj-pagination__item moj-pagination__item--prev" th:if="${pagedRequest.hasPrevious}">
+                        <a class="govuk-link govuk-pagination__link" th:href="@{/manage-linking-account(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">
+                            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                            </svg>
+                            <span >Previous
+                    <span class="govuk-visually-hidden"> page</span>
+                        </span>
+                        </a>
+                    </li>
+
+                    <th:block th:each="i : ${#numbers.sequence(1, pagedRequest.totalPages)}">
+                        <li class="moj-pagination__item"
+                            th:classappend="${i == pagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
+                            <a class="moj-pagination__link"
+                               th:href="@{/manage-linking-account(page=${i}, size=${pagedRequest.pageSize})}"
+                               th:aria-label="'Page ' + ${i} + ' of ' + ${pagedRequest.totalPages}"
+                               th:aria-current="${i == pagedRequest.currentPage ? 'page' : null}"
+                               th:text="${i}"></a>
+                        </li>
+                    </th:block>
+
+
+                    <li class="moj-pagination__item moj-pagination__item--next" th:if="${pagedRequest.hasNext}">
+                        <a class="govuk-pagination__link-title" th:href="@{/manage-linking-account(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}">
+                   <span class="govuk-pagination__link-title"> Next
+                    <span class="govuk-visually-hidden"> page</span>
+                   </span>
+                            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                </ul>
+
+                <p class="moj-pagination__results">
+                    Showing <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + 1}"></b>
+                    to <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + pagedRequest.linkedRequests.size()}"></b>
+                    of <b th:text="${pagedRequest.totalItems}"></b> results
+                </p>
+            </nav>
+
         </div>
     </div>
 
-    <table class="govuk-table" data-module="moj-sortable-table">
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th aria-sort="none" class="govuk-table__header" scope="col">Login Id</th>
-            <th aria-sort="none" class="govuk-table__header" scope="col">Requesting User Id</th>
-            <th aria-sort="none" class="govuk-table__header" scope="col">Requesting Firm Id</th>
-            <th aria-sort="ascending" class="govuk-table__header" scope="col">Request Date</th>
-            <th aria-sort="none" class="govuk-table__header govuk-table__header--numeric" scope="col">Status</th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-            <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
-                <td class="govuk-table__cell" th:text="${request.oldLoginId}">Login Id</td>
-                <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
-                <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
-                <td class="govuk-table__cell" th:text="${#temporals.format(request.createdDate, 'dd/MM/yyyy')}">Request Date</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">
-                    <span class="moj-badge moj-badge--green" th:if="${request.status.name() == 'APPROVED'}" th:text="${request.status}">Status</span>
-                    <span class="moj-badge moj-badge--red" th:if="${request.status.name() == 'REJECTED'}" th:text="${request.status}">Status</span>
-                    <span class="moj-badge moj-badge--blue" th:if="${request.status.name() == 'OPEN'}" th:text="${request.status}">Status</span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${pagedRequest.totalPages > 1}">
-        <ul class="moj-pagination__list">
-            <li class="moj-pagination__item moj-pagination__item--prev" th:if="${pagedRequest.hasPrevious}">
-                <a class="moj-pagination__link"
-                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">Previous<span
-                        class="govuk-visually-hidden"> page</span></a>
-            </li>
-
-            <th:block th:each="i : ${#numbers.sequence(1, pagedRequest.totalPages)}">
-                <li class="moj-pagination__item" 
-                    th:classappend="${i == pagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
-                    <a class="moj-pagination__link"
-                       th:href="@{/manage-linking-account(page=${i}, size=${pagedRequest.pageSize})}"
-                       th:aria-label="'Page ' + ${i} + ' of ' + ${pagedRequest.totalPages}"
-                       th:aria-current="${i == pagedRequest.currentPage ? 'page' : null}"
-                       th:text="${i}"></a>
-                </li>
-            </th:block>
-
-            <li class="moj-pagination__item moj-pagination__item--next" th:if="${pagedRequest.hasNext}">
-                <a class="moj-pagination__link"
-                   th:href="@{/manage-linking-account(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}">Next<span
-                        class="govuk-visually-hidden"> page</span></a>
-            </li>
-        </ul>
-
-        <p class="moj-pagination__results">
-            Showing <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + 1}"></b>
-            to <b th:text="${(pagedRequest.pageSize * (pagedRequest.currentPage - 1)) + pagedRequest.linkedRequests.size()}"></b>
-            of <b th:text="${pagedRequest.totalItems}"></b> results
-        </p>
-    </nav>
 
 </main>
 </body>
