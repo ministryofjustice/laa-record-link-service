@@ -16,20 +16,6 @@ jobs:
     permissions:
       id-token: write 
       contents: read 
-    env: 
-      REGISTRY: ${{ secrets.ECR_REGISTRY }}
-      REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-      IMAGE_TAG: ${{ github.sha }}
-      KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
-      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}
-      SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
-      GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -52,6 +38,12 @@ jobs:
 
       - name: Build JAR
         run: ./gradlew build
+        env:
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ENVIRONMENT: ${{ vars.ENV_NAME }}
 
       - name: Build and Push Docker Image to the container repository
         run: |
@@ -61,6 +53,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
+          ENV_NAME: ${{ vars.ENV_NAME }}
 
       - name: Generate Deployment the Files
         run: |
@@ -68,11 +61,23 @@ jobs:
           cat deployments/templates/ingress.yml | envsubst > deployments/ingress.yml
           cat deployments/templates/service.yml | envsubst > deployments/service.yml
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          REGISTRY: ${{ secrets.ECR_REGISTRY }}
           REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-          SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
+          IMAGE_TAG: ${{ github.sha }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}
+          SENTRY_ENVIRONMENT: ${{ vars.ENV_NAME }}
+          SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INGRESS_CLASS_NAME: ${{ vars.INGRESS_CLASS_NAME }}
+          POPULATE_TEST_DATA: ${{ vars.POPULATE_DUMMY_DATA }}
+          BASE_URL_HOMEPAGE: ${{ secrets.BASE_URL_HOMEPAGE }}
 
 
       - name: Configure kubectl
@@ -82,7 +87,12 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${KUBE_NAMESPACE}
           kubectl config use-context ${KUBE_CLUSTER}
+        env:
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
 
       - name: Deploy to Cloud Platform
         run: |
           kubectl -n ${KUBE_NAMESPACE} apply -f deployments/
+        env:
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}

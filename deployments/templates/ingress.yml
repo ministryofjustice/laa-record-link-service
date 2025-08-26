@@ -10,6 +10,11 @@ metadata:
     nginx.ingress.kubernetes.io/session-cookie-hash: sha1
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      SecRuleEngine On
+      SecAuditEngine On
+      SecDefaultAction "phase:2,pass,log,tag:github_team=laa-portal-stabilisation-tech"
+      SecDebugLogLevel 1
 spec:
   ingressClassName: ${INGRESS_CLASS_NAME}
   tls:
