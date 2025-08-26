@@ -28,7 +28,7 @@ jobs:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}
       SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
-      GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+      GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout Source Code
@@ -69,6 +69,10 @@ jobs:
           cat deployments/templates/service.yml | envsubst > deployments/service.yml
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
 
 
       - name: Configure kubectl
