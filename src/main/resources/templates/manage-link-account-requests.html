@@ -27,23 +27,24 @@
             Contents
         </h2>
         <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item" th:fragment="open-cases">
-                <a class="govuk-tabs__tab" href="#open-cases">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-tabs__tab" href="#open-cases"  >
                     Open Cases
                 </a>
             </li>
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected"  th:fragment="all-cases">
+            <li class="govuk-tabs__list-item" >
                 <a class="govuk-tabs__tab" href="#all-cases">
                     All cases
                 </a>
             </li>
         </ul>
-        <div class="govuk-tabs__panel" id="open-cases" >
+        <div class="govuk-tabs__panel" id="open-cases">
+
         </div>
         <div class="govuk-tabs__panel" id="all-cases" >
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-one-half">
-                    <form method="get" th:action="@{/manage-linking-account}" role="search">
+                    <form method="get" th:action="@{/manage-linking-account#all-cases}" role="search">
                         <div class="moj-search">
                             <div class="govuk-form-group">
                                 <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
@@ -97,7 +98,7 @@
                 <ul class="moj-pagination__list">
 
                     <li class="moj-pagination__item moj-pagination__item--prev" th:if="${pagedRequest.hasPrevious}">
-                        <a class="govuk-link govuk-pagination__link" th:href="@{/manage-linking-account(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">
+                        <a class="govuk-link govuk-pagination__link" th:href="@{/manage-linking-account#all-cases(page=${pagedRequest.currentPage - 1}, size=${pagedRequest.pageSize})}">
                             <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                                 <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
                             </svg>
@@ -111,7 +112,7 @@
                         <li class="moj-pagination__item"
                             th:classappend="${i == pagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
                             <a class="moj-pagination__link"
-                               th:href="@{/manage-linking-account(page=${i}, size=${pagedRequest.pageSize})}"
+                               th:href="@{/manage-linking-account#all-cases(page=${i}, size=${pagedRequest.pageSize})}"
                                th:aria-label="'Page ' + ${i} + ' of ' + ${pagedRequest.totalPages}"
                                th:aria-current="${i == pagedRequest.currentPage ? 'page' : null}"
                                th:text="${i}"></a>
@@ -120,7 +121,7 @@
 
 
                     <li class="moj-pagination__item moj-pagination__item--next" th:if="${pagedRequest.hasNext}">
-                        <a class="govuk-pagination__link-title" th:href="@{/manage-linking-account(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}">
+                        <a class="govuk-pagination__link-title" th:href="@{/manage-linking-account#all-cases(page=${pagedRequest.currentPage + 1}, size=${pagedRequest.pageSize})}" >
                    <span class="govuk-pagination__link-title"> Next
                     <span class="govuk-visually-hidden"> page</span>
                    </span>

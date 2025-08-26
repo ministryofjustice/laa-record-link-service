@@ -25,7 +25,7 @@ public class ManageLinkingAccountRequestsController {
 
         Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
 
-        PagedUserRequest pagedRequest = new PagedUserRequest(
+        PagedUserRequest<LinkedRequest> pagedRequest = new PagedUserRequest<>(
                 linkedRequestsPage.getContent(),
                 size,
                 linkedRequestsPage.getTotalPages(),
@@ -36,7 +36,6 @@ public class ManageLinkingAccountRequestsController {
         );
 
         model.addAttribute("pagedRequest", pagedRequest);
-        model.addAttribute("fragmentId", "all-cases");
         return "manage-link-account-requests";
     }
 }
