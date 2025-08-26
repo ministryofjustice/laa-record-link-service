@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: laa-record-linking-service 
+  name: laa-record-link-service 
   labels:
-    app: laa-record-linking-service 
+    app: laa-record-link-service 
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: laa-record-linking-service # this should match the selector in service.yml
+      app: laa-record-link-service # this should match the selector in service.yml
   template:
     metadata:
       labels:
-        app: laa-record-linking-service  # this should match the selector in service.yml
+        app: laa-record-link-service  # this should match the selector in service.yml
     spec:
       containers:
-        - name: laa-record-linking-service
+        - name: laa-record-link-service
           image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
           ports:
             - containerPort: 8080

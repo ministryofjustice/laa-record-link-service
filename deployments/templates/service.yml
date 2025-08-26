@@ -6,7 +6,7 @@ metadata:
     app: laa-record-linking-service
 spec:
   selector:
-    app: laa-record-linking-service # this should match the pod label in deployment.yml
+    app: laa-record-link-service # this should match the pod label in deployment.yml
   ports:
     - name: https
       port: 8080
