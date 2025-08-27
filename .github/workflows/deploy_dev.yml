@@ -65,6 +65,7 @@ jobs:
           REPOSITORY: ${{ vars.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
           KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}

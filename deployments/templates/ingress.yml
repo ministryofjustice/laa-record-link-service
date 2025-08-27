@@ -19,9 +19,9 @@ spec:
   ingressClassName: ${INGRESS_CLASS_NAME}
   tls:
     - hosts:
-        - ${BASE_URL_HOMEPAGE}
+        - ${NAMESPACE}.apps.live.cloud-platform.service.justice.gov.uk
   rules:
-    - host: ${BASE_URL_HOMEPAGE}
+    - host: ${NAMESPACE}.apps.live.cloud-platform.service.justice.gov.uk
       http:
         paths:
           - path: /
