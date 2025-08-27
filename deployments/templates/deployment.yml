@@ -93,8 +93,8 @@ spec:
                 secretKeyRef:
                   name: laa-record-link-service-azure-tenant-secret-k8s
                   key: AZURE_TENANT_ID
-            - name: BASE_URL
+            - name: BASE_URL_HOMEPAGE
               valueFrom:
                 secretKeyRef:
                   name: laa-record-link-service-base-url-k8s
-                  key: BASE_URL
+                  key: BASE_URL_HOMEPAGE

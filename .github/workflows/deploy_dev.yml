@@ -73,8 +73,6 @@ jobs:
           SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}
           SENTRY_ENVIRONMENT: ${{ vars.ENV_NAME }}
           SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INGRESS_CLASS_NAME: ${{ vars.INGRESS_CLASS_NAME }}
           POPULATE_TEST_DATA: ${{ vars.POPULATE_DUMMY_DATA }}
           BASE_URL_HOMEPAGE: ${{ secrets.BASE_URL_HOMEPAGE }}
