@@ -1,15 +1,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: laa-record-linking-service-ingress 
+  name: laa-record-link-service-ingress 
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: laa-record-linking-service-ingress-${NAMESPACE}-green
+    external-dns.alpha.kubernetes.io/set-identifier: laa-record-link-service-ingress-${NAMESPACE}-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "sticky"
     nginx.ingress.kubernetes.io/session-cookie-hash: sha1
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      SecRuleEngine On
+      SecAuditEngine On
+      SecDefaultAction "phase:2,pass,log,tag:github_team=laa-portal-stabilisation-tech"
+      SecDebugLogLevel 1
 spec:
   ingressClassName: ${INGRESS_CLASS_NAME}
   tls:
@@ -23,6 +28,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: laa-record-linking-service # this should match the metadata.name in service.yml
+                name: laa-record-link-service # this should match the metadata.name in service.yml
                 port:
                   number: 8080

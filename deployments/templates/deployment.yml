@@ -1,22 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: laa-record-linking-service 
+  name: laa-record-link-service 
   labels:
-    app: laa-record-linking-service 
+    app: laa-record-link-service 
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: laa-record-linking-service # this should match the selector in service.yml
+      app: laa-record-link-service # this should match the selector in service.yml
   template:
     metadata:
       labels:
-        app: laa-record-linking-service  # this should match the selector in service.yml
+        app: laa-record-link-service  # this should match the selector in service.yml
     spec:
       containers:
-        - name: laa-record-linking-service
+        - name: laa-record-link-service
           image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           ports:
             - containerPort: 8080
           resources:
@@ -26,6 +36,18 @@ spec:
             limits:
               memory: "3000Mi"
               cpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
           env:
             - name: SENTRY_ENABLED
               value: "${SENTRY_ENABLED}"
@@ -71,8 +93,8 @@ spec:
                 secretKeyRef:
                   name: laa-record-link-service-azure-tenant-secret-k8s
                   key: AZURE_TENANT_ID
-            - name: BASE_URL
+            - name: BASE_URL_HOMEPAGE
               valueFrom:
                 secretKeyRef:
                   name: laa-record-link-service-base-url-k8s
-                  key: BASE_URL
+                  key: BASE_URL_HOMEPAGE
