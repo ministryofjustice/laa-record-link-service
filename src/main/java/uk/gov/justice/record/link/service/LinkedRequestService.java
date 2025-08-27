@@ -20,4 +20,10 @@ public class LinkedRequestService {
 
         return linkedRequestRepository.findAll(pageable);
     }
+
+    public Page<LinkedRequest> getLinkingRequestByOldLogin(String oldLogin, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.asc("createdDate")));
+        return linkedRequestRepository.findByOldLoginIdContainingAllIgnoreCase(oldLogin, pageable);
+
+    }
 }
