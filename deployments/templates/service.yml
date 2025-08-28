@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: laa-record-linking-service
+  name: laa-record-link-service
   labels:
-    app: laa-record-linking-service
+    app: laa-record-link-service
 spec:
   selector:
     app: laa-record-link-service # this should match the pod label in deployment.yml
