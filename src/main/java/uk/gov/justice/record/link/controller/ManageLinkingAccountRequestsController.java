@@ -2,6 +2,8 @@ package uk.gov.justice.record.link.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +19,11 @@ public class ManageLinkingAccountRequestsController {
     private final LinkedRequestService linkedRequestService;
 
     @GetMapping("/manage-linking-account")
-    public String manageRequests(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
-            Model model) {
+    public String manageRequests(@AuthenticationPrincipal OidcUser oidcUser,
+                                 @RequestParam(defaultValue = "1") int page,
+                                 @RequestParam(defaultValue = "10") int size,
+                                 @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
+                                 Model model) {
 
         Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
 

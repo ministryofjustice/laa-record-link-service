@@ -35,6 +35,11 @@ public class UserTransferController {
         return "index";
     }
 
+    @GetMapping("/not-authorised")
+    public String errorHome() {
+        return "not-authorised";
+    }
+
     @GetMapping("/user-transfer-request")
     public String userTransferRequest(Model model, HttpSession session) {
         UserTransferRequest userTransferRequest = (UserTransferRequest) session.getAttribute("userTransferRequest");
@@ -63,7 +68,7 @@ public class UserTransferController {
         log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
         final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.INVALID_STATUS_MESSAGE);
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
-                                    .filter(expectedErrorMessages::contains).toList();
+                .filter(expectedErrorMessages::contains).toList();
 
         if (!errors.isEmpty()) {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
