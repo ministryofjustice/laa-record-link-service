@@ -5,4 +5,5 @@ public class SilasConstants {
     public static final String USER_NAME = "USER_NAME";
     public static final String USER_EMAIL = "USER_EMAIL";
     public static final String ACCOUNTS = "LAA_ACCOUNTS";
+    public static final String FIRM_NAME = "FIRM_NAME";
 }
