@@ -45,10 +45,9 @@ public class SecurityConfigTest {
         when(oidcUser.getAttributes()).thenReturn(attributes);
 
         AuthenticationSuccessHandler handler = securityConfig.customSuccessHandler();
-
         handler.onAuthenticationSuccess(request, response, authentication);
 
-        verify(response).sendRedirect("/manage-linking-account");
+        verify(response).sendRedirect("/internal/manage-linking-account");
     }
 
     @Test
@@ -59,10 +58,9 @@ public class SecurityConfigTest {
         when(oidcUser.getAttributes()).thenReturn(attributes);
 
         AuthenticationSuccessHandler handler = securityConfig.customSuccessHandler();
-
         handler.onAuthenticationSuccess(request, response, authentication);
 
-        verify(response).sendRedirect("/");
+        verify(response).sendRedirect("/external/");
     }
 
     @Test
@@ -73,7 +71,6 @@ public class SecurityConfigTest {
         when(oidcUser.getAttributes()).thenReturn(attributes);
 
         AuthenticationSuccessHandler handler = securityConfig.customSuccessHandler();
-
         handler.onAuthenticationSuccess(request, response, authentication);
 
         verify(response).sendRedirect("/not-authorised");

@@ -23,7 +23,7 @@
     <div class="govuk-hint govuk-heading-l">
         Create a transfer request
     </div>
-    <form th:action="@{/check-answers}" th:method="post" th:object="${userTransferRequest}">
+    <form th:action="@{/external/check-answers}" th:method="post" th:object="${userTransferRequest}">
         <div th:if="${#fields.hasErrors()}">
             <div class="govuk-error-summary" data-module="govuk-error-summary"
                  role="alert">
@@ -72,7 +72,7 @@
             <button class="govuk-button" data-module="govuk-button">
                 Continue
             </button>
-            <a class="govuk-link" href="/cancel">Cancel</a>
+            <a class="govuk-link" href="/external/cancel">Cancel</a>
         </div>
     </form>
 </main>

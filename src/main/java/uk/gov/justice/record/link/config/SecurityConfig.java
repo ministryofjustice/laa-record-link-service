@@ -8,7 +8,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -17,6 +21,7 @@ import uk.gov.justice.record.link.constants.SilasConstants;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -27,11 +32,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**", "/health/**").permitAll()
+                        .requestMatchers("/external/**").hasRole(Roles.EXTERNAL.getRoleName())
+                        .requestMatchers("/internal/**").hasRole(Roles.INTERNAL.getRoleName())
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(new OidcUserService()))
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService()))
                         .successHandler(customSuccessHandler())
                         .failureUrl("/login?error=true"))
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendRedirect("/not-authorised");
+                        }))
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.deny()));
         return http.build();
@@ -47,9 +58,27 @@ public class SecurityConfig {
         }
     }
 
+    @Bean
+    public OidcUserService oidcUserService() {
+        return new OidcUserService() {
+            @Override
+            public OidcUser loadUser(OidcUserRequest userRequest) {
+                OidcUser oidcUser = super.loadUser(userRequest);
+
+                Map<String, Object> attributes = oidcUser.getAttributes();
+                List<String> roles = extractList(attributes.get(SilasConstants.APP_ROLES));
+                List<GrantedAuthority> authorities = roles.stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .collect(Collectors.toList());
+
+                return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+            }
+        };
+    }
+
     AuthenticationSuccessHandler customSuccessHandler() {
         return (HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
-
+            String redirectUrl;
             Object principal = authentication.getPrincipal();
 
             if (principal instanceof OidcUser oidcUser) {
@@ -58,12 +87,10 @@ public class SecurityConfig {
                 Object appRolesRaw = attributes.get(SilasConstants.APP_ROLES);
                 List<String> roles = extractList(appRolesRaw != null ? appRolesRaw : "");
 
-                String redirectUrl;
-
                 if (roles.stream().anyMatch(r -> r.equalsIgnoreCase(Roles.INTERNAL.getRoleName()))) {
-                    redirectUrl = "/manage-linking-account";
+                    redirectUrl = "/internal/manage-linking-account";
                 } else if (roles.stream().anyMatch(r -> r.equalsIgnoreCase(Roles.EXTERNAL.getRoleName()))) {
-                    redirectUrl = "/";
+                    redirectUrl = "/external/";
                 } else {
                     redirectUrl = "/not-authorised";
                 }
