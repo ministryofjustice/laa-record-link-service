@@ -35,6 +35,7 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     implementation 'org.mapstruct:mapstruct:1.6.3'
     implementation 'org.hibernate.validator:hibernate-validator:9.0.1.Final'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     compileOnly 'org.projectlombok:lombok'
 
