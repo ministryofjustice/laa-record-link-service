@@ -14,13 +14,13 @@
 <nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
     <ol class="govuk-breadcrumbs__list">
         <li class="govuk-breadcrumbs__list-item">
-            <a class="govuk-breadcrumbs__link" th:href="@{/user-transfer-request}">
+            <a class="govuk-breadcrumbs__link" th:href="@{/external/user-transfer-request}">
                 < Back</a>
         </li>
     </ol>
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
-    <form th:action="@{/request-confirmation}" th:method="post" th:object="${userTransferRequest}">
+    <form th:action="@{/external/request-confirmation}" th:method="post" th:object="${userTransferRequest}">
         <div class="govuk-hint govuk-heading-l">
             Create a transfer request
         </div>
@@ -40,7 +40,7 @@
                     <span th:text="${userTransferRequest.oldLogin}"></span>
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" href="/user-transfer-request">Change</a>
+                    <a class="govuk-link" href="/external/user-transfer-request">Change</a>
                 </dd>
                 <input  type="hidden" id="oldLogin" name="oldLogin" th:value="*{oldLogin}">
             </div>
@@ -52,7 +52,7 @@
                     <span th:text="${userTransferRequest.additionalInfo}"></span>
                 </dd>
                 <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" href="/user-transfer-request">Change</a>
+                    <a class="govuk-link" href="/external/user-transfer-request">Change</a>
                 </dd>
                 <input class="govuk-input govuk-!-width-one-half" type="hidden" id="additionalInfo" name="additionalInfo" th:value="*{additionalInfo}">
             </div>
@@ -65,7 +65,7 @@
             <button class="govuk-button" data-module="govuk-button" type="submit">
                 Confirm and send
             </button>
-            <a class="govuk-link" href="/cancel">Cancel</a>
+            <a class="govuk-link" href="/external/cancel">Cancel</a>
         </div>
     </form>
 </main>

@@ -63,7 +63,6 @@ public class UserTransferControllerTest {
     @Captor
     private ArgumentCaptor<String> reasonCaptor;
 
-
     @Test
     void shouldRenderHomePage() throws Exception {
         mockMvc.perform(get("/"))
@@ -76,7 +75,7 @@ public class UserTransferControllerTest {
         @DisplayName("Should render preview with user data")
         @Test
         void shouldRenderPreviewPageWithUserData() throws Exception {
-            MvcResult result = mockMvc.perform(post("/check-answers")
+            MvcResult result = mockMvc.perform(post("/external/check-answers")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -92,7 +91,7 @@ public class UserTransferControllerTest {
         @DisplayName("User transfer form with empty CCMS login id")
         @Test
         void givenEmptyUsername_shouldTriggerPatternViolation() throws Exception {
-            MvcResult result = mockMvc.perform(post("/check-answers")
+            MvcResult result = mockMvc.perform(post("/external/check-answers")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("user-transfer-request"))
@@ -107,7 +106,7 @@ public class UserTransferControllerTest {
         @DisplayName("Should not trigger any other validation from check answer page")
         @Test
         void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
-            mockMvc.perform(post("/check-answers")
+            mockMvc.perform(post("/external/check-answers")
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -123,7 +122,7 @@ public class UserTransferControllerTest {
         @DisplayName("Render user transfer form")
         @Test
         void shouldRenderUserTransferForm() throws Exception {
-            mockMvc.perform(get("/user-transfer-request")
+            mockMvc.perform(get("/external/user-transfer-request")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -150,7 +149,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -168,7 +167,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -178,7 +177,7 @@ public class UserTransferControllerTest {
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
-                            .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
 
             verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
         }
@@ -190,7 +189,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -213,7 +212,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -234,7 +233,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -256,7 +255,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -273,7 +272,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -285,7 +284,7 @@ public class UserTransferControllerTest {
 
     }
 
-    private  CcmsUser ccmsUser = CcmsUser.builder()
+    private final CcmsUser ccmsUser = CcmsUser.builder()
             .loginId("Alice")
             .firstName("Alison")
             .lastName("Doe")

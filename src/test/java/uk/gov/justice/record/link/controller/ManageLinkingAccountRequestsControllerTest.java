@@ -55,7 +55,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -79,7 +79,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 2, 5)).thenReturn(mockPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "2")
                             .param("size", "5"))
                     .andExpect(status().isOk())
@@ -102,7 +102,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(emptyPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -126,7 +126,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 3, 10)).thenReturn(mockPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "3")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -149,7 +149,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -176,7 +176,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             when(linkedRequestService.getLinkingRequestByOldLogin("oldLogiInd", 1, 10)).thenReturn(mockPage);
 
-            mockMvc.perform(get("/manage-linking-account")
+            mockMvc.perform(get("/internal/manage-linking-account")
                             .param("page", "1")
                             .param("size", "10")
                             .param("oldLoginId", "oldLogiInd"))

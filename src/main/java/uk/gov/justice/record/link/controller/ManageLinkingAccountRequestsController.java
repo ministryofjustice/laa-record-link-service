@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
@@ -12,6 +13,7 @@ import uk.gov.justice.record.link.service.LinkedRequestService;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/internal")
 public class ManageLinkingAccountRequestsController {
 
     private final LinkedRequestService linkedRequestService;
