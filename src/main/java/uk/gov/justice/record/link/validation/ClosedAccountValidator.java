@@ -3,7 +3,7 @@ package uk.gov.justice.record.link.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.AllArgsConstructor;
-import uk.gov.justice.record.link.entity.ClosedAccount;
+import uk.gov.justice.record.link.constants.ClosedAccount;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 
 @AllArgsConstructor

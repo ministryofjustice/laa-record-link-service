@@ -1,4 +1,4 @@
-package uk.gov.justice.record.link.entity;
+package uk.gov.justice.record.link.constants;
 
 public enum ClosedAccount {
     CLOSED_EMAIL("ONLINE-SUPPORT@LEGALAID.GSI.GOV.UK");
