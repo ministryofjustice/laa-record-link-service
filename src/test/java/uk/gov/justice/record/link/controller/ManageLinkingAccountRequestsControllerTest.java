@@ -215,7 +215,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             LinkedRequest request1 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser1)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Alice")
                     .idamLastName("Johnson")
                     .idamFirmName("Johnson & Associates")
@@ -227,7 +227,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             LinkedRequest request2 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser2)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Bob")
                     .idamLastName("Wilson")
                     .idamFirmName("Wilson Legal")
@@ -239,7 +239,7 @@ class ManageLinkingAccountRequestsControllerTest {
 
             LinkedRequest request3 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser1)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Carol")
                     .idamLastName("Brown")
                     .idamFirmName("Brown Law Firm")

@@ -141,7 +141,7 @@ public class UserTransferControllerTest {
                     .status(Status.OPEN)
                     .idamFirstName("TODO in STB-2368")
                     .idamLastName("TODO in STB-2368")
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamEmail(StringUtils.randomAlphanumeric(6))
                     .createdDate(LocalDateTime.now())
                     .build();

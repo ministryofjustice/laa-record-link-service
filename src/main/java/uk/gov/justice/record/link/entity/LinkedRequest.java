@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "link_request", indexes = {
@@ -39,7 +38,7 @@ public final class LinkedRequest extends BaseEntity {
     private String oldLoginId;
 
     @Column(name = "idam_legacy_user_id", nullable = false, unique = true)
-    private UUID idamLegacyUserId;
+    private String idamLegacyUserId;
 
     @Column(name = "idam_first_name", nullable = false)
     private String idamFirstName;
