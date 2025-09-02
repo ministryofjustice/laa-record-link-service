@@ -45,7 +45,8 @@ public class UserTransferServiceTest {
         ccmsUserRepository = mock(CcmsUserRepository.class);
         linkedRequestRepository = mock(LinkedRequestRepository.class);
         currentUserService = mock(CurrentUserService.class);
-        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, CurrentUserService);
+        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, currentUserService);
+
         
         new MockUp<LocalDateTime>() {
             @mockit.Mock
