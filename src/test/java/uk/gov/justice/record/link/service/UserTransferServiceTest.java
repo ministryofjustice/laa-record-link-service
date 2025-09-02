@@ -35,6 +35,8 @@ public class UserTransferServiceTest {
     private UserTransferService userTransferService;
     private CcmsUserRepository ccmsUserRepository;
     private LinkedRequestRepository linkedRequestRepository;
+    private CurrentUserService currentUserService;
+
     @Captor
     private ArgumentCaptor<LinkedRequest> linkedRequestArgumentCaptor;
 
@@ -42,7 +44,9 @@ public class UserTransferServiceTest {
     void setUp() {
         ccmsUserRepository = mock(CcmsUserRepository.class);
         linkedRequestRepository = mock(LinkedRequestRepository.class);
-        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository);
+        currentUserService = mock(CurrentUserService.class);
+        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, CurrentUserService);
+        
         new MockUp<LocalDateTime>() {
             @mockit.Mock
             public LocalDateTime now() {
