@@ -1,15 +1,13 @@
 package uk.gov.justice.record.link.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class OidcTokenClaimsExtractor {
 
     private final OidcUser oidcUser;
-
-    public OidcTokenClaimsExtractor(OidcUser oidcUser) {
-        this.oidcUser = oidcUser;
-    }
 
     public String getUserName() {
         return getClaimAsString("USER_NAME");

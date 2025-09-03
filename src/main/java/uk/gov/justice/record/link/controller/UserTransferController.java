@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,7 +42,7 @@ public class UserTransferController {
     private final CurrentUserService currentUserService;
 
     @GetMapping("/")
-    public String homepage(@AuthenticationPrincipal OidcUser oidcUser, @RequestParam(defaultValue = "0") int page, Model model) {
+    public String homepage(@RequestParam(defaultValue = "0") int page, Model model) {
         String currentUserId = currentUserService.getCurrentUserClaims().getUserName();
 
         Pageable pageable = PageRequest.of(page, 10);
