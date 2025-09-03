@@ -1,5 +1,7 @@
 package uk.gov.justice.record.link.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.record.link.entity.CcmsUser;
@@ -62,5 +64,8 @@ public class UserTransferService {
         linkedRequestRepository.save(newUser);
     }
 
+    public Page<LinkedRequest> getRequestsForCurrentUser(String userName, Pageable pageable) {
+    return linkedRequestRepository.findByIdamLegacyUserId(userName, pageable);
+    }
 
 }

@@ -15,4 +15,20 @@ public class CurrentUserService {
             throw new IllegalStateException("Authenticated user is not an OidcUser");
         }
     }
+
+    public String getUserName() {
+        return getCurrentUserClaims().getUserName();
+    }
+
+    public String getFirstName() {
+        return getCurrentUserClaims().getFirstName();
+    }
+
+    public String getLastName() {
+        return getCurrentUserClaims().getLastName();
+    }
+
+    public String getEmail() {
+        return getCurrentUserClaims().getEmail();
+    }
 }

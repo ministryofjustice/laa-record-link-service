@@ -1,5 +1,6 @@
 package uk.gov.justice.record.link.service;
 
+
 import mockit.MockUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+@Service
+public class CurrentUserService {
+public String getFirstName();
+public String getLastName();
+public String getUserName();
+public String getEmail();
+}
 
 @ExtendWith(MockitoExtension.class)
 public class UserTransferServiceTest {
@@ -59,6 +68,12 @@ public class UserTransferServiceTest {
     @Test
     void saveUserTransferRequest() {
 
+        when(currentUserService.getFirstName()).thenReturn("TestFirstName");
+        when(currentUserService.getLastName()).thenReturn("TestLastName");
+        when(currentUserService.getUserName()).thenReturn("test-username");
+        when(currentUserService.getEmail()).thenReturn("test@example.com");
+
+
         UserTransferRequest transferRequest = createUserTransferRequest("Alice", "My surname has changed due to marriage.");
         CcmsUser ccmsUser = createCcmsUser("Alice", "Alison", "Doe");
 
@@ -66,10 +81,10 @@ public class UserTransferServiceTest {
                 .additionalInfo("My surname has changed due to marriage.")
                 .ccmsUser(ccmsUser)
                 .status(Status.OPEN)
-                .idamFirstName("TODO in STB-2368")
-                .idamLastName("TODO in STB-2368")
-                .idamLegacyUserId(UUID.randomUUID().toString())
-                .idamEmail(StringUtils.randomAlphanumeric(6))
+                .idamFirstName(currentUserService.getFirstName())
+                .idamLastName(currentUserService.getLastName())
+                .idamLegacyUserId(currentUserService.getUserName())
+                .idamEmail(currentUserService.getEmail())
                 .createdDate(LocalDateTime.now())
                 .build();
 
