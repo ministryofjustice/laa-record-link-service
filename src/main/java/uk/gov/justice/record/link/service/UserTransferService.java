@@ -65,7 +65,7 @@ public class UserTransferService {
     }
 
     public Page<LinkedRequest> getRequestsForCurrentUser(String userName, Pageable pageable) {
-    return linkedRequestRepository.findByIdamLegacyUserId(userName, pageable);
+        return linkedRequestRepository.findByIdamLegacyUserId(userName, pageable);
     }
 
 }

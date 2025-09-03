@@ -54,8 +54,8 @@ public class UserTransferController {
         model.addAttribute("currentPage", userRequests.getNumber());
         model.addAttribute("totalPages", userRequests.getTotalPages());
 
-    return "index";
-}
+        return "index"; 
+    }
 
     @GetMapping("/user-transfer-request")
     public String userTransferRequest(Model model, HttpSession session) {
