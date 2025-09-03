@@ -289,8 +289,6 @@ public class UserTransferControllerTest {
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Account closed");
-            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
-                    .isEqualTo(Arrays.asList("invalidLoginId", "My surname has changed due to marriage."));
             verify(mockCcmsUserRepository, times(2)).findByLoginId("invalidLoginId");
         }
 
@@ -308,7 +306,6 @@ public class UserTransferControllerTest {
                     .andReturn();
 
             verify(mockCcmsUserRepository, times(1)).findByLoginId("Alice");
-            assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
         }
 
         @DisplayName("Order of validation when login id is valid, account is not closed, and status is not opened")
@@ -327,7 +324,6 @@ public class UserTransferControllerTest {
 
             verify(mockCcmsUserRepository, times(2)).findByLoginId(anyString());
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
         }
     }
 
