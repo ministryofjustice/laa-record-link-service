@@ -278,17 +278,18 @@ public class UserTransferControllerTest {
         @DisplayName("Login id validation should take priority when login id invalid and user account is closed")
         @Test
         void shouldReturnRequestRejectedWhenLoginIdIsInvalidAndAccountIsClosed() throws Exception {
-            when(mockCcmsUserRepository.findByLoginId("Alice")).thenReturn(Optional.empty());
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "Alice")
+                            .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
                     .andReturn();
 
-            verify(mockCcmsUserRepository, times(1)).findByLoginId("Alice");
+            verify(mockCcmsUserRepository, times(1)).findByLoginId("invalidLoginId");
+            assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
         }
     }
 
