@@ -46,8 +46,16 @@ public class UserTransferServiceTest {
     void setUp() {
         ccmsUserRepository = mock(CcmsUserRepository.class);
         linkedRequestRepository = mock(LinkedRequestRepository.class);
-        
+        currentUserService = mock(CurrentUserService.class);
         userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, currentUserService);
+
+        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
+        when(mockClaims.getFirstName()).thenReturn("TestFirstName");
+        when(mockClaims.getLastName()).thenReturn("TestLastName");
+        when(mockClaims.getUserName()).thenReturn("test-username");
+        when(mockClaims.getEmail()).thenReturn("test@example.com");
+
+        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
 
         new MockUp<LocalDateTime>() {
             @mockit.Mock
