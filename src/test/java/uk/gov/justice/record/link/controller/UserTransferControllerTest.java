@@ -1,6 +1,5 @@
 package uk.gov.justice.record.link.controller;
 
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,9 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,9 +75,11 @@ public class UserTransferControllerTest {
     void shouldRenderHomePage() throws Exception {
         OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
         when(mockClaims.getUserName()).thenReturn("Alice");
-
-        // Mock currentUserService to return the mocked OidcTokenClaimsExtractor
         when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
+
+        Page<LinkedRequest> mockPage = new PageImpl<>(List.of());
+        when(userTransferService.getRequestsForCurrentUser(anyString(), any(Pageable.class)))
+        .thenReturn(mockPage);
         mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
