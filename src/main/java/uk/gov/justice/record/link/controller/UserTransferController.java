@@ -65,7 +65,8 @@ public class UserTransferController {
     @PostMapping("/request-confirmation")
     public String userLinked(@Validated(SubmissionValidationSequence.class) @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result, Model model, HttpSession session) {
         log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
-        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.INVALID_STATUS_MESSAGE);
+        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.CCMS_ACCOUNT_CLOSED,
+                ValidationConstants.INVALID_STATUS_MESSAGE);
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                 .filter(expectedErrorMessages::contains).toList();
 
