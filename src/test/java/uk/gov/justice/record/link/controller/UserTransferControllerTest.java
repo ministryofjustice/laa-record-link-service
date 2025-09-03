@@ -282,7 +282,7 @@ public class UserTransferControllerTest {
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "Mo")
+                            .param("oldLogin", "ALice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
@@ -290,7 +290,7 @@ public class UserTransferControllerTest {
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Account closed");
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
-                    .isEqualTo(Arrays.asList("Mo", "My surname has changed due to marriage."));
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
             verify(mockCcmsUserRepository, times(2)).findByLoginId("Mo");
         }
 
@@ -301,13 +301,13 @@ public class UserTransferControllerTest {
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "Mo")
+                            .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
                     .andReturn();
 
-            verify(mockCcmsUserRepository, times(1)).findByLoginId("Mo");
+            verify(mockCcmsUserRepository, times(1)).findByLoginId("Alice");
             assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
         }
 
