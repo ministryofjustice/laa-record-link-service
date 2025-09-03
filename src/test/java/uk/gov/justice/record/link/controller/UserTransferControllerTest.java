@@ -22,6 +22,7 @@ import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.CurrentUserService;
+import uk.gov.justice.record.link.service.OidcTokenClaimsExtractor;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,7 +52,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = UserTransferController.class)
 public class UserTransferControllerTest {
 
-    private static Validator validator;
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -69,6 +70,11 @@ public class UserTransferControllerTest {
 
     @Test
     void shouldRenderHomePage() throws Exception {
+        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
+        when(mockClaims.getUserName()).thenReturn("Alice");
+
+        // Mock currentUserService to return the mocked OidcTokenClaimsExtractor
+        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
         mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
