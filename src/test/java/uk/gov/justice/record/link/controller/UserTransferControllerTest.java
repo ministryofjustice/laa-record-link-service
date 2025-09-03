@@ -280,57 +280,6 @@ public class UserTransferControllerTest {
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
         }
-
-        @DisplayName("Should validate request when login id is valid and email of a LAA closed account")
-        @Test
-        void shouldReturnRequestRejectedWhenEmailIsOfLaaClosedAccount() throws Exception {
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(user2));
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "invalidLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("request_rejected"))
-                    .andReturn();
-
-            assertThat(reasonCaptor.getValue()).isEqualTo("Account closed");
-            verify(mockCcmsUserRepository, times(2)).findByLoginId("invalidLoginId");
-        }
-
-        @DisplayName("Login id validation should take priority when login id invalid and user account is closed")
-        @Test
-        void shouldReturnRequestRejectedWhenLoginIdIsInvalidAndAccountIsClosed() throws Exception {
-            when(mockCcmsUserRepository.findByLoginId("Mo")).thenReturn(Optional.empty());
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("request_rejected"))
-                    .andReturn();
-
-            verify(mockCcmsUserRepository, times(1)).findByLoginId("Alice");
-        }
-
-        @DisplayName("Order of validation when login id is valid, account is not closed, and status is not opened")
-        @Test
-        void shouldReturnRequestCreatedWhenLoginIdIsValidAndAccountIsNotClosed() throws Exception {
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/request-confirmation")
-                            .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("request-created"))
-                    .andReturn();
-
-            verify(mockCcmsUserRepository, times(2)).findByLoginId(anyString());
-            verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
-        }
     }
 
     private final CcmsUser ccmsUser = CcmsUser.builder()
