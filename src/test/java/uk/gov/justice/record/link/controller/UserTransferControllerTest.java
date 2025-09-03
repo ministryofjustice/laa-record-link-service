@@ -82,7 +82,7 @@ public class UserTransferControllerTest {
         mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
-        }
+}
 
     @Nested
     class CheckAnswer {
