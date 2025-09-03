@@ -45,7 +45,7 @@ class LinkedRequestServiceTest {
     @Captor
     private ArgumentCaptor<String> oldLoginCaptor;
     @Captor
-    private ArgumentCaptor<Pageable> pegeableCaptor;
+    private ArgumentCaptor<Pageable> pageableCaptor;
 
     @Nested
     @DisplayName("ShouldReturnPagedResults")
@@ -237,13 +237,14 @@ class LinkedRequestServiceTest {
 
             linkedRequestService.getLinkingRequestByOldLogin("oldLoginId", 1, 10);
 
-            verify(linkedRequestRepository).findByOldLoginIdContainingAllIgnoreCase(oldLoginCaptor.capture(), pegeableCaptor.capture());
+            verify(linkedRequestRepository).findByOldLoginIdContainingAllIgnoreCase(oldLoginCaptor.capture(), pageableCaptor.capture());
 
             assertThat(oldLoginCaptor.getValue()).isEqualTo("oldLoginId");
 
-            assertThat(pegeableCaptor.getValue().getPageNumber()).isEqualTo(0);
-            assertThat(pegeableCaptor.getValue().getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
-            assertThat(pegeableCaptor.getValue().getPageSize()).isEqualTo(10);
+            Pageable capturedPageable = pageableCaptor.getValue();
+            assertThat(capturedPageable.getPageNumber()).isEqualTo(0);
+            assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
+            assertThat(capturedPageable.getPageSize()).isEqualTo(10);
         }
 
     }

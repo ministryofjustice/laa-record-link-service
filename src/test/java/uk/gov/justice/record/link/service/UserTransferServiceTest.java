@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.thymeleaf.util.StringUtils;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
@@ -21,7 +21,6 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,20 +29,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Service
-public class CurrentUserService {
-public String getFirstName();
-public String getLastName();
-public String getUserName();
-public String getEmail();
-}
-
 @ExtendWith(MockitoExtension.class)
 public class UserTransferServiceTest {
 
     private UserTransferService userTransferService;
     private CcmsUserRepository ccmsUserRepository;
     private LinkedRequestRepository linkedRequestRepository;
+
+    @Mock
     private CurrentUserService currentUserService;
 
     @Captor
@@ -53,10 +46,9 @@ public class UserTransferServiceTest {
     void setUp() {
         ccmsUserRepository = mock(CcmsUserRepository.class);
         linkedRequestRepository = mock(LinkedRequestRepository.class);
-        currentUserService = mock(CurrentUserService.class);
+        
         userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, currentUserService);
 
-        
         new MockUp<LocalDateTime>() {
             @mockit.Mock
             public LocalDateTime now() {
@@ -67,12 +59,10 @@ public class UserTransferServiceTest {
 
     @Test
     void saveUserTransferRequest() {
-
         when(currentUserService.getFirstName()).thenReturn("TestFirstName");
         when(currentUserService.getLastName()).thenReturn("TestLastName");
         when(currentUserService.getUserName()).thenReturn("test-username");
         when(currentUserService.getEmail()).thenReturn("test@example.com");
-
 
         UserTransferRequest transferRequest = createUserTransferRequest("Alice", "My surname has changed due to marriage.");
         CcmsUser ccmsUser = createCcmsUser("Alice", "Alison", "Doe");
@@ -92,7 +82,6 @@ public class UserTransferServiceTest {
 
         userTransferService.save(transferRequest);
 
-        verify(ccmsUserRepository).findByLoginId(transferRequest.getOldLogin());
         verify(ccmsUserRepository, times(1)).findByLoginId(transferRequest.getOldLogin());
     }
     
