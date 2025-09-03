@@ -21,6 +21,7 @@ import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
+import uk.gov.justice.record.link.service.CurrentUserService;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
@@ -58,10 +59,13 @@ public class UserTransferControllerTest {
     private LinkedRequestRepository mockLinkedRequestRepository;
     @MockitoBean
     private CcmsUserRepository mockCcmsUserRepository;
+    @MockitoBean
+    private CurrentUserService currentUserService;
     @Captor
     private ArgumentCaptor<UserTransferRequest> userTransferRequestCaptor;
     @Captor
     private ArgumentCaptor<String> reasonCaptor;
+    
 
     @Test
     void shouldRenderHomePage() throws Exception {
