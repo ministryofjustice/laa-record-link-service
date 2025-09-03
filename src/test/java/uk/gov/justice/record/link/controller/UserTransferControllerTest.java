@@ -69,7 +69,6 @@ public class UserTransferControllerTest {
     private ArgumentCaptor<UserTransferRequest> userTransferRequestCaptor;
     @Captor
     private ArgumentCaptor<String> reasonCaptor;
-    
 
     @Test
     void shouldRenderHomePage() throws Exception {
@@ -79,11 +78,11 @@ public class UserTransferControllerTest {
 
         Page<LinkedRequest> mockPage = new PageImpl<>(List.of());
         when(userTransferService.getRequestsForCurrentUser(anyString(), any(Pageable.class)))
-        .thenReturn(mockPage);
+                .thenReturn(mockPage);
         mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
-    }
+}
 
     @Nested
     class CheckAnswer {
