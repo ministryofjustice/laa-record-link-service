@@ -65,7 +65,7 @@ public class UserTransferControllerTest {
 
     @Test
     void shouldRenderHomePage() throws Exception {
-        mockMvc.perform(get("/"))
+        mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
     }
