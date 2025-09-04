@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.constants.ValidationConstants;
 import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.service.UserTransferService;
@@ -36,7 +35,7 @@ public class UserTransferController {
     private final UserTransferService userTransferService;
 
     @GetMapping("/")
-    public String homepage(@AuthenticationPrincipal OidcUser oidcUser) {
+    public String homepage(@AuthenticationPrincipal OidcUser oidcUse) {
         return "index";
     }
 
@@ -53,11 +52,10 @@ public class UserTransferController {
 
     @PostMapping("/check-answers")
     public String userTransferRequest(@Validated(OnCreateRequest.class) @ModelAttribute UserTransferRequest userTransferRequest,
-                                      BindingResult result, Model model, HttpSession session, @AuthenticationPrincipal OidcUser oidcUser) {
+                                      BindingResult result, Model model, HttpSession session) {
         if (result.hasErrors()) {
             return "user-transfer-request";
         }
-        userTransferRequest.setFirmCode(oidcUser.getClaim(SilasConstants.FIRM_CODE));
         model.addAttribute("userTransferRequest", userTransferRequest);
         session.setAttribute("userTransferRequest", userTransferRequest);
 
@@ -65,21 +63,20 @@ public class UserTransferController {
     }
 
     @PostMapping("/request-confirmation")
-    public String userLinked(@Validated(SubmissionValidationSequence.class) @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result,
-                             Model model, HttpSession session) {
+    public String userLinked(@Validated(SubmissionValidationSequence.class) @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result, Model model, HttpSession session) {
         log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
-        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE,
-                                                            ValidationConstants.INVALID_STATUS_MESSAGE,
-                                                            ValidationConstants.CCMS_ACCOUNT_CLOSED,
-                                                            ValidationConstants.INVALID_FIRM_ID_MESSAGE);
-
+        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.CCMS_ACCOUNT_CLOSED,
+                ValidationConstants.INVALID_STATUS_MESSAGE);
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
-                                    .filter(expectedErrorMessages::contains).toList();
+                .filter(expectedErrorMessages::contains).toList();
 
         if (!errors.isEmpty()) {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
             userTransferService.rejectRequest(userTransferRequest, errors.getFirst());
             return "request_rejected";
+        }
+        if (Objects.isNull(userTransferRequest)) {
+            userTransferRequest = new UserTransferRequest();
         }
 
         model.addAttribute("userTransferRequest", userTransferRequest);

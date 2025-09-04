@@ -7,16 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.thymeleaf.util.StringUtils;
-import uk.gov.justice.record.link.config.DevSecurityConfig;
-import uk.gov.justice.record.link.constants.SilasConstants;
-import uk.gov.justice.record.link.constants.ValidationConstants;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
@@ -31,8 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -41,7 +37,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -49,8 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @ActiveProfiles("local")
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UserTransferController.class)
-@Import(DevSecurityConfig.class)
+@ContextConfiguration(classes = UserTransferController.class)
 public class UserTransferControllerTest {
 
     private static Validator validator;
@@ -67,7 +63,6 @@ public class UserTransferControllerTest {
     @Captor
     private ArgumentCaptor<String> reasonCaptor;
 
-
     @Test
     void shouldRenderHomePage() throws Exception {
         mockMvc.perform(get("/"))
@@ -81,8 +76,6 @@ public class UserTransferControllerTest {
         @Test
         void shouldRenderPreviewPageWithUserData() throws Exception {
             MvcResult result = mockMvc.perform(post("/external/check-answers")
-                            .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -114,8 +107,6 @@ public class UserTransferControllerTest {
         @Test
         void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
             mockMvc.perform(post("/external/check-answers")
-                            .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -123,23 +114,6 @@ public class UserTransferControllerTest {
 
             verify(mockLinkedRequestRepository, times(0)).countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList());
             verify(mockCcmsUserRepository, times(0)).findByLoginId(anyString());
-        }
-
-        @DisplayName("Should add firm id claim to user transfer request")
-        @Test
-        void addsClaimsToRequest() throws Exception {
-            var result = mockMvc.perform(post("/external/check-answers")
-                            .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
-                            .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(model().attribute("userTransferRequest",
-                            hasProperty("firmCode", is("1234"))
-                    ))
-                    .andExpect(status().isOk())
-                    .andReturn();
-            String html = result.getResponse().getContentAsString();
-            assertTrue(html.contains("firmCode"));
         }
     }
 
@@ -174,12 +148,10 @@ public class UserTransferControllerTest {
 
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "1234"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
                     .andExpect(model().attributeExists("userTransferRequest"))
@@ -193,16 +165,13 @@ public class UserTransferControllerTest {
         void shouldReturnRequestRejectedForLoginIdInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "1234"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
-                    .andExpect(model().hasErrors())
                     .andReturn();
 
 
@@ -218,16 +187,13 @@ public class UserTransferControllerTest {
         void shouldReturnSuccessForLoginIdNotInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "1234"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
-                    .andExpect(model().hasNoErrors())
                     .andReturn();
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
@@ -237,7 +203,6 @@ public class UserTransferControllerTest {
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
         }
-
 
         @DisplayName("Should return request rejected when login id does not exist in CCMS_USER")
         @Test
@@ -251,7 +216,6 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
-                    .andExpect(model().hasErrors())
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
@@ -266,16 +230,13 @@ public class UserTransferControllerTest {
         void shouldReturnRequestAcceptedWhenLoginIdIsValid() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "1234"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
-                    .andExpect(model().hasNoErrors())
                     .andReturn();
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
@@ -286,7 +247,7 @@ public class UserTransferControllerTest {
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
         }
 
-        @DisplayName("Order of validation: Login id validation should take priority when both login id and status are invalid")
+        @DisplayName("Login id validation should take priority when both login id and status are invalid")
         @Test
         void shouldReturnRequestRejectedWhenLoginIdAndStatusAreInvalid() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
@@ -298,103 +259,26 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
-                    .andExpect(model().hasErrors())
                     .andReturn();
 
-            assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_LOGIN_ID_MESSAGE);
+            assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
         }
 
-        @DisplayName("Order of validation: Should validate status only after login iD is valid")
+        @DisplayName("Should validate status only after login iD is valid")
         @Test
         void shouldValidateStatusOnlyAfterLoginIdIsValid() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "invalidLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                             .param("firmCode", "1234"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
-                    .andExpect(model().hasErrors())
                     .andReturn();
 
-            assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_STATUS_MESSAGE);
-        }
-
-        @DisplayName("Should return success if IDAM firm code matches CCMS firm code")
-        @Test
-        void shouldRejectLinkRequestIfIdamFirmCodeDoesNotMatchCcmsFirmCode() throws Exception {
-            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
-
-            mockMvc.perform(post("/external/request-confirmation")
-                            .param("oldLogin", "validLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "1234"))
-                    .andExpect(status().isOk())
-                    .andExpect(model().hasNoErrors())
-                    .andExpect(view().name("request-created"));
-
-            verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
-
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
-            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo", "firmCode")
-                    .isEqualTo(Arrays.asList("validLoginId", "My surname has changed due to marriage.", "1234"));
-
-        }
-
-        @DisplayName("Should return request rejected when IDAM firm code does not match CCMS firm code")
-        @Test
-        void shouldReturnRequestRejectedWhenIdamFirmCodeDoesNotMatchCcmsFirmCode() throws Exception {
-            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/external/request-confirmation")
-                            .param("oldLogin", "validLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "invalidCode"))
-                    .andExpect(status().isOk())
-                    .andExpect(model().hasErrors())
-                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "firmCode"))
-                    .andExpect(view().name("request_rejected"));
-
-            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
-
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
-
-            assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
-
-        }
-
-        @DisplayName("Order of validation: firm code should take priority over status when both are invalid")
-        @Test
-        void firmCodeTakestPriorityOverStatus() throws Exception {
-            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/external/request-confirmation")
-                            .param("oldLogin", "validLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "invalidCode"))
-                    .andExpect(status().isOk())
-                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "firmCode"))
-                    .andExpect(view().name("request_rejected"));
-
-            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
-
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
-
-            assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
-
+            assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
         }
 
         @DisplayName("Order of validation when login id is valid, account is not closed, and status is not opened")
@@ -402,13 +286,11 @@ public class UserTransferControllerTest {
         void shouldReturnRequestCreatedWhenLoginIdIsValidAndAccountIsNotClosed() throws Exception {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "invalidCode"))
+                            .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-created"))
                     .andReturn();
@@ -450,34 +332,7 @@ public class UserTransferControllerTest {
             verify(mockCcmsUserRepository, times(1)).findByLoginId("Mo");
             assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
         }
-
-        @DisplayName("Order of validation: Login id should take priority when both status, login id and firm code are invalid")
-        @Test
-        void loginIdTakestPriorityOverStatusAndFirmCode() throws Exception {
-            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
-            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
-            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
-
-            mockMvc.perform(post("/external/request-confirmation")
-                            .param("oldLogin", "invalidLoginId")
-                            .param("additionalInfo", "My surname has changed due to marriage.")
-                            .param("firmCode", "invalidCode"))
-                    .andExpect(status().isOk())
-                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "oldLogin"))
-                    .andExpect(view().name("request_rejected"));
-
-            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
-
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
-
-            assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_LOGIN_ID_MESSAGE);
-        }
     }
-
-
-
-
 
     private final CcmsUser ccmsUser = CcmsUser.builder()
             .loginId("Alice")
