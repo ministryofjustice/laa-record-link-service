@@ -69,9 +69,9 @@ public class UserTransferController {
                              Model model, HttpSession session) {
         log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
         final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE,
-                                                            ValidationConstants.INVALID_STATUS_MESSAGE,
-                                                            ValidationConstants.CCMS_ACCOUNT_CLOSED,
-                                                            ValidationConstants.INVALID_FIRM_ID_MESSAGE);
+                                                           ValidationConstants.INVALID_STATUS_MESSAGE,
+                                                           ValidationConstants.CCMS_ACCOUNT_CLOSED,
+                                                           ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                                     .filter(expectedErrorMessages::contains).toList();
