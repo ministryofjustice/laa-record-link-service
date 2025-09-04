@@ -45,7 +45,7 @@ class LinkedRequestServiceTest {
     @Captor
     private ArgumentCaptor<String> oldLoginCaptor;
     @Captor
-    private ArgumentCaptor<Pageable> pegeableCaptor;
+    private ArgumentCaptor<Pageable> pageableCaptor;
 
     @Nested
     @DisplayName("ShouldReturnPagedResults")
@@ -191,7 +191,7 @@ class LinkedRequestServiceTest {
 
             LinkedRequest request1 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser1)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Alice")
                     .idamLastName("Johnson")
                     .idamFirmName("Johnson & Associates")
@@ -203,7 +203,7 @@ class LinkedRequestServiceTest {
 
             LinkedRequest request2 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser2)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Bob")
                     .idamLastName("Wilson")
                     .idamFirmName("Wilson Legal")
@@ -215,7 +215,7 @@ class LinkedRequestServiceTest {
 
             LinkedRequest request3 = LinkedRequest.builder()
                     .ccmsUser(ccmsUser1)
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Carol")
                     .idamLastName("Brown")
                     .idamFirmName("Brown Law Firm")
@@ -237,13 +237,14 @@ class LinkedRequestServiceTest {
 
             linkedRequestService.getLinkingRequestByOldLogin("oldLoginId", 1, 10);
 
-            verify(linkedRequestRepository).findByOldLoginIdContainingAllIgnoreCase(oldLoginCaptor.capture(), pegeableCaptor.capture());
+            verify(linkedRequestRepository).findByOldLoginIdContainingAllIgnoreCase(oldLoginCaptor.capture(), pageableCaptor.capture());
 
             assertThat(oldLoginCaptor.getValue()).isEqualTo("oldLoginId");
 
-            assertThat(pegeableCaptor.getValue().getPageNumber()).isEqualTo(0);
-            assertThat(pegeableCaptor.getValue().getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
-            assertThat(pegeableCaptor.getValue().getPageSize()).isEqualTo(10);
+            Pageable capturedPageable = pageableCaptor.getValue();
+            assertThat(capturedPageable.getPageNumber()).isEqualTo(0);
+            assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
+            assertThat(capturedPageable.getPageSize()).isEqualTo(10);
         }
 
     }
