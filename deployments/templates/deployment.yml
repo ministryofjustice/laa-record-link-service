@@ -98,3 +98,5 @@ spec:
                 secretKeyRef:
                   name: laa-record-link-service-base-url-k8s
                   key: BASE_URL_HOMEPAGE
+            - name: INGEST_PROD_DATA
+              value: "${INGEST_PROD_DATA}"
