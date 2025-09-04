@@ -3,8 +3,10 @@ package uk.gov.justice.record.link.controller;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,8 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import uk.gov.justice.record.link.constants.ValidationConstants;
+import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.UserTransferRequest;
+import uk.gov.justice.record.link.service.CurrentUserService;
 import uk.gov.justice.record.link.service.UserTransferService;
 import uk.gov.justice.record.link.validation.groups.OnCreateRequest;
 import uk.gov.justice.record.link.validation.groups.SubmissionValidationSequence;
@@ -33,10 +39,20 @@ import java.util.Objects;
 public class UserTransferController {
 
     private final UserTransferService userTransferService;
+    private final CurrentUserService currentUserService;
 
     @GetMapping("/")
-    public String homepage(@AuthenticationPrincipal OidcUser oidcUse) {
-        return "index";
+    public String homepage(@RequestParam(defaultValue = "0") int page, Model model) {
+        String currentUserId = currentUserService.getCurrentUserClaims().getUserName();
+
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<LinkedRequest> userRequests = userTransferService.getRequestsForCurrentUser(currentUserId, pageable);
+
+        model.addAttribute("userRequests", userRequests.getContent());
+        model.addAttribute("currentPage", userRequests.getNumber());
+        model.addAttribute("totalPages", userRequests.getTotalPages());
+
+        return "index"; 
     }
 
     @GetMapping("/user-transfer-request")
@@ -90,4 +106,5 @@ public class UserTransferController {
         session.removeAttribute("userTransferRequest");
         return "redirect:/";
     }
+
 }

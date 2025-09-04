@@ -1,5 +1,6 @@
 package uk.gov.justice.record.link.service;
 
+
 import mockit.MockUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.thymeleaf.util.StringUtils;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
@@ -20,7 +21,6 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,6 +35,10 @@ public class UserTransferServiceTest {
     private UserTransferService userTransferService;
     private CcmsUserRepository ccmsUserRepository;
     private LinkedRequestRepository linkedRequestRepository;
+
+    @Mock
+    private CurrentUserService currentUserService;
+
     @Captor
     private ArgumentCaptor<LinkedRequest> linkedRequestArgumentCaptor;
 
@@ -42,7 +46,17 @@ public class UserTransferServiceTest {
     void setUp() {
         ccmsUserRepository = mock(CcmsUserRepository.class);
         linkedRequestRepository = mock(LinkedRequestRepository.class);
-        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository);
+        currentUserService = mock(CurrentUserService.class);
+        userTransferService = new UserTransferService(linkedRequestRepository, ccmsUserRepository, currentUserService);
+
+        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
+        when(mockClaims.getFirstName()).thenReturn("TestFirstName");
+        when(mockClaims.getLastName()).thenReturn("TestLastName");
+        when(mockClaims.getUserName()).thenReturn("test-username");
+        when(mockClaims.getEmail()).thenReturn("test@example.com");
+
+        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
+
         new MockUp<LocalDateTime>() {
             @mockit.Mock
             public LocalDateTime now() {
@@ -53,6 +67,10 @@ public class UserTransferServiceTest {
 
     @Test
     void saveUserTransferRequest() {
+        when(currentUserService.getFirstName()).thenReturn("TestFirstName");
+        when(currentUserService.getLastName()).thenReturn("TestLastName");
+        when(currentUserService.getUserName()).thenReturn("test-username");
+        when(currentUserService.getEmail()).thenReturn("test@example.com");
 
         UserTransferRequest transferRequest = createUserTransferRequest("Alice", "My surname has changed due to marriage.");
         CcmsUser ccmsUser = createCcmsUser("Alice", "Alison", "Doe");
@@ -61,10 +79,10 @@ public class UserTransferServiceTest {
                 .additionalInfo("My surname has changed due to marriage.")
                 .ccmsUser(ccmsUser)
                 .status(Status.OPEN)
-                .idamFirstName("TODO in STB-2368")
-                .idamLastName("TODO in STB-2368")
-                .idamLegacyUserId(UUID.randomUUID())
-                .idamEmail(StringUtils.randomAlphanumeric(6))
+                .idamFirstName(currentUserService.getFirstName())
+                .idamLastName(currentUserService.getLastName())
+                .idamLegacyUserId(currentUserService.getUserName())
+                .idamEmail(currentUserService.getEmail())
                 .createdDate(LocalDateTime.now())
                 .build();
 
@@ -72,7 +90,6 @@ public class UserTransferServiceTest {
 
         userTransferService.save(transferRequest);
 
-        verify(ccmsUserRepository).findByLoginId(transferRequest.getOldLogin());
         verify(ccmsUserRepository, times(1)).findByLoginId(transferRequest.getOldLogin());
     }
     

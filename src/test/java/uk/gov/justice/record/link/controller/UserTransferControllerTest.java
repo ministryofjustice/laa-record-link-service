@@ -1,6 +1,5 @@
 package uk.gov.justice.record.link.controller;
 
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,9 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,12 +23,15 @@ import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
+import uk.gov.justice.record.link.service.CurrentUserService;
+import uk.gov.justice.record.link.service.OidcTokenClaimsExtractor;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,7 +55,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = UserTransferController.class)
 public class UserTransferControllerTest {
 
-    private static Validator validator;
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -58,6 +63,8 @@ public class UserTransferControllerTest {
     private LinkedRequestRepository mockLinkedRequestRepository;
     @MockitoBean
     private CcmsUserRepository mockCcmsUserRepository;
+    @MockitoBean
+    private CurrentUserService currentUserService;
     @Captor
     private ArgumentCaptor<UserTransferRequest> userTransferRequestCaptor;
     @Captor
@@ -65,7 +72,14 @@ public class UserTransferControllerTest {
 
     @Test
     void shouldRenderHomePage() throws Exception {
-        mockMvc.perform(get("/"))
+        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
+        when(mockClaims.getUserName()).thenReturn("Alice");
+        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
+
+        Page<LinkedRequest> mockPage = new PageImpl<>(List.of());
+        when(userTransferService.getRequestsForCurrentUser(anyString(), any(Pageable.class)))
+                .thenReturn(mockPage);
+        mockMvc.perform(get("/external/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"));
     }
@@ -141,7 +155,7 @@ public class UserTransferControllerTest {
                     .status(Status.OPEN)
                     .idamFirstName("TODO in STB-2368")
                     .idamLastName("TODO in STB-2368")
-                    .idamLegacyUserId(UUID.randomUUID())
+                    .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamEmail(StringUtils.randomAlphanumeric(6))
                     .createdDate(LocalDateTime.now())
                     .build();
