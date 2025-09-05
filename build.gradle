@@ -51,6 +51,7 @@ dependencies {
     testImplementation('org.testcontainers:junit-jupiter')
     testImplementation('org.springframework.boot:spring-boot-testcontainers')
     testImplementation 'org.jmockit:jmockit:1.49'
+    testImplementation 'org.springframework.security:spring-security-test'
 
 }
 

@@ -3,10 +3,11 @@ package uk.gov.justice.record.link.controller;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.constants.ValidationConstants;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.UserTransferRequest;
@@ -52,7 +53,7 @@ public class UserTransferController {
         model.addAttribute("currentPage", userRequests.getNumber());
         model.addAttribute("totalPages", userRequests.getTotalPages());
 
-        return "index"; 
+        return "index";
     }
 
     @GetMapping("/user-transfer-request")
@@ -68,10 +69,12 @@ public class UserTransferController {
 
     @PostMapping("/check-answers")
     public String userTransferRequest(@Validated(OnCreateRequest.class) @ModelAttribute UserTransferRequest userTransferRequest,
-                                      BindingResult result, Model model, HttpSession session) {
+                                      BindingResult result, Model model, HttpSession session, @AuthenticationPrincipal OidcUser oidcUser) {
         if (result.hasErrors()) {
             return "user-transfer-request";
         }
+
+        userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
         model.addAttribute("userTransferRequest", userTransferRequest);
         session.setAttribute("userTransferRequest", userTransferRequest);
 
@@ -81,8 +84,11 @@ public class UserTransferController {
     @PostMapping("/request-confirmation")
     public String userLinked(@Validated(SubmissionValidationSequence.class) @ModelAttribute UserTransferRequest userTransferRequest, BindingResult result, Model model, HttpSession session) {
         log.info("User transfer request received with login id: {}", userTransferRequest.getOldLogin());
-        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE, ValidationConstants.CCMS_ACCOUNT_CLOSED,
-                ValidationConstants.INVALID_STATUS_MESSAGE);
+        final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE,
+                                                           ValidationConstants.INVALID_STATUS_MESSAGE,
+                                                           ValidationConstants.CCMS_ACCOUNT_CLOSED,
+                                                           ValidationConstants.INVALID_FIRM_ID_MESSAGE);
+
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                 .filter(expectedErrorMessages::contains).toList();
 
@@ -90,9 +96,6 @@ public class UserTransferController {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
             userTransferService.rejectRequest(userTransferRequest, errors.getFirst());
             return "request_rejected";
-        }
-        if (Objects.isNull(userTransferRequest)) {
-            userTransferRequest = new UserTransferRequest();
         }
 
         model.addAttribute("userTransferRequest", userTransferRequest);
@@ -106,5 +109,4 @@ public class UserTransferController {
         session.removeAttribute("userTransferRequest");
         return "redirect:/";
     }
-
 }

@@ -42,4 +42,25 @@ public class CcmsUserRepositoryTest {
             assertThat(actualResult).isNull();
         }
     }
+
+    @Nested
+    class ExistsByFirmCode {
+        @Sql("classpath:test_data/insert_link_request.sql")
+        @DisplayName("Should return true for firm code that exists in CCMS table")
+        @Test
+        void returnTrueForValidFirmCode() {
+            var actualResult = ccmsUserRepository.existsByFirmCode("F123");
+
+            assertThat(actualResult).isTrue();
+        }
+
+        @Sql("classpath:test_data/insert_link_request.sql")
+        @DisplayName("Should return false for firm code that does not exist in CCMS table")
+        @Test
+        void returnFalseForInvalidFirmCode() {
+            var actualResult = ccmsUserRepository.existsByFirmCode("invalid");
+
+            assertThat(actualResult).isFalse();
+        }
+    }
 }
