@@ -73,7 +73,8 @@ public class UserTransferController {
         if (result.hasErrors()) {
             return "user-transfer-request";
         }
-        userTransferRequest.setFirmCode(oidcUser.getClaim(SilasConstants.FIRM_CODE));
+
+        userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
         model.addAttribute("userTransferRequest", userTransferRequest);
         session.setAttribute("userTransferRequest", userTransferRequest);
 
