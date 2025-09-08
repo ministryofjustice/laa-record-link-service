@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface CcmsUserRepository extends JpaRepository<CcmsUser, String> {
 
     Optional<CcmsUser> findByLoginId(String name);
+
+    boolean existsByFirmCode(String firmCode);
 }
