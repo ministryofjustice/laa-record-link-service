@@ -1,8 +1,8 @@
 package uk.gov.justice.record.link.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
@@ -20,7 +20,6 @@ public class UserTransferService {
     private final LinkedRequestRepository linkedRequestRepository;
     private final CcmsUserRepository ccmsUserRepository;
     private final CurrentUserService currentUserService;
-
 
     public void save(final UserTransferRequest userTransferRequest) {
 
@@ -59,6 +58,8 @@ public class UserTransferService {
                 .idamLastName(token.getLastName())
                 .idamLegacyUserId(token.getUserName())
                 .idamEmail(token.getEmail())
+                .idamFirmName(token.getFirmName())
+                .idamFirmCode(token.getFirmCode())
                 .createdDate(LocalDateTime.now())
                 .build();
         linkedRequestRepository.save(newUser);
@@ -67,5 +68,4 @@ public class UserTransferService {
     public Page<LinkedRequest> getRequestsForCurrentUser(String userName, Pageable pageable) {
         return linkedRequestRepository.findByIdamLegacyUserId(userName, pageable);
     }
-
 }
