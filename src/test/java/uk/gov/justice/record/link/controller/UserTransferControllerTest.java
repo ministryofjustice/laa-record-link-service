@@ -202,7 +202,7 @@ public class UserTransferControllerTest {
                     .andExpect(model().attributeExists("userTransferRequest"))
                     .andReturn();
 
-            verify(userTransferService, times(1)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(1)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request rejected for login id in OPEN or APPROVED status")
@@ -226,7 +226,7 @@ public class UserTransferControllerTest {
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
 
-            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request accepted when login id not OPEN or APPROVED status")
@@ -247,7 +247,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
@@ -271,7 +271,7 @@ public class UserTransferControllerTest {
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("invalidLoginId", "My surname has changed due to marriage."));
 
-            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request accepted when login id exist in CCMS_USER")
@@ -292,7 +292,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
@@ -405,7 +405,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo", "firmCode")
                     .isEqualTo(Arrays.asList("validLoginId", "My surname has changed due to marriage.", "1234"));
 
@@ -430,7 +430,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
@@ -454,7 +454,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
@@ -478,7 +478,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_LOGIN_ID_MESSAGE);
         }

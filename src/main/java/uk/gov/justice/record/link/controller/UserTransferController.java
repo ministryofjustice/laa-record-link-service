@@ -99,7 +99,7 @@ public class UserTransferController {
         }
 
         model.addAttribute("userTransferRequest", userTransferRequest);
-        userTransferService.save(userTransferRequest);
+        userTransferService.createRequest(userTransferRequest);
         log.info("User transfer request created with login id: {}", userTransferRequest.getOldLogin());
         return "request-created";
     }
