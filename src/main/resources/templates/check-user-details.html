@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'manage-user'},
+      breadcrumbs=~{::#breadcrumbs})}" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Check User Details</title>
+</head>
+
+<body>
+<nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link"
+               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}"
+               th:text="${hasFilters} ? 'Back to search results' : 'Home'"></a>
+        </li>
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link"
+               th:aria-label="${user.idamFirstName + ' ' + user.idamLastName}">
+                <span th:text="${user.idamFirstName + ' ' + user.idamLastName}"></span>
+            </a>
+        </li>
+    </ol>
+</nav>
+
+<main class="govuk-main-wrapper" id="main-content">
+    <style>
+        #main-content .govuk-summary-card__content {
+            min-height: 215px;
+        }
+    </style>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div class="moj-page-header-actions">
+                <div class="moj-page-header-actions__title" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <p class="govuk-heading-xl">Check details</p>
+                    <p class="govuk-heading-s" th:text="'Assigned to: ' + ${user.idamFirstName + ' ' + user.idamLastName}"></p>
+                </div>
+                <form class="form" th:if="${!(isAccessGranted ?: false)}"
+                      th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/grant-access'}" method="post">
+                    <div class="moj-page-header-actions__actions">
+                    </div>
+                </form>
+            </div>
+
+            <div class="govuk-tabs" data-module="govuk-tabs">
+                <h2 class="govuk-tabs__title">Contents</h2>
+
+                <ul class="govuk-tabs__list">
+                    <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                        <a class="govuk-tabs__tab" href="#accounts">Accounts</a>
+                    </li>
+                    <li class="govuk-tabs__list-item">
+                        <a class="govuk-tabs__tab" href="#transfer-info">Transfer Information</a>
+                    </li>
+                </ul>
+
+                <div class="govuk-tabs__panel" id="accounts">
+                    <!-- Empty placeholder for Accounts -->
+                </div>
+
+                <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="transfer-info">
+                    <!-- Empty placeholder for Transfer Information -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <a class="govuk-button govuk-button--primary" data-module="govuk-button"
+               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
+                Return to manage tranfer requests
+            </a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

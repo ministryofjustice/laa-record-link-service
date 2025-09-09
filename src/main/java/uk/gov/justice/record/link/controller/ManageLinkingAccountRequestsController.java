@@ -2,11 +2,15 @@ package uk.gov.justice.record.link.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
+
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
@@ -40,4 +44,17 @@ public class ManageLinkingAccountRequestsController {
         model.addAttribute("pagedRequest", pagedRequest);
         return "manage-link-account-requests";
     }
+
+    @GetMapping("/manage-linking-account/check-user-details")
+    public String viewUserDetails(@RequestParam("id") String id, Model model) {
+        System.out.println("Received id: " + id);
+
+        LinkedRequest request = linkedRequestService.getRequestById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        model.addAttribute("user", request);
+        return "check-user-details"; 
+    }
+
+
 }

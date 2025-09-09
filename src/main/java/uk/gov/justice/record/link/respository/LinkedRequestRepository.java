@@ -18,5 +18,3 @@ public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UU
     
     Page<LinkedRequest> findByIdamLegacyUserId(String idamLegacyUserId, Pageable pageable);
 }
-
-
