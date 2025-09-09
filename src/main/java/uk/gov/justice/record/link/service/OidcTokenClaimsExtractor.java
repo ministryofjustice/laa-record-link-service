@@ -2,6 +2,8 @@ package uk.gov.justice.record.link.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import uk.gov.justice.record.link.constants.SilasConstants;
+
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -10,23 +12,31 @@ public class OidcTokenClaimsExtractor {
     private final OidcUser oidcUser;
 
     public String getUserName() {
-        return getClaimAsString("USER_NAME");
+        return getClaimAsString(SilasConstants.FIRM_NAME);
     }
 
     public String getEmail() {
-        return getClaimAsString("USER_EMAIL");
+        return getClaimAsString(SilasConstants.USER_EMAIL);
     }
 
     public String getFirstName() {
-        return getClaimAsString("given_name");
+        return getClaimAsString(SilasConstants.FIRST_NAME);
     }
 
     public String getLastName() {
-        return getClaimAsString("family_name");
+        return getClaimAsString(SilasConstants.SURNAME);
+    }
+
+    public String getFirmName() {
+        return getClaimAsString(SilasConstants.FIRM_NAME);
+    }
+
+    public String getFirmCode() {
+        return getClaimAsString(SilasConstants.FIRM_CODE);
     }
 
     public List<String> getRoles() {
-        Object roles = oidcUser.getClaims().get("APP_ROLES");
+        Object roles = oidcUser.getClaims().get(SilasConstants.APP_ROLES);
         if (roles instanceof List<?>) {
             return ((List<?>) roles).stream().map(Object::toString).toList();
         } else if (roles instanceof String) {
