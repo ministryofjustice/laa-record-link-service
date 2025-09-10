@@ -73,8 +73,7 @@ public class UserTransferController {
         if (result.hasErrors()) {
             return "user-transfer-request";
         }
-
-        userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
+        mapToUserTransferRequest(userTransferRequest, oidcUser);
         model.addAttribute("userTransferRequest", userTransferRequest);
         session.setAttribute("userTransferRequest", userTransferRequest);
 
@@ -108,5 +107,15 @@ public class UserTransferController {
     public String cancelUserCreation(HttpSession session) {
         session.removeAttribute("userTransferRequest");
         return "redirect:/";
+    }
+
+    private void mapToUserTransferRequest(final UserTransferRequest userTransferRequest, final OidcUser oidcUser) {
+        userTransferRequest.setLegacyUserId(oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString());
+        userTransferRequest.setFirstName(oidcUser.getClaims().get(SilasConstants.FIRST_NAME).toString());
+        userTransferRequest.setLastName(oidcUser.getClaims().get(SilasConstants.SURNAME).toString());
+        userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
+        userTransferRequest.setFirmName(oidcUser.getClaims().get(SilasConstants.FIRM_NAME).toString());
+        userTransferRequest.setEmail(oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
+
     }
 }

@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -97,7 +98,16 @@ public class UserTransferControllerTest {
         void shouldRenderPreviewPageWithUserData() throws Exception {
             MvcResult result = mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -130,7 +140,16 @@ public class UserTransferControllerTest {
         void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
             mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -145,16 +164,35 @@ public class UserTransferControllerTest {
         void addsClaimsToRequest() throws Exception {
             var result = mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(model().attribute("userTransferRequest",
-                            hasProperty("firmCode", is("1234"))
-                    ))
+                    .andExpect(model().attribute("userTransferRequest", allOf(
+                            hasProperty("firmCode", is("1234")),
+                            hasProperty("firmName", is("FIRM 1")),
+                            hasProperty("firstName", is("Alice")),
+                            hasProperty("lastName", is("Smith")),
+                            hasProperty("legacyUserId", is("LegacyUser")),
+                            hasProperty("email", is("alice@smith.com"))
+                    )))
                     .andExpect(status().isOk())
                     .andReturn();
             String html = result.getResponse().getContentAsString();
             assertTrue(html.contains("firmCode"));
+            assertTrue(html.contains("firmName"));
+            assertTrue(html.contains("firstName"));
+            assertTrue(html.contains("lastName"));
+            assertTrue(html.contains("legacyUserId"));
+            assertTrue(html.contains("email"));
         }
 
 
