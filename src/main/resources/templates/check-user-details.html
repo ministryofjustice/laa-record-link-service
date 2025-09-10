@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" th:replace="~{layout :: layout(
+<html lang="en"
+      th:replace="~{layout :: layout(
       title=~{::title},
       mainContent=~{::#main-content},
       pageCategory=${'manage-user'},
-      breadcrumbs=~{::#breadcrumbs})}" xmlns:th="http://www.thymeleaf.org">
+      breadcrumbs=~{::#breadcrumbs})}"
+      xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <title>Check User Details</title>
@@ -38,11 +40,14 @@
             <div class="moj-page-header-actions">
                 <div class="moj-page-header-actions__title" style="display: flex; flex-direction: column; gap: 0.25rem;">
                     <p class="govuk-heading-xl">Check details</p>
-                    <p class="govuk-heading-s" th:text="'Assigned to: ' + ${user.idamFirstName + ' ' + user.idamLastName}"></p>
+                    <p class="govuk-heading-s"
+                       th:text="'Assigned to: ' + ${user.idamFirstName + ' ' + user.idamLastName}"></p>
                 </div>
                 <form class="form" th:if="${!(isAccessGranted ?: false)}"
-                      th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/grant-access'}" method="post">
+                      th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/grant-access'}"
+                      method="post">
                     <div class="moj-page-header-actions__actions">
+                        <!-- Possibly grant access button here -->
                     </div>
                 </form>
             </div>
@@ -59,15 +64,82 @@
                     </li>
                 </ul>
 
+                <!-- Panel 1: Accounts -->
                 <div class="govuk-tabs__panel" id="accounts">
-                    <!-- Empty placeholder for Accounts -->
-                </div>
+                    <div class="govuk-summary-card">
+                        <div class="govuk-summary-card__title-wrapper">
+                            <h2 class="govuk-summary-card__title" th:text="'Accounts'"></h2>
+                        </div>
+                        <div class="govuk-summary-card__content">
+                            <dl class="govuk-summary-list">
+                                <table class="govuk-table">
+                                    <caption class="govuk-table__caption govuk-table__caption--m">Accounts</caption>
+                                    <thead class="govuk-table__head">
+                                        <tr class="govuk-table__row">
+                                            <th scope="col" class="govuk-table__header"></th>
+                                            <th scope="col" class="govuk-table__header govuk-table__header--numeric">CCMS Account</th>
+                                            <th scope="col" class="govuk-table__header govuk-table__header--numeric">This Account</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="govuk-table__body">
+                                        <tr class="govuk-table__row">
+                                            <th scope="row" class="govuk-table__header">Firm</th>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.firmName}">CCMS_FIRM_HERE</td>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${user.idamFirmName}">THIS_FIRM_HERE</td>
+                                        </tr>
+                                        <tr class="govuk-table__row">
+                                            <th scope="row" class="govuk-table__header">First Name</th>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.firstName}">CCMS_FIRST_NAME_HERE</td>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamFirstName}">First name</td>
+                                        </tr>
+                                        <tr class="govuk-table__row">
+                                            <th scope="row" class="govuk-table__header">Last Name</th>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.LastName}">CCMS_LAST_NAME_HERE</td>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamLastName}"></td>
+                                        </tr>
+                                        <tr class="govuk-table__row">
+                                            <th scope="row" class="govuk-table__header">Username</th>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.loginId}">CCMS_USERNAME_HERE</td>
+                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamEmail}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </dl>
+                        </div>
+                    </div>
+                </div> <!-- END of #accounts -->
 
+                <!-- Panel 2: Transfer Information -->
                 <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="transfer-info">
-                    <!-- Empty placeholder for Transfer Information -->
-                </div>
-            </div>
-
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m">Transfer Information</caption>
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th scope="col" class="govuk-table__header">Field</th>
+                                <th scope="col" class="govuk-table__header">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Status</th>
+                                <td class="govuk-table__cell">STATUS_HERE</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Reason</th>
+                                <td class="govuk-table__cell">REASON_HERE</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Decision Date</th>
+                                <td class="govuk-table__cell">DECISION_DATE_HERE</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Decision Maker</th>
+                                <td class="govuk-table__cell">DECISION_MAKER_HERE</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> <!-- END of #transfer-info -->
+            </div> <!-- END of .govuk-tabs -->
         </div>
     </div>
 
@@ -75,11 +147,16 @@
         <div class="govuk-grid-column-full">
             <a class="govuk-button govuk-button--primary" data-module="govuk-button"
                th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
-                Return to manage tranfer requests
+                Return to manage transfer requests
             </a>
         </div>
     </div>
-
 </main>
+
+<!-- GOV.UK Frontend JS (if not already included via layout) -->
+<script>
+    window.GOVUKFrontend && window.GOVUKFrontend.initAll();
+</script>
+
 </body>
 </html>

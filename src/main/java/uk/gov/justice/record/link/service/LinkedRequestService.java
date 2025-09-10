@@ -34,7 +34,7 @@ public class LinkedRequestService {
         UUID uuid = UUID.fromString(id); 
         return linkedRequestRepository.findById(uuid);
     } catch (IllegalArgumentException e) {
-        return Optional.empty(); // Invalid UUID string
+        return Optional.empty();
     }
     }
 

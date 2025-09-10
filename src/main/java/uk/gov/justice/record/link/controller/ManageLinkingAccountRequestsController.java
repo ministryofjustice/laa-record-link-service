@@ -1,6 +1,8 @@
 package uk.gov.justice.record.link.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -10,12 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
-
+import uk.gov.justice.record.link.dto.CcmsUserDto;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 @Controller
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/internal")
 public class ManageLinkingAccountRequestsController {
@@ -52,9 +55,19 @@ public class ManageLinkingAccountRequestsController {
         LinkedRequest request = linkedRequestService.getRequestById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        // Create session ccms user details
+        CcmsUserDto ccmsUserDto = CcmsUserDto.builder()
+                .firmName(request.getCcmsUser().getFirmName())
+                .firmCode(request.getCcmsUser().getFirmCode())
+                .firstName(request.getCcmsUser().getFirstName())
+                .lastName(request.getCcmsUser().getLastName())
+                .email(request.getCcmsUser().getEmail())
+                .loginId(request.getCcmsUser().getLoginId())
+                .build();
+    
         model.addAttribute("user", request);
+        model.addAttribute("ccmsuser", ccmsUserDto);
+
         return "check-user-details"; 
     }
-
-
 }
