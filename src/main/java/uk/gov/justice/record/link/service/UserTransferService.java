@@ -28,13 +28,13 @@ public class UserTransferService {
 
     public void createRequest(final UserTransferRequest userTransferRequest) {
         ccmsUserRepository.findByLoginId(userTransferRequest.getOldLogin()).ifPresent(ccmsUser -> {
-            log.info("Creating link request for user {}", userTransferRequest.getOldLogin());
+            log.debug("Creating link request for user {}", userTransferRequest.getOldLogin());
             LinkedRequest.LinkedRequestBuilder<?, ?> initialLinkRequest = createBaseLinkRequestEntity(userTransferRequest, ccmsUser);
             LinkedRequest linkedRequest = isRequestAutoApproved(userTransferRequest, ccmsUser)
                     ? createApprovedRequestEntity(initialLinkRequest)
                     : createOpenRequestEntity(initialLinkRequest);
             linkedRequestRepository.save(linkedRequest);
-            log.info("Link request created for user {} with status {}", userTransferRequest.getOldLogin(), linkedRequest.getStatus());
+            log.debug("Link request created for user with login id {} with status {}", userTransferRequest.getOldLogin(), linkedRequest.getStatus());
         });
     }
 
@@ -43,7 +43,7 @@ public class UserTransferService {
         LinkedRequest.LinkedRequestBuilder<?, ?> initialLinkRequest = createBaseLinkRequestEntity(userTransferRequest, ccmsUser);
         LinkedRequest linkedRequest = createRejectedRequestEntity(initialLinkRequest, reason);
         linkedRequestRepository.save(linkedRequest);
-        log.error("Link request created for user {} with status {}", userTransferRequest.getOldLogin(), Status.REJECTED);
+        log.error("Link request created for user with login id {} with status {}", userTransferRequest.getOldLogin(), Status.REJECTED);
     }
 
     public Page<LinkedRequest> getRequestsForCurrentUser(String userName, Pageable pageable) {

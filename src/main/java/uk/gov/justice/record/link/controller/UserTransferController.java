@@ -116,6 +116,5 @@ public class UserTransferController {
         userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
         userTransferRequest.setFirmName(oidcUser.getClaims().get(SilasConstants.FIRM_NAME).toString());
         userTransferRequest.setEmail(oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
-
     }
 }
