@@ -64,77 +64,69 @@
                     </li>
                 </ul>
 
-                <!-- Panel 1: Accounts -->
                 <div class="govuk-tabs__panel" id="accounts">
-                    <div class="govuk-summary-card">
-                        <div class="govuk-summary-card__title-wrapper">
-                            <h2 class="govuk-summary-card__title" th:text="'Accounts'"></h2>
-                        </div>
-                        <div class="govuk-summary-card__content">
-                            <dl class="govuk-summary-list">
-                                <table class="govuk-table">
-                                    <caption class="govuk-table__caption govuk-table__caption--m">Accounts</caption>
-                                    <thead class="govuk-table__head">
-                                        <tr class="govuk-table__row">
-                                            <th scope="col" class="govuk-table__header"></th>
-                                            <th scope="col" class="govuk-table__header govuk-table__header--numeric">CCMS Account</th>
-                                            <th scope="col" class="govuk-table__header govuk-table__header--numeric">This Account</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="govuk-table__body">
-                                        <tr class="govuk-table__row">
-                                            <th scope="row" class="govuk-table__header">Firm</th>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.firmName}">CCMS_FIRM_HERE</td>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${user.idamFirmName}">THIS_FIRM_HERE</td>
-                                        </tr>
-                                        <tr class="govuk-table__row">
-                                            <th scope="row" class="govuk-table__header">First Name</th>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.firstName}">CCMS_FIRST_NAME_HERE</td>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamFirstName}">First name</td>
-                                        </tr>
-                                        <tr class="govuk-table__row">
-                                            <th scope="row" class="govuk-table__header">Last Name</th>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.LastName}">CCMS_LAST_NAME_HERE</td>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamLastName}"></td>
-                                        </tr>
-                                        <tr class="govuk-table__row">
-                                            <th scope="row" class="govuk-table__header">Username</th>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric"th:text="${ccmsuser.loginId}">CCMS_USERNAME_HERE</td>
-                                            <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamEmail}"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </dl>
-                        </div>
-                    </div>
-                </div> <!-- END of #accounts -->
-
-                <!-- Panel 2: Transfer Information -->
-                <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="transfer-info">
                     <table class="govuk-table">
-                        <caption class="govuk-table__caption govuk-table__caption--m">Transfer Information</caption>
+                        <caption class="govuk-table__caption govuk-table__caption--m"></caption>
                         <thead class="govuk-table__head">
                             <tr class="govuk-table__row">
-                                <th scope="col" class="govuk-table__header">Field</th>
-                                <th scope="col" class="govuk-table__header">Value</th>
+                                <th scope="col" class="govuk-table__header"></th>
+                                <th scope="col" class="govuk-table__header govuk-table__header--numeric">CCMS Account</th>
+                                <th scope="col" class="govuk-table__header govuk-table__header--numeric">This Account</th>
                             </tr>
                         </thead>
                         <tbody class="govuk-table__body">
                             <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Firm</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.firmName : 'N/A'}">CCMS_FIRM</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user != null ? user.idamFirmName : 'No firm available'}">THIS_FIRM</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">First Name</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.firstName : 'N/A'}">CCMS_FIRST_NAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamFirstName}">First name</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Last Name</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.lastName : 'N/A'}">CCMS_LAST_NAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamLastName}">Last name</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Username</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.loginId : 'N/A'}">CCMS_USERNAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamEmail}">Username</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Panel 2: Transfer Information -->
+                <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="transfer-info">
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m"></caption>
+                        <thead class="govuk-table__head">
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">Status</th>
-                                <td class="govuk-table__cell">STATUS_HERE</td>
+                                <td class="govuk-table__cell">
+                                    <span class="moj-badge moj-badge--green" th:if="${user.status?.name() == 'APPROVED'}" th:text="${user.status}">APPROVED</span>
+                                    <span class="moj-badge moj-badge--red" th:if="${user.status?.name() == 'REJECTED'}" th:text="${user.status}">REJECTED</span>
+                                    <span class="moj-badge moj-badge--blue" th:if="${user.status?.name() == 'OPEN'}" th:text="${user.status}">OPEN</span>
+                                    <span class="moj-badge" th:if="${user.status == null}" th:text="'Unknown'">UNKNOWN</span>
+                                </td>
                             </tr>
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">Reason</th>
-                                <td class="govuk-table__cell">REASON_HERE</td>
+                                <td class="govuk-table__cell"th:text="${user.decisionReason}">REASON</td>
                             </tr>
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">Decision Date</th>
-                                <td class="govuk-table__cell">DECISION_DATE_HERE</td>
+                                <td class="govuk-table__cell"th:text="${user.decisionDate}">DECISION_DATE</td>
                             </tr>
                             <tr class="govuk-table__row">
                                 <th scope="row" class="govuk-table__header">Decision Maker</th>
-                                <td class="govuk-table__cell">DECISION_MAKER_HERE</td>
+                                <td class="govuk-table__cell"th:text="${user.laaAssignee}">DECISION_MAKER</td>
                             </tr>
                         </tbody>
                     </table>

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.justice.record.link.dto.CcmsUserDto;
+import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
@@ -50,24 +51,28 @@ public class ManageLinkingAccountRequestsController {
 
     @GetMapping("/manage-linking-account/check-user-details")
     public String viewUserDetails(@RequestParam("id") String id, Model model) {
-        System.out.println("Received id: " + id);
-
         LinkedRequest request = linkedRequestService.getRequestById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // Create session ccms user details
-        CcmsUserDto ccmsUserDto = CcmsUserDto.builder()
-                .firmName(request.getCcmsUser().getFirmName())
-                .firmCode(request.getCcmsUser().getFirmCode())
-                .firstName(request.getCcmsUser().getFirstName())
-                .lastName(request.getCcmsUser().getLastName())
-                .email(request.getCcmsUser().getEmail())
-                .loginId(request.getCcmsUser().getLoginId())
-                .build();
-    
-        model.addAttribute("user", request);
-        model.addAttribute("ccmsuser", ccmsUserDto);
+        if (request.getCcmsUser() == null) {
+            log.warn("LinkedRequest with id={} has no associated CCMS User", id);
+            model.addAttribute("user", request);
+            model.addAttribute("ccmsuser", null);  // or skip adding ccmsuser attribute
+        } else {
+            CcmsUserDto ccmsUserDto = CcmsUserDto.builder()
+                    .firmName(request.getCcmsUser().getFirmName())
+                    .firmCode(request.getCcmsUser().getFirmCode())
+                    .firstName(request.getCcmsUser().getFirstName())
+                    .lastName(request.getCcmsUser().getLastName())
+                    .email(request.getCcmsUser().getEmail())
+                    .loginId(request.getCcmsUser().getLoginId())
+                    .build();
 
-        return "check-user-details"; 
+            model.addAttribute("user", request);
+            model.addAttribute("ccmsuser", ccmsUserDto);
+        }
+
+        return "check-user-details";
     }
+
 }
