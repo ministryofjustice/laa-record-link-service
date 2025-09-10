@@ -12,7 +12,7 @@ public class OidcTokenClaimsExtractor {
     private final OidcUser oidcUser;
 
     public String getUserName() {
-        return getClaimAsString(SilasConstants.FIRM_NAME);
+        return getClaimAsString(SilasConstants.SILAS_LOGIN_ID);
     }
 
     public String getEmail() {

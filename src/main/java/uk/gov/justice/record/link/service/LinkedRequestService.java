@@ -26,4 +26,9 @@ public class LinkedRequestService {
         return linkedRequestRepository.findByOldLoginIdContainingAllIgnoreCase(oldLogin, pageable);
 
     }
+
+    public Page<LinkedRequest> getAssignedRequests(String assignee, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.asc("createdDate")));
+        return linkedRequestRepository.findByLaaAssignee(assignee, pageable);
+    }
 }

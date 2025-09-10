@@ -28,8 +28,8 @@
         </h2>
         <ul class="govuk-tabs__list">
             <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-tabs__tab" href="#open-cases"  >
-                    Open Cases
+                <a class="govuk-tabs__tab" href="#assigned-cases"  >
+                    Assigned cases
                 </a>
             </li>
             <li class="govuk-tabs__list-item" >
@@ -38,8 +38,86 @@
                 </a>
             </li>
         </ul>
-        <div class="govuk-tabs__panel" id="open-cases">
+        <div class="govuk-tabs__panel" id="assigned-cases">
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-one-half">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold">
+                            Assigned cases
+                        </label>
+                    </div>
+                </div>
+            </div>
 
+            <table class="govuk-table" data-module="moj-sortable-table">
+                <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requested username</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Firm</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requested By</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Assignee</th>
+                    <th aria-sort="none" class="govuk-table__header govuk-table__header--numeric" scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody class="govuk-table__body">
+                <tr class="govuk-table__row" th:each="request : ${assignedPagedRequest.linkedRequests}">
+                    <td class="govuk-table__cell" th:text="${request.oldLoginId}">Requested username</td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm</td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">Requested By</td>
+                    <td class="govuk-table__cell" th:text="${request.laaAssignee}">Assignee</td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">
+                        <span class="moj-badge moj-badge--green" th:if="${request.status.name() == 'APPROVED'}" th:text="${request.status}">Status</span>
+                        <span class="moj-badge moj-badge--red" th:if="${request.status.name() == 'REJECTED'}" th:text="${request.status}">Status</span>
+                        <span class="moj-badge moj-badge--blue" th:if="${request.status.name() == 'OPEN'}" th:text="${request.status}">Status</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            
+            <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${assignedPagedRequest.totalPages > 1}">
+                <ul class="moj-pagination__list">
+
+                    <li class="moj-pagination__item moj-pagination__item--prev" th:if="${assignedPagedRequest.hasPrevious}">
+                        <a class="govuk-link govuk-pagination__link" th:href="@{/internal/manage-linking-account#assigned-cases(assignedPage=${assignedPagedRequest.currentPage - 1}, size=${assignedPagedRequest.pageSize})}">
+                            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                            </svg>
+                            <span >Previous
+                    <span class="govuk-visually-hidden"> page</span>
+                        </span>
+                        </a>
+                    </li>
+
+                    <th:block th:each="i : ${#numbers.sequence(1, assignedPagedRequest.totalPages)}">
+                        <li class="moj-pagination__item"
+                            th:classappend="${i == assignedPagedRequest.currentPage ? 'moj-pagination__item--active' : ''}">
+                            <a class="moj-pagination__link"
+                               th:href="@{/internal/manage-linking-account#assigned-cases(assignedPage=${i}, size=${assignedPagedRequest.pageSize})}"
+                               th:aria-label="'Page ' + ${i} + ' of ' + ${assignedPagedRequest.totalPages}"
+                               th:aria-current="${i == assignedPagedRequest.currentPage ? 'page' : null}"
+                               th:text="${i}"></a>
+                        </li>
+                    </th:block>
+
+                    <li class="moj-pagination__item moj-pagination__item--next" th:if="${assignedPagedRequest.hasNext}">
+                        <a class="govuk-pagination__link-title" th:href="@{/internal/manage-linking-account#assigned-cases(assignedPage=${assignedPagedRequest.currentPage + 1}, size=${assignedPagedRequest.pageSize})}" >
+                   <span class="govuk-pagination__link-title"> Next
+                    <span class="govuk-visually-hidden"> page</span>
+                   </span>
+                            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                </ul>
+
+                <p class="moj-pagination__results">
+                    Showing <b th:text="${(assignedPagedRequest.pageSize * (assignedPagedRequest.currentPage - 1)) + 1}"></b>
+                    to <b th:text="${(assignedPagedRequest.pageSize * (assignedPagedRequest.currentPage - 1)) + assignedPagedRequest.linkedRequests.size()}"></b>
+                    of <b th:text="${assignedPagedRequest.totalItems}"></b> results
+                </p>
+            </nav>
         </div>
         <div class="govuk-tabs__panel" id="all-cases" >
             <div class="govuk-grid-row">
