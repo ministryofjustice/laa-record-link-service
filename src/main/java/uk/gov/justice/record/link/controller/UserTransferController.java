@@ -22,7 +22,6 @@ import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.constants.ValidationConstants;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.UserTransferRequest;
-import uk.gov.justice.record.link.service.CurrentUserService;
 import uk.gov.justice.record.link.service.UserTransferService;
 import uk.gov.justice.record.link.validation.groups.OnCreateRequest;
 import uk.gov.justice.record.link.validation.groups.SubmissionValidationSequence;
@@ -40,11 +39,10 @@ import java.util.Objects;
 public class UserTransferController {
 
     private final UserTransferService userTransferService;
-    private final CurrentUserService currentUserService;
 
     @GetMapping("/")
-    public String homepage(@RequestParam(defaultValue = "0") int page, Model model) {
-        String currentUserId = currentUserService.getCurrentUserClaims().getUserName();
+    public String homepage(@RequestParam(defaultValue = "0") int page, Model model,  @AuthenticationPrincipal OidcUser oidcUser) {
+        String currentUserId = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
 
         Pageable pageable = PageRequest.of(page, 10);
         Page<LinkedRequest> userRequests = userTransferService.getRequestsForCurrentUser(currentUserId, pageable);
@@ -106,7 +104,7 @@ public class UserTransferController {
     @GetMapping("/cancel")
     public String cancelUserCreation(HttpSession session) {
         session.removeAttribute("userTransferRequest");
-        return "redirect:/";
+        return "redirect:/external/";
     }
 
     private void mapToUserTransferRequest(final UserTransferRequest userTransferRequest, final OidcUser oidcUser) {

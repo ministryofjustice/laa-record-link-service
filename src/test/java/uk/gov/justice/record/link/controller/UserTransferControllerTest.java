@@ -27,7 +27,6 @@ import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.CurrentUserService;
-import uk.gov.justice.record.link.service.OidcTokenClaimsExtractor;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
@@ -44,8 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,16 +78,31 @@ public class UserTransferControllerTest {
 
     @Test
     void shouldRenderHomePage() throws Exception {
-        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
-        when(mockClaims.getUserName()).thenReturn("Alice");
-        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
+
 
         Page<LinkedRequest> mockPage = new PageImpl<>(List.of());
         when(userTransferService.getRequestsForCurrentUser(anyString(), any(Pageable.class)))
                 .thenReturn(mockPage);
-        mockMvc.perform(get("/external/"))
+
+        mockMvc.perform(get("/external/")
+                        .with(oidcLogin()
+                                .idToken(token -> token.claims(
+                                        claim -> {
+                                            claim.put(SilasConstants.FIRM_CODE, "1234");
+                                            claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                            claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                            claim.put(SilasConstants.SURNAME, "Smith");
+                                            claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                            claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                        }
+                                )))
+                )
                 .andExpect(status().isOk())
-                .andExpect(view().name("index"));
+                .andExpect(view().name("index"))
+                .andExpect(model().attributeExists("userRequests", "currentPage", "totalPages"));
+
+
+        verify(userTransferService).getRequestsForCurrentUser(eq("LegacyUser"), any(Pageable.class));
     }
 
     @Nested
