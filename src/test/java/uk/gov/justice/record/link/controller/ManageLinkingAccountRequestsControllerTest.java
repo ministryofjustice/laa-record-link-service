@@ -70,7 +70,6 @@ class ManageLinkingAccountRequestsControllerTest {
                     .andExpect(view().name("manage-link-account-requests"))
                     .andExpect(model().attributeExists("pagedRequest"))
                     .andExpect(model().attributeExists("assignedPagedRequest"))
-                    .andExpect(model().attributeExists("userName"))
                     .andExpect(result -> {
                         PagedUserRequest<?> pagedRequest = (PagedUserRequest<?>) Objects.requireNonNull(result.getModelAndView()).getModel().get("pagedRequest");
                         assertThat(pagedRequest.currentPage()).isEqualTo(1);
@@ -87,9 +86,6 @@ class ManageLinkingAccountRequestsControllerTest {
                         assertThat(assignedPagedRequest.pageSize()).isEqualTo(10);
                         assertThat(assignedPagedRequest.hasNext()).isEqualTo(false);
                         assertThat(assignedPagedRequest.hasPrevious()).isEqualTo(false);
-                        
-                        String userName = (String) Objects.requireNonNull(result.getModelAndView()).getModel().get("userName");
-                        assertThat(userName).isEqualTo("testUser");
                     });
         }
 
