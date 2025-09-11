@@ -21,7 +21,11 @@ import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -507,8 +511,10 @@ class ManageLinkingAccountRequestsControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(view().name("check-user-details"))
                     .andExpect(model().attributeExists("user"))
-                    .andExpect(result -> {CcmsUser ccmsuser = (CcmsUser) result.getModelAndView().getModel().get("ccmsuser");
-                        assertThat(ccmsuser).isNull();});
+                    .andExpect(result -> {
+                        CcmsUser ccmsuser = (CcmsUser) result.getModelAndView().getModel().get("ccmsuser");
+                        assertThat(ccmsuser).isNull();
+                    });
         }
     }
 
