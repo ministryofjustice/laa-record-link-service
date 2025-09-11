@@ -21,12 +21,10 @@ import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -453,29 +451,7 @@ class ManageLinkingAccountRequestsControllerTest {
                     });
         }
 
-        private List<LinkedRequest> createMockLinkedRequests() {
-            CcmsUser ccmsUser1 = CcmsUser.builder()
-                    .loginId("user1")
-                    .firstName("John")
-                    .lastName("Doe")
-                    .firmCode("FIRM001")
-                    .email("john.doe@example.com")
-                    .build();
 
-            LinkedRequest request1 = LinkedRequest.builder()
-                    .ccmsUser(ccmsUser1)
-                    .idamLegacyUserId(UUID.randomUUID().toString())
-                    .idamFirstName("Alice")
-                    .idamLastName("Johnson")
-                    .idamFirmName("Johnson & Associates")
-                    .idamFirmCode("JA001")
-                    .idamEmail("alice.johnson@example.com")
-                    .createdDate(LocalDateTime.now().minusDays(5))
-                    .status(Status.OPEN)
-                    .build();
-
-            return Arrays.asList(request1);
-        }
 
         private List<LinkedRequest> createMockAssignedRequests() {
             CcmsUser ccmsUser1 = CcmsUser.builder()
@@ -502,5 +478,78 @@ class ManageLinkingAccountRequestsControllerTest {
 
             return Arrays.asList(assignedRequest1);
         }
+    }
+
+    @Nested
+    @DisplayName("viewUserDetails")
+    class ViewUserDetails {
+
+        @Test
+        void shouldShowRequestDetails() throws Exception {
+            List<LinkedRequest> mockRequests = createMockLinkedRequests();
+            when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(mockRequests.get(0)));
+
+            mockMvc.perform(get("/internal/manage-linking-account/check-user-details")
+                            .param("id", "25985641-9ba5-44a1-7e8f-e23u7be7bb0l"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("check-user-details"))
+                    .andExpect(model().attributeExists("user"))
+                    .andExpect(model().attributeExists("ccmsuser"));
+        }
+
+        @Test
+        void shouldShowRequestDetailsIfNullUser() throws Exception {
+            List<LinkedRequest> mockRequests = createMockLinkedRequestsWithNullUser();
+            when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(mockRequests.get(0)));
+
+            mockMvc.perform(get("/internal/manage-linking-account/check-user-details")
+                            .param("id", "25985641-9ba5-44a1-7e8f-e23u7be7bb0l"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("check-user-details"))
+                    .andExpect(model().attributeExists("user"))
+                    .andExpect(result -> {CcmsUser ccmsuser = (CcmsUser) result.getModelAndView().getModel().get("ccmsuser");
+                        assertThat(ccmsuser).isNull();});
+        }
+    }
+
+    private List<LinkedRequest> createMockLinkedRequests() {
+        CcmsUser ccmsUser1 = CcmsUser.builder()
+                .loginId("user1")
+                .firstName("John")
+                .lastName("Doe")
+                .firmCode("FIRM001")
+                .email("john.doe@example.com")
+                .build();
+
+        LinkedRequest request1 = LinkedRequest.builder()
+                .ccmsUser(ccmsUser1)
+                .idamLegacyUserId(UUID.randomUUID().toString())
+                .idamFirstName("Alice")
+                .idamLastName("Johnson")
+                .idamFirmName("Johnson & Associates")
+                .idamFirmCode("JA001")
+                .idamEmail("alice.johnson@example.com")
+                .createdDate(LocalDateTime.now().minusDays(5))
+                .status(Status.OPEN)
+                .build();
+
+        return Arrays.asList(request1);
+    }
+
+    private List<LinkedRequest> createMockLinkedRequestsWithNullUser() {
+
+        LinkedRequest request1 = LinkedRequest.builder()
+                .ccmsUser(null)
+                .idamLegacyUserId(UUID.randomUUID().toString())
+                .idamFirstName("Alice")
+                .idamLastName("Johnson")
+                .idamFirmName("Johnson & Associates")
+                .idamFirmCode("JA001")
+                .idamEmail("alice.johnson@example.com")
+                .createdDate(LocalDateTime.now().minusDays(5))
+                .status(Status.OPEN)
+                .build();
+
+        return Arrays.asList(request1);
     }
 }

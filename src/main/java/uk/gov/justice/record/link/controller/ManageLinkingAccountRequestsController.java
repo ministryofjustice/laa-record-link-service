@@ -47,7 +47,8 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
+//        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
+        String userName = "oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString()";
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
@@ -74,7 +75,6 @@ public class ManageLinkingAccountRequestsController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (request.getCcmsUser() == null) {
-            log.warn("LinkedRequest with id={} has no associated CCMS User", id);
             model.addAttribute("user", request);
             model.addAttribute("ccmsuser", null);
         } else {
