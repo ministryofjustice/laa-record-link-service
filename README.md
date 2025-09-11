@@ -1,11 +1,9 @@
 # laa-spring-boot-microservice-template
 [![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/laa-spring-boot-microservice-template/badge)](https://github-community.service.justice.gov.uk/repository-standards/laa-spring-boot-microservice-template)
 
-### ⚠️ WORK IN PROGRESS ⚠️
-This template is still under development and features may be added or subject to change.
 
 ## Overview
-  The Laa Record Linking Service is used to link user with LASSIE id to their old CCMS user id 
+  The LAA Record Linking Service is used to link user with SILAS ID to their old CCMS user id 
 
 - [Checkstyle](https://docs.gradle.org/current/userguide/checkstyle_plugin.html)
 - [Dependency Management](https://plugins.gradle.org/plugin/io.spring.dependency-management)
@@ -19,81 +17,64 @@ This template is still under development and features may be added or subject to
 The plugin is provided by -  [laa-ccms-spring-boot-common](https://github.com/ministryofjustice/laa-ccms-spring-boot-common), where you can find
 more information regarding setup and usage.
 
+## Running the app locally
 
-## Setup Instructions
-Once you've created your repository using this template, perform the following steps:
+### Prerequisites
 
-### Update README
-Edit this `README.md` file to document your project accurately. Take the time to create a clear, engaging, and informative`README.md` file. Include information such as what your project does, how to install and run it, how to contribute, and any other pertinent details.
+#### Install Java
 
-### Add Branch Protection rules
-Ensure branch protection is set up on the `main` branch.
+Ensure you have installed the correct version of Java on your local machine. At the time of writing this is Java 21.
+Some MoJ devices will come prepackaged with the latest version of Java
 
-### Configure Dependabot
-Change all `uk.gov.laa.springboot.microservice.*` package references to `uk.gov.laa.{application-package-name}.*`.
+Check your local version of Java: `java -version`
 
-Uncomment the `registries` section and follow the instructions in the comments.
+To check all versions of Java you have installed locally run: `/usr/libexec/java_home -V`
 
-### Add Repository To Snyk
-Ensure that your repository has been added to the [Legal Aid Agency Snyk](https://app.snyk.io/org/legal-aid-agency) organisation.
+Once you have downloaded Java, you can open your bash profile:
 
-Also add `SNYK_TOKEN` as a repository secret.
-
-### Update Project Files
-<details>
-
-<summary>Click here for more details on which files to update.</summary>
-
-#### 1. Rename subproject directories
-Ensure to rename `spring-boot-microservice-api` and `spring-boot-microservice-service` directories to your application name:
-`{application-name}-api` and `{application-name}-service`.
-
-Update `settings.gradle` as follows:
 ```
-rootProject.name = '{repository-name}'
-
-include '{application-name}-api'
-include '{application-name}-service'
+sudo nano ~/.bash_profile
 ```
 
-Update `build.gradle` in the project root directory as follows:
+enter your device password add export the version of Java you wish to use:
+
 ```
-subprojects {
-    group = 'uk.gov.justice.laa.{application-name}'
-}
+export JAVA_HOME=$(/usr/libexec/java_home -v 21.0.7)
 ```
 
-#### 2. Update api subproject
-Update the following files found in the `{application-name}-api` directory:
+Once exported be sure to source your latest bash profile: `source ~/.bash_profile   `
 
-- `open-api-specification.yml` - replace the contents of this file with the API specification for your application.
-- `build.gradle` - replace all references to `spring-boot-microservice-api` with `{service-name}-api`.
 
-#### 3. Update service subproject
+#### Obtaining an Entra user
 
-Rename the package name/directory - `uk.gov.justice.laa.springboot.microservice` to `uk.gov.justice.laa.{application-package-name}`
-under `src/integrationTest/java`, `src/main/java`, `src/test/java`.
+- You need a valid **MoJ DEVL External email address** for Entra ID authentication. This email will be used for validation.
+    - If you do not have one, reach out to an Entra admin in the #staff-identity-external-authentication-service Slack channel.
+    - Use the **`New Admin Account`** button at the bottom of the slack channel
 
-Update the following properties in `src/main/resources/application.yml` with your application details:
-`spring.application.name`, `info.app.name`, `info.app.description`
 
-#### 4. Update Dockerfile
-Rename the `laa-spring-boot-microservice` directory and jar file name to  `laa-{application-name}`.
+#### Creating a GitHub Token
 
-#### 5. Update GitHub workflow
-The following workflows have been provided:
+1. Ensure you have created a classic GitHub Personal Access Token with the following permissions:
+    1. repo
+    2. write:packages
+    3. read:packages
+2. The token **must be authorised with (MoJ) SSO**.
+3. Add the following parameters to `~/.gradle/gradle.properties`
 
-* Build and test PR - `build-test-pr.yml`
-* Build and deploy after PR merged - `pr-merge-main.yml` 
+```
+project.ext.gitPackageUser = <your GitHub username>
+project.ext.gitPackageKey = <your GitHub access token>
 
-In the above workflow files, change all occurrences of the `spring-boot-microservice-service/build/` build path to `{application-name}-service/build/`.
+```
 
-</details>
+#### Filling out .env
 
-### Database scripts
-The *.sql scripts in  `src/main/resources` have been included to provide an example database for demonstration purposes only and should be removed for your application.
+Using the `.env-template` file as a template, copy to a new .env file
+`cp .env-template .env`
 
-## Build And Run Application
+Be sure to fill out all values as they are required for pulling dependencies for the application to run
+
+### Build And Run Application
 Ensure that all environment variables from `.env` set
 
 `export $(grep -v '^#' .env | xargs)`
@@ -106,7 +87,7 @@ Once the environment variables are set, you can run must first start the databas
 3. Using the Terminal, run `docker-compose up -d` - this will start the database container using Docker.
 4. To create database schema, run `./gradlew flywayMigrate` 
 5. To add demo data for local:
-   - update V3__insert_demo_data_local.sql to include your email 
+   - update V5__insert_demo_data_local.sql to include your email 
    - run `INCLUDE_DEMO_DATA=true ./gradlew flywayMigrate` or set INCLUDE_DEMO_DATA to true in your .env file and run `./gradlew flywayMigrate`
 
 ### Build application
@@ -147,6 +128,5 @@ The following actuator endpoints have been configured:
   methods like getters, setters, constructors etc. at compile-time using annotations.
 - [MapStruct](https://mapstruct.org/) - used for object mapping, specifically for converting between different Java object types, such as Data Transfer Objects (DTOs)
   and Entity objects. It generates mapping code at compile code.
-- [H2](https://www.h2database.com/html/main.html) - used to provide an example database and should not be used in production.
 
 

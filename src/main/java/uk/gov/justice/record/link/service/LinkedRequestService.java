@@ -29,13 +29,18 @@ public class LinkedRequestService {
 
     }
 
-    public Optional<LinkedRequest> getRequestById(String id) {
-    try {
-        UUID uuid = UUID.fromString(id); 
-        return linkedRequestRepository.findById(uuid);
-    } catch (IllegalArgumentException e) {
-        return Optional.empty();
+    public Page<LinkedRequest> getAssignedRequests(String assignee, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.asc("createdDate")));
+        return linkedRequestRepository.findByLaaAssignee(assignee, pageable);
     }
+
+    public Optional<LinkedRequest> getRequestById(String id) {
+        try {
+            UUID uuid = UUID.fromString(id);
+            return linkedRequestRepository.findById(uuid);
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
 }

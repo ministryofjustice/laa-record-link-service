@@ -246,6 +246,119 @@ class LinkedRequestServiceTest {
             assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
             assertThat(capturedPageable.getPageSize()).isEqualTo(10);
         }
+    }
 
+    @Nested
+    @DisplayName("GetAssignedRequests")
+    class GetAssignedRequests {
+
+        @Captor
+        private ArgumentCaptor<String> assigneeCaptor;
+
+        @Test
+        void shouldReturnPagedAssignedRequests() {
+            List<LinkedRequest> mockAssignedRequests = createMockAssignedRequests();
+            Page<LinkedRequest> mockAssignedPage = new PageImpl<>(mockAssignedRequests, PageRequest.of(0, 10), 15);
+            
+            when(linkedRequestRepository.findByLaaAssignee(any(String.class), any(Pageable.class))).thenReturn(mockAssignedPage);
+
+            Page<LinkedRequest> result = linkedRequestService.getAssignedRequests("testUser", 1, 10);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(2);
+            assertThat(result.getTotalElements()).isEqualTo(15);
+            assertThat(result.getTotalPages()).isEqualTo(2);
+            assertThat(result.getNumber()).isEqualTo(0);
+            assertThat(result.getSize()).isEqualTo(10);
+        }
+
+        @Test
+        void shouldCallRepositoryWithCorrectParameters() {
+            String assignee = "testUser";
+            int page = 2;
+            int size = 5;
+            
+            Page<LinkedRequest> mockPage = new PageImpl<>(List.of(), PageRequest.of(1, 5), 0);
+            when(linkedRequestRepository.findByLaaAssignee(any(String.class), any(Pageable.class))).thenReturn(mockPage);
+
+            linkedRequestService.getAssignedRequests(assignee, page, size);
+
+            verify(linkedRequestRepository).findByLaaAssignee(assigneeCaptor.capture(), pageableCaptor.capture());
+            
+            assertThat(assigneeCaptor.getValue()).isEqualTo("testUser");
+            
+            Pageable capturedPageable = pageableCaptor.getValue();
+            assertThat(capturedPageable.getPageNumber()).isEqualTo(1);
+            assertThat(capturedPageable.getPageSize()).isEqualTo(5);
+            assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
+        }
+
+        @Test
+        void shouldHandleEmptyResults() {
+            Page<LinkedRequest> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+            when(linkedRequestRepository.findByLaaAssignee(any(String.class), any(Pageable.class))).thenReturn(emptyPage);
+
+            Page<LinkedRequest> result = linkedRequestService.getAssignedRequests("testUser", 1, 10);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).isEmpty();
+            assertThat(result.getTotalElements()).isEqualTo(0);
+            assertThat(result.getTotalPages()).isEqualTo(0);
+            assertThat(result.hasContent()).isFalse();
+        }
+
+        @Test
+        void shouldConvertOneBasedPageToZeroBased() {
+            Page<LinkedRequest> mockPage = new PageImpl<>(List.of(), PageRequest.of(2, 15), 0);
+            when(linkedRequestRepository.findByLaaAssignee(any(String.class), any(Pageable.class))).thenReturn(mockPage);
+
+            linkedRequestService.getAssignedRequests("testUser", 3, 15);
+
+            verify(linkedRequestRepository).findByLaaAssignee(assigneeCaptor.capture(), pageableCaptor.capture());
+            
+            Pageable capturedPageable = pageableCaptor.getValue();
+            assertThat(capturedPageable.getPageNumber()).isEqualTo(2);
+            assertThat(capturedPageable.getPageSize()).isEqualTo(15);
+        }
+
+        private List<LinkedRequest> createMockAssignedRequests() {
+            CcmsUser ccmsUser1 = CcmsUser.builder()
+                    .loginId("assignedUser1")
+                    .firstName("Assigned")
+                    .lastName("User1")
+                    .firmCode("FIRM003")
+                    .email("assigned.user1@example.com")
+                    .build();
+
+            LinkedRequest assignedRequest1 = LinkedRequest.builder()
+                    .ccmsUser(ccmsUser1)
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Assigned")
+                    .idamLastName("Person1")
+                    .idamFirmName("Assigned Firm 1")
+                    .idamFirmCode("AF001")
+                    .idamEmail("assigned.person1@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(2))
+                    .assignedDate(LocalDateTime.now().minusDays(1))
+                    .laaAssignee("testUser")
+                    .status(Status.OPEN)
+                    .build();
+
+            LinkedRequest assignedRequest2 = LinkedRequest.builder()
+                    .ccmsUser(ccmsUser1)
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Assigned")
+                    .idamLastName("Person2")
+                    .idamFirmName("Assigned Firm 2")
+                    .idamFirmCode("AF002")
+                    .idamEmail("assigned.person2@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(3))
+                    .assignedDate(LocalDateTime.now().minusDays(2))
+                    .laaAssignee("testUser")
+                    .status(Status.APPROVED)
+                    .build();
+
+            return Arrays.asList(assignedRequest1, assignedRequest2);
+        }
     }
 }
