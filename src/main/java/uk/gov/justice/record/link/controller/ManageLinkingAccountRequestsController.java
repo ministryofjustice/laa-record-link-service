@@ -57,7 +57,7 @@ public class ManageLinkingAccountRequestsController {
         if (request.getCcmsUser() == null) {
             log.warn("LinkedRequest with id={} has no associated CCMS User", id);
             model.addAttribute("user", request);
-            model.addAttribute("ccmsuser", null);  // or skip adding ccmsuser attribute
+            model.addAttribute("ccmsuser", null);
         } else {
             CcmsUserDto ccmsUserDto = CcmsUserDto.builder()
                     .firmName(request.getCcmsUser().getFirmName())
