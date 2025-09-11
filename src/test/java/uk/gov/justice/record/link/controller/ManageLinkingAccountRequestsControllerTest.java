@@ -4,20 +4,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.justice.record.link.config.DevSecurityConfig;
+import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.PagedUserRequest;
-import uk.gov.justice.record.link.service.CurrentUserService;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 import java.time.LocalDateTime;
@@ -28,15 +28,15 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @ActiveProfiles("local")
-@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(ManageLinkingAccountRequestsController.class)
-@ContextConfiguration(classes = ManageLinkingAccountRequestsController.class)
+@Import(DevSecurityConfig.class)
 class ManageLinkingAccountRequestsControllerTest {
 
     @Autowired
@@ -44,9 +44,6 @@ class ManageLinkingAccountRequestsControllerTest {
 
     @MockitoBean
     private LinkedRequestService linkedRequestService;
-
-    @MockitoBean
-    private CurrentUserService currentUserService;
 
     @Nested
     @DisplayName("ShouldReturnViewWithPaginatedData")
@@ -60,10 +57,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockAssignedPage = new PageImpl<>(mockAssignedRequests, PageRequest.of(0, 10), 5);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(mockAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(mockAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -96,10 +102,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 5), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 2, 5)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 5)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 5)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "2")
                             .param("size", "5"))
                     .andExpect(status().isOk())
@@ -127,10 +142,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(emptyPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -154,10 +178,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 3, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "3")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -180,10 +213,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -210,10 +252,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("testLogin", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10")
                             .param("oldLoginId", "testLogin"))
@@ -308,7 +359,7 @@ class ManageLinkingAccountRequestsControllerTest {
                     .idamEmail("assigned.person1@example.com")
                     .createdDate(LocalDateTime.now().minusDays(2))
                     .assignedDate(LocalDateTime.now().minusDays(1))
-                    .laaAssignee("testUser")
+                    .laaAssignee("1234567890")
                     .status(Status.OPEN)
                     .build();
 
@@ -322,7 +373,7 @@ class ManageLinkingAccountRequestsControllerTest {
                     .idamEmail("assigned.person2@example.com")
                     .createdDate(LocalDateTime.now().minusDays(3))
                     .assignedDate(LocalDateTime.now().minusDays(2))
-                    .laaAssignee("testUser")
+                    .laaAssignee("1234567890")
                     .status(Status.APPROVED)
                     .build();
 
@@ -342,10 +393,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockAssignedPage = new PageImpl<>(mockAssignedRequests, PageRequest.of(1, 10), 11);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 2, 10)).thenReturn(mockAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 2, 10)).thenReturn(mockAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10")
                             .param("assignedPage", "2"))
@@ -370,10 +430,19 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("testUser", 1, 10)).thenReturn(emptyAssignedPage);
-            when(currentUserService.getUserName()).thenReturn("testUser");
+            when(linkedRequestService.getAssignedRequests("1234567890", 1, 10)).thenReturn(emptyAssignedPage);
 
-            mockMvc.perform(get("/internal/manage-linking-account"))
+            mockMvc.perform(get("/internal/manage-linking-account")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Jane");
+                                                claim.put(SilasConstants.SURNAME, "Doe");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "1234567890");
+                                                claim.put(SilasConstants.USER_EMAIL, "janedoe@test.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("manage-link-account-requests"))
                     .andExpect(model().attributeExists("assignedPagedRequest"))
@@ -427,7 +496,7 @@ class ManageLinkingAccountRequestsControllerTest {
                     .idamEmail("assigned.person1@example.com")
                     .createdDate(LocalDateTime.now().minusDays(2))
                     .assignedDate(LocalDateTime.now().minusDays(1))
-                    .laaAssignee("testUser")
+                    .laaAssignee("1234567890")
                     .status(Status.OPEN)
                     .build();
 

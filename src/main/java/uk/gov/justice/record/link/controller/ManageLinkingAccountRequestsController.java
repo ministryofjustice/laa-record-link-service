@@ -2,14 +2,17 @@ package uk.gov.justice.record.link.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
-import uk.gov.justice.record.link.service.CurrentUserService;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 @Controller
@@ -18,7 +21,6 @@ import uk.gov.justice.record.link.service.LinkedRequestService;
 public class ManageLinkingAccountRequestsController {
 
     private final LinkedRequestService linkedRequestService;
-    private final CurrentUserService currentUserService;
 
     @GetMapping("/manage-linking-account")
     public String manageRequests(
@@ -26,6 +28,7 @@ public class ManageLinkingAccountRequestsController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
             @RequestParam(defaultValue = "1") int assignedPage,
+            @AuthenticationPrincipal OidcUser oidcUser,
             Model model) {
 
         Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
@@ -41,7 +44,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = currentUserService.getUserName();
+        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
