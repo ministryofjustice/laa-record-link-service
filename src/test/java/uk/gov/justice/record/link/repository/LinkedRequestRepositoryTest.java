@@ -152,4 +152,73 @@ public class LinkedRequestRepositoryTest {
 
     }
 
+    @Nested
+    @Sql("classpath:test_data/insert_assigned_requests.sql")
+    @DisplayName("FindByLaaAssignee")
+    class FindByLaaAssignee {
+        final Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("createdDate")));
+
+        @DisplayName("Should return requests assigned to specific user")
+        @Test
+        void shouldFindRequestsAssignedToUser() {
+            var actualResults = linkedRequestRepository.findByLaaAssignee("testUser1", pageable);
+
+            assertThat(actualResults.getContent().size()).isEqualTo(3);
+            assertThat(actualResults.getTotalElements()).isEqualTo(3);
+            assertThat(actualResults.getTotalPages()).isEqualTo(1);
+        }
+
+        @DisplayName("Should return empty results for non-existent assignee")
+        @Test
+        void shouldReturnEmptyForNonExistentAssignee() {
+            var actualResults = linkedRequestRepository.findByLaaAssignee("nonExistentUser", pageable);
+
+            assertThat(actualResults.getContent().size()).isEqualTo(0);
+            assertThat(actualResults.getTotalElements()).isEqualTo(0);
+            assertThat(actualResults.getTotalPages()).isEqualTo(0);
+            assertThat(actualResults.hasNext()).isFalse();
+            assertThat(actualResults.hasPrevious()).isFalse();
+        }
+
+        @DisplayName("Should handle pagination correctly")
+        @Test
+        void shouldHandlePaginationCorrectly() {
+            Pageable smallPageable = PageRequest.of(0, 2, Sort.by(Sort.Order.asc("createdDate")));
+            var actualResults = linkedRequestRepository.findByLaaAssignee("testUser1", smallPageable);
+
+            assertThat(actualResults.getContent().size()).isEqualTo(2);
+            assertThat(actualResults.getTotalElements()).isEqualTo(3);
+            assertThat(actualResults.getTotalPages()).isEqualTo(2);
+            assertThat(actualResults.hasNext()).isTrue();
+            assertThat(actualResults.hasPrevious()).isFalse();
+        }
+
+        @DisplayName("Should handle second page of pagination")
+        @Test
+        void shouldHandleSecondPageOfPagination() {
+            Pageable secondPageable = PageRequest.of(1, 2, Sort.by(Sort.Order.asc("createdDate")));
+            var actualResults = linkedRequestRepository.findByLaaAssignee("testUser1", secondPageable);
+
+            assertThat(actualResults.getContent().size()).isEqualTo(1);
+            assertThat(actualResults.getTotalElements()).isEqualTo(3);
+            assertThat(actualResults.getTotalPages()).isEqualTo(2);
+            assertThat(actualResults.hasNext()).isFalse();
+            assertThat(actualResults.hasPrevious()).isTrue();
+        }
+
+        @DisplayName("Should respect sorting by created date")
+        @Test
+        void shouldSortByCreatedDate() {
+            var actualResults = linkedRequestRepository.findByLaaAssignee("testUser1", pageable);
+
+            var content = actualResults.getContent();
+            assertThat(content.size()).isGreaterThan(1);
+            
+            for (int i = 0; i < content.size() - 1; i++) {
+                assertThat(content.get(i).getCreatedDate())
+                    .isBeforeOrEqualTo(content.get(i + 1).getCreatedDate());
+            }
+        }
+    }
+
 }
