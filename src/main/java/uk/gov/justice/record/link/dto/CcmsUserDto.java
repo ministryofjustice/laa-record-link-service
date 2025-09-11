@@ -1,14 +1,10 @@
 package uk.gov.justice.record.link.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CcmsUserDto {
     private String loginId;
     private String firstName;
