@@ -47,8 +47,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-//        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
-        String userName = "oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString()";
+        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
