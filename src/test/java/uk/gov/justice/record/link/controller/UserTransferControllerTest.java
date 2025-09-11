@@ -27,7 +27,6 @@ import uk.gov.justice.record.link.model.UserTransferRequest;
 import uk.gov.justice.record.link.respository.CcmsUserRepository;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import uk.gov.justice.record.link.service.CurrentUserService;
-import uk.gov.justice.record.link.service.OidcTokenClaimsExtractor;
 import uk.gov.justice.record.link.service.UserTransferService;
 
 import java.time.LocalDateTime;
@@ -37,14 +36,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,16 +78,31 @@ public class UserTransferControllerTest {
 
     @Test
     void shouldRenderHomePage() throws Exception {
-        OidcTokenClaimsExtractor mockClaims = mock(OidcTokenClaimsExtractor.class);
-        when(mockClaims.getUserName()).thenReturn("Alice");
-        when(currentUserService.getCurrentUserClaims()).thenReturn(mockClaims);
+
 
         Page<LinkedRequest> mockPage = new PageImpl<>(List.of());
         when(userTransferService.getRequestsForCurrentUser(anyString(), any(Pageable.class)))
                 .thenReturn(mockPage);
-        mockMvc.perform(get("/external/"))
+
+        mockMvc.perform(get("/external/")
+                        .with(oidcLogin()
+                                .idToken(token -> token.claims(
+                                        claim -> {
+                                            claim.put(SilasConstants.FIRM_CODE, "1234");
+                                            claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                            claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                            claim.put(SilasConstants.SURNAME, "Smith");
+                                            claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                            claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                        }
+                                )))
+                )
                 .andExpect(status().isOk())
-                .andExpect(view().name("index"));
+                .andExpect(view().name("index"))
+                .andExpect(model().attributeExists("userRequests", "currentPage", "totalPages"));
+
+
+        verify(userTransferService).getRequestsForCurrentUser(eq("LegacyUser"), any(Pageable.class));
     }
 
     @Nested
@@ -97,7 +112,16 @@ public class UserTransferControllerTest {
         void shouldRenderPreviewPageWithUserData() throws Exception {
             MvcResult result = mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -130,7 +154,16 @@ public class UserTransferControllerTest {
         void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
             mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -145,16 +178,35 @@ public class UserTransferControllerTest {
         void addsClaimsToRequest() throws Exception {
             var result = mockMvc.perform(post("/external/check-answers")
                             .with(oidcLogin()
-                                    .idToken(token -> token.claim(SilasConstants.FIRM_CODE, "1234")))
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRM_CODE, "1234");
+                                                claim.put(SilasConstants.FIRM_NAME, "FIRM 1");
+                                                claim.put(SilasConstants.FIRST_NAME, "Alice");
+                                                claim.put(SilasConstants.SURNAME, "Smith");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "LegacyUser");
+                                                claim.put(SilasConstants.USER_EMAIL, "alice@smith.com");
+                                            }
+                                    )))
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage."))
-                    .andExpect(model().attribute("userTransferRequest",
-                            hasProperty("firmCode", is("1234"))
-                    ))
+                    .andExpect(model().attribute("userTransferRequest", allOf(
+                            hasProperty("firmCode", is("1234")),
+                            hasProperty("firmName", is("FIRM 1")),
+                            hasProperty("firstName", is("Alice")),
+                            hasProperty("lastName", is("Smith")),
+                            hasProperty("legacyUserId", is("LegacyUser")),
+                            hasProperty("email", is("alice@smith.com"))
+                    )))
                     .andExpect(status().isOk())
                     .andReturn();
             String html = result.getResponse().getContentAsString();
             assertTrue(html.contains("firmCode"));
+            assertTrue(html.contains("firmName"));
+            assertTrue(html.contains("firstName"));
+            assertTrue(html.contains("lastName"));
+            assertTrue(html.contains("legacyUserId"));
+            assertTrue(html.contains("email"));
         }
 
 
@@ -202,7 +254,7 @@ public class UserTransferControllerTest {
                     .andExpect(model().attributeExists("userTransferRequest"))
                     .andReturn();
 
-            verify(userTransferService, times(1)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(1)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request rejected for login id in OPEN or APPROVED status")
@@ -226,7 +278,7 @@ public class UserTransferControllerTest {
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
 
-            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request accepted when login id not OPEN or APPROVED status")
@@ -247,7 +299,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
@@ -271,7 +323,7 @@ public class UserTransferControllerTest {
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("invalidLoginId", "My surname has changed due to marriage."));
 
-            verify(userTransferService, times(0)).save(any(UserTransferRequest.class));
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
         }
 
         @DisplayName("Should return request accepted when login id exist in CCMS_USER")
@@ -292,7 +344,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
@@ -405,7 +457,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(0)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(1)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(1)).createRequest(userTransferRequestCaptor.capture());
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo", "firmCode")
                     .isEqualTo(Arrays.asList("validLoginId", "My surname has changed due to marriage.", "1234"));
 
@@ -430,7 +482,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
@@ -454,7 +506,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
@@ -478,7 +530,7 @@ public class UserTransferControllerTest {
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            verify(userTransferService, times(0)).save(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_LOGIN_ID_MESSAGE);
         }

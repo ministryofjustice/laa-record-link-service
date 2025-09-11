@@ -27,4 +27,9 @@ public class UserTransferRequest {
     private String additionalInfo;
     @ValidFirmCode(groups = OnSubmitRequestFirmCode.class)
     private String firmCode;
+    private String legacyUserId;
+    private String firstName;
+    private String lastName;
+    private String firmName;
+    private String email;
 }
