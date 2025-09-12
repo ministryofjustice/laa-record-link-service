@@ -30,6 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class LinkedRequestServiceTest {
@@ -231,8 +233,9 @@ class LinkedRequestServiceTest {
     }
 
     @Nested
-    @DisplayName("Should call findOldLogin with right param")
     class GetLinkingRequestByOldLogin {
+
+        @DisplayName("Should call findOldLogin with right param")
         @Test
         void shouldCallFindOldLoginWithRightParam() {
 
@@ -252,6 +255,7 @@ class LinkedRequestServiceTest {
     @Nested
     @DisplayName("Should return request when valid UUID is provided")
     class GetRequestById {
+
         @Test
         void shouldGetRequestById() {
 
@@ -266,6 +270,18 @@ class LinkedRequestServiceTest {
             assertThat(result.get()).isEqualTo(mockRequest);
 
             verify(linkedRequestRepository).findById(validUuid);
+        }
+
+        @Test
+        void shouldReturnEmptyWhenInvalidUuid() {
+
+            String invalidUuidStr = "not-a-valid-uuid";
+
+            Optional<LinkedRequest> result = linkedRequestService.getRequestById(invalidUuidStr);
+
+            assertThat(result).isEmpty();
+
+            verify(linkedRequestRepository, never()).findById(any());
         }
     }
 
