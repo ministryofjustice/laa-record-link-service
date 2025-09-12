@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'manage-user'},
+      breadcrumbs=~{::#breadcrumbs})}"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Check User Details</title>
+</head>
+
+<body>
+<nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link"
+               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}"
+               th:text="${hasFilters} ? 'Back to search results' : 'Home'"></a>
+        </li>
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link"
+               th:aria-label="${user.idamFirstName + ' ' + user.idamLastName}">
+                <span th:text="${user.idamFirstName + ' ' + user.idamLastName}"></span>
+            </a>
+        </li>
+    </ol>
+</nav>
+
+<main class="govuk-main-wrapper" id="main-content">
+    <style>
+        #main-content .govuk-summary-card__content {
+            min-height: 215px;
+        }
+    </style>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div class="moj-page-header-actions">
+                <div class="moj-page-header-actions__title" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <p class="govuk-heading-xl">Check details</p>
+                    <p class="govuk-heading-s"
+                       th:text="'Assigned to: ' + ${user.idamFirstName + ' ' + user.idamLastName}"></p>
+                </div>
+                <form class="form" th:if="${!(isAccessGranted ?: false)}"
+                      th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/grant-access'}"
+                      method="post">
+                    <div class="moj-page-header-actions__actions">
+                        <!-- Possibly grant access button here -->
+                    </div>
+                </form>
+            </div>
+
+            <div class="govuk-tabs" data-module="govuk-tabs">
+                <h2 class="govuk-tabs__title">Contents</h2>
+
+                <ul class="govuk-tabs__list">
+                    <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                        <a class="govuk-tabs__tab" href="#accounts">Accounts</a>
+                    </li>
+                    <li class="govuk-tabs__list-item">
+                        <a class="govuk-tabs__tab" href="#transfer-info">Transfer Information</a>
+                    </li>
+                </ul>
+
+                <div class="govuk-tabs__panel" id="accounts">
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m"></caption>
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th scope="col" class="govuk-table__header"></th>
+                                <th scope="col" class="govuk-table__header govuk-table__header--numeric">CCMS Account</th>
+                                <th scope="col" class="govuk-table__header govuk-table__header--numeric">This Account</th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Firm</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.firmName : 'N/A'}">CCMS_FIRM</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user != null ? user.idamFirmName : 'No firm available'}">THIS_FIRM</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">First Name</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.firstName : 'N/A'}">CCMS_FIRST_NAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamFirstName}">First name</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Last Name</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.lastName : 'N/A'}">CCMS_LAST_NAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamLastName}">Last name</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Username</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.loginId : 'N/A'}">CCMS_USERNAME</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamEmail}">Username</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Panel 2: Transfer Information -->
+                <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="transfer-info">
+                    <table class="govuk-table">
+                        <caption class="govuk-table__caption govuk-table__caption--m"></caption>
+                        <thead class="govuk-table__head">
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Status</th>
+                                <td class="govuk-table__cell">
+                                    <span class="moj-badge moj-badge--green" th:if="${user.status?.name() == 'APPROVED'}" th:text="${user.status}">APPROVED</span>
+                                    <span class="moj-badge moj-badge--red" th:if="${user.status?.name() == 'REJECTED'}" th:text="${user.status}">REJECTED</span>
+                                    <span class="moj-badge moj-badge--blue" th:if="${user.status?.name() == 'OPEN'}" th:text="${user.status}">OPEN</span>
+                                    <span class="moj-badge" th:if="${user.status == null}" th:text="'Unknown'">UNKNOWN</span>
+                                </td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Reason</th>
+                                <td class="govuk-table__cell"th:text="${user.decisionReason}">REASON</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Decision Date</th>
+                                <td class="govuk-table__cell"th:text="${user.decisionDate}">DECISION_DATE</td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Decision Maker</th>
+                                <td class="govuk-table__cell"th:text="${user.laaAssignee}">DECISION_MAKER</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> <!-- END of #transfer-info -->
+            </div> <!-- END of .govuk-tabs -->
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <a class="govuk-button govuk-button--primary" data-module="govuk-button"
+               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
+                Return to manage transfer requests
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- GOV.UK Frontend JS (if not already included via layout) -->
+<script>
+    window.GOVUKFrontend && window.GOVUKFrontend.initAll();
+</script>
+
+</body>
+</html>

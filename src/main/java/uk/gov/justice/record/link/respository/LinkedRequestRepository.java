@@ -17,8 +17,6 @@ public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UU
     Page<LinkedRequest> findByOldLoginIdContainingAllIgnoreCase(@Nullable String oldLoginId, Pageable pageable);
     
     Page<LinkedRequest> findByIdamLegacyUserId(String idamLegacyUserId, Pageable pageable);
-    
+
     Page<LinkedRequest> findByLaaAssignee(String laaAssignee, Pageable pageable);
 }
-
-
