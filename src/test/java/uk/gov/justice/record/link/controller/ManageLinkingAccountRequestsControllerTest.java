@@ -32,7 +32,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -352,7 +355,9 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
 
             LinkedRequest assignedRequest1 = LinkedRequest.builder()
+                    .id(UUID.fromString("11111111-1111-1111-1111-111111111111"))
                     .ccmsUser(ccmsUser1)
+                    .oldLoginId("assigned_user1_login")
                     .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Assigned")
                     .idamLastName("Person1")
@@ -366,7 +371,9 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
 
             LinkedRequest assignedRequest2 = LinkedRequest.builder()
+                    .id(UUID.fromString("22222222-2222-2222-2222-222222222222"))
                     .ccmsUser(ccmsUser1)
+                    .oldLoginId("assigned_user2_login")
                     .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Assigned")
                     .idamLastName("Person2")
@@ -467,7 +474,9 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
 
             LinkedRequest assignedRequest1 = LinkedRequest.builder()
+                    .id(UUID.fromString("33333333-3333-3333-3333-333333333333"))
                     .ccmsUser(ccmsUser1)
+                    .oldLoginId("assigned_user1_login")
                     .idamLegacyUserId(UUID.randomUUID().toString())
                     .idamFirstName("Assigned")
                     .idamLastName("Person1")
@@ -557,5 +566,77 @@ class ManageLinkingAccountRequestsControllerTest {
                 .build();
 
         return Arrays.asList(request1);
+    }
+
+    @Nested
+    @DisplayName("AssignNextCase")
+    class AssignNextCase {
+
+        @Test
+        void shouldAssignNextCaseAndRedirectToRequestDetails() throws Exception {
+            LinkedRequest assignedRequest = createMockAssignedRequest();
+            when(linkedRequestService.assignNextCase("asdasdasd")).thenReturn(Optional.of(assignedRequest));
+
+            mockMvc.perform(post("/internal/assign-next-case")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Test");
+                                                claim.put(SilasConstants.SURNAME, "User");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "asdasdasd");
+                                                claim.put(SilasConstants.USER_EMAIL, "test.user@example.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/internal/manage-linking-account/check-user-details?id=" + assignedRequest.id))
+                    .andExpect(flash().attribute("assignmentSuccess", true));
+        }
+
+        @Test
+        void shouldRedirectToManagePageWhenNoRequestsAvailable() throws Exception {
+            when(linkedRequestService.assignNextCase("asdasdasd")).thenReturn(Optional.empty());
+
+            mockMvc.perform(post("/internal/assign-next-case")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(
+                                            claim -> {
+                                                claim.put(SilasConstants.FIRST_NAME, "Test");
+                                                claim.put(SilasConstants.SURNAME, "User");
+                                                claim.put(SilasConstants.SILAS_LOGIN_ID, "asdasdasd");
+                                                claim.put(SilasConstants.USER_EMAIL, "test.user@example.com");
+                                            }
+                                    ))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/internal/manage-linking-account"))
+                    .andExpect(flash().attribute("noRequestsAvailable", true));
+        }
+
+        private LinkedRequest createMockAssignedRequest() {
+            CcmsUser ccmsUser = CcmsUser.builder()
+                    .loginId("assigned_user")
+                    .firstName("Assigned")
+                    .lastName("User")
+                    .firmCode("FIRM001")
+                    .email("assigned.user@example.com")
+                    .build();
+
+            return LinkedRequest.builder()
+                    .id(UUID.fromString("12345678-1234-1234-1234-123456789012"))
+                    .ccmsUser(ccmsUser)
+                    .oldLoginId("assigned_login")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Assigned")
+                    .idamLastName("Person")
+                    .idamFirmName("Assigned Firm")
+                    .idamFirmCode("AF001")
+                    .idamEmail("assigned.person@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(2))
+                    .assignedDate(LocalDateTime.now())
+                    .laaAssignee("asdasdasd")
+                    .status(Status.OPEN)
+                    .build();
+        }
     }
 }

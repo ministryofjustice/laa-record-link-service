@@ -221,4 +221,38 @@ public class LinkedRequestRepositoryTest {
         }
     }
 
+    @Nested
+    @Sql("classpath:test_data/insert_unassigned_requests.sql")
+    @DisplayName("FindFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc")
+    class FindFirstUnassignedByStatusOrderByCreatedDateAsc {
+
+        @DisplayName("Should return oldest unassigned OPEN request")
+        @Test
+        void shouldReturnOldestUnassignedOpenRequest() {
+            var result = linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN);
+
+            assertThat(result).isPresent();
+            assertThat(result.get().getLaaAssignee()).isNull();
+            assertThat(result.get().getStatus()).isEqualTo(Status.OPEN);
+            assertThat(result.get().getOldLoginId()).isEqualTo("oldest_unassigned");
+        }
+
+        @DisplayName("Should return empty when no unassigned OPEN requests exist")
+        @Test
+        void shouldReturnEmptyWhenNoUnassignedOpenRequests() {
+            var result = linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.APPROVED);
+
+            assertThat(result).isEmpty();
+        }
+
+        @DisplayName("Should ignore assigned requests even if they are OPEN")
+        @Test
+        void shouldIgnoreAssignedRequests() {
+            var result = linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN);
+
+            assertThat(result).isPresent();
+            assertThat(result.get().getLaaAssignee()).isNull();
+        }
+    }
+
 }
