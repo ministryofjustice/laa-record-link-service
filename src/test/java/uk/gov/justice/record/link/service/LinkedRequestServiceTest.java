@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -230,8 +231,8 @@ class LinkedRequestServiceTest {
     }
 
     @Nested
+    @DisplayName("Should call findOldLogin with right param")
     class GetLinkingRequestByOldLogin {
-        @DisplayName("Should call findOldLogin with right param")
         @Test
         void shouldCallFindOldLoginWithRightParam() {
 
@@ -245,6 +246,26 @@ class LinkedRequestServiceTest {
             assertThat(capturedPageable.getPageNumber()).isEqualTo(0);
             assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
             assertThat(capturedPageable.getPageSize()).isEqualTo(10);
+        }
+    }
+
+    @Nested
+    @DisplayName("Should return request when valid UUID is provided")
+    class GetRequestById {
+        @Test
+        void shouldGetRequestById() {
+
+            UUID validUuid = UUID.randomUUID();
+            String validUuidStr = validUuid.toString();
+            LinkedRequest mockRequest = new LinkedRequest();
+            when(linkedRequestRepository.findById(validUuid)).thenReturn(Optional.of(mockRequest));
+
+            Optional<LinkedRequest> result = linkedRequestService.getRequestById(validUuidStr);
+
+            assertThat(result).isPresent();
+            assertThat(result.get()).isEqualTo(mockRequest);
+
+            verify(linkedRequestRepository).findById(validUuid);
         }
     }
 
