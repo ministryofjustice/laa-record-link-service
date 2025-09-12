@@ -8,6 +8,7 @@ import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UUID> {
@@ -19,4 +20,6 @@ public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UU
     Page<LinkedRequest> findByIdamLegacyUserId(String idamLegacyUserId, Pageable pageable);
 
     Page<LinkedRequest> findByLaaAssignee(String laaAssignee, Pageable pageable);
+    
+    Optional<LinkedRequest> findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status status);
 }
