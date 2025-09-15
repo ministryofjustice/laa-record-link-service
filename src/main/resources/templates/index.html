@@ -71,7 +71,7 @@
     <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${totalPages > 1}">
         <ul class="moj-pagination__list">
             <!-- Previous -->
-            <li class="moj-pagination__item moj-pagination__item--prev" th:if="${currentPage > 0}">
+            <li class="moj-pagination__item govuk-pagination__prev" th:if="${currentPage > 0}">
                 <a class="govuk-link govuk-pagination__link"
                    th:href="@{/external/(page=${currentPage - 1})}">
                     <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
