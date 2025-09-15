@@ -73,7 +73,7 @@
                 </tr>
                 </tbody>
             </table>
-            
+
             <nav class="moj-pagination" aria-label="Pagination navigation" th:if="${assignedPagedRequest.totalPages > 1}">
                 <ul class="moj-pagination__list">
 
@@ -151,19 +151,24 @@
             <table class="govuk-table" data-module="moj-sortable-table">
                 <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
-                    <th aria-sort="none" class="govuk-table__header" scope="col">Requested username</th>
-                    <th aria-sort="none" class="govuk-table__header" scope="col">Firm</th>
-                    <th aria-sort="none" class="govuk-table__header" scope="col">Requested By</th>
-                    <th aria-sort="none" class="govuk-table__header" scope="col">Assignee</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Login Id</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requesting User Id</th>
+                    <th aria-sort="none" class="govuk-table__header" scope="col">Requesting Firm Id</th>
+                    <th aria-sort="ascending" class="govuk-table__header" scope="col">Request Date</th>
                     <th aria-sort="none" class="govuk-table__header govuk-table__header--numeric" scope="col">Status</th>
                 </tr>
                 </thead>
                 <tbody class="govuk-table__body">
                 <tr class="govuk-table__row" th:each="request : ${pagedRequest.linkedRequests}">
-                    <td class="govuk-table__cell" th:text="${request.oldLoginId}">Requested username</td>
-                    <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm</td>
-                    <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">Requested By</td>
-                    <td class="govuk-table__cell" th:text="${request.laaAssignee}">Assignee</td>
+                    <td class="govuk-table__cell">
+                        <a class="govuk-link govuk-link--no-visited-state"
+                        th:href="@{'/internal/manage-linking-account/check-user-details'(id=${request.id})}"
+                        th:text="${request.oldLoginId}">
+                        </a>
+                    </td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirstName + ' ' + request.idamLastName}">User ID</td>
+                    <td class="govuk-table__cell" th:text="${request.idamFirmName}">Firm Id</td>
+                    <td class="govuk-table__cell" th:text="${#temporals.format(request.createdDate, 'dd/MM/yyyy')}">Request Date</td>
                     <td class="govuk-table__cell govuk-table__cell--numeric">
                         <span class="moj-badge moj-badge--green" th:if="${request.status.name() == 'APPROVED'}" th:text="${request.status}">Status</span>
                         <span class="moj-badge moj-badge--red" th:if="${request.status.name() == 'REJECTED'}" th:text="${request.status}">Status</span>
