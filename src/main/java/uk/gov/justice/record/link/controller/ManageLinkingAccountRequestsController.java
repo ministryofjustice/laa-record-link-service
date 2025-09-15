@@ -50,7 +50,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
+        String userName = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
@@ -98,9 +98,9 @@ public class ManageLinkingAccountRequestsController {
 
     @PostMapping("/assign-next-case")
     public String assignNextCase(@AuthenticationPrincipal OidcUser oidcUser, RedirectAttributes redirectAttributes) {
-        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
+        String assigneeEmail = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
 
-        Optional<LinkedRequest> assignedRequest = linkedRequestService.assignNextCase(userName);
+        Optional<LinkedRequest> assignedRequest = linkedRequestService.assignNextCase(assigneeEmail);
         
         if (assignedRequest.isPresent()) {
             redirectAttributes.addFlashAttribute("assignmentSuccess", true);
