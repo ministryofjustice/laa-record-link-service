@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'manage-user'},
+      breadcrumbs=~{::#breadcrumbs})}"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Transfer Request Decision</title>
+</head>
+
+<body>
+<nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link" th:href="@{/internal/manage-linking-account}">Home</a>
+        </li>
+    </ol>
+</nav>
+
+<main class="govuk-main-wrapper" id="main-content">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <!-- Success panel -->
+            <div class="govuk-panel govuk-panel--confirmation" 
+                 th:classappend="${decision == 'APPROVED' ? 'govuk-panel--confirmation' : 'govuk-panel--rejection'}">
+                <h1 class="govuk-panel__title">
+                    Transfer request <span th:text="${decision == 'APPROVED' ? 'approved' : 'rejected'}"></span>
+                </h1>
+                <div class="govuk-panel__body">
+                    for <span th:text="${user.idamEmail}"></span>
+                </div>
+            </div>
+
+            <h2 class="govuk-heading-m">What happens next</h2>
+            
+            <div th:if="${decision == 'APPROVED'}">
+                <p class="govuk-body">The user will be able to view the CCMS cases in 2 to 5 days.</p>
+            </div>
+            
+            <div th:if="${decision == 'REJECTED'}">
+                <p class="govuk-body">The user has been notified that their transfer request has been rejected.</p>
+            </div>
+
+            <p class="govuk-body">
+                You can <a class="govuk-link" th:href="@{/internal/assign-next-case}">assign a new case</a>
+            </p>
+
+            <div class="govuk-button-group">
+                <a class="govuk-button" th:href="@{/internal/manage-linking-account}" role="button">
+                    Return to manage transfer requests
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    .govuk-panel--rejection {
+        background-color: #d4351c;
+        border: 5px solid #d4351c;
+    }
+    
+    .govuk-panel--rejection .govuk-panel__title,
+    .govuk-panel--rejection .govuk-panel__body {
+        color: white;
+    }
+</style>
+
+</body>
+</html>
