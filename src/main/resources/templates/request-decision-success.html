@@ -39,14 +39,20 @@
             <div th:if="${decision == 'APPROVED'}">
                 <p class="govuk-body">The user will be able to view the CCMS cases in 2 to 5 days.</p>
             </div>
-            
-            <div th:if="${decision == 'REJECTED'}">
-                <p class="govuk-body">The user has been notified that their transfer request has been rejected.</p>
-            </div>
 
             <p class="govuk-body">
-                You can <a class="govuk-link" th:href="@{/internal/assign-next-case}">assign a new case</a>
+                You can <a href="#" onclick="assignNewCase(event)" class="govuk-link">assign a new case</a>
             </p>
+
+            <form id="assignCaseForm" th:action="@{/internal/assign-next-case}" method="post" style="display: none;">
+            </form>
+
+            <script>
+                function assignNewCase(event) {
+                    event.preventDefault();
+                    document.getElementById('assignCaseForm').submit();
+                }
+            </script>
 
             <div class="govuk-button-group">
                 <a class="govuk-button" th:href="@{/internal/manage-linking-account}" role="button">
