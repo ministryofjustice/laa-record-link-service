@@ -122,8 +122,8 @@
                     </th:block>
 
                     <li class="moj-pagination__item moj-pagination__item--next" th:if="${assignedPagedRequest.hasNext}">
-                        <a class="moj-pagination__link" th:href="@{/internal/manage-linking-account#assigned-cases(assignedPage=${assignedPagedRequest.currentPage + 1}, size=${assignedPagedRequest.pageSize})}">
-                            <span>Next
+                        <a class="govuk-pagination__link-title" th:href="@{/internal/manage-linking-account#assigned-cases(assignedPage=${assignedPagedRequest.currentPage + 1}, size=${assignedPagedRequest.pageSize})}" >
+                            <span class="govuk-pagination__link-title"> Next
                                 <span class="govuk-visually-hidden"> page</span>
                             </span>
                             <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
