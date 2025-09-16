@@ -23,15 +23,14 @@ import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class LinkedRequestServiceTest {
@@ -396,6 +395,104 @@ class LinkedRequestServiceTest {
                     .build();
 
             return Arrays.asList(assignedRequest1, assignedRequest2);
+        }
+    }
+
+    @Nested
+    @DisplayName("AssignNextCase")
+    class AssignNextCase {
+
+        @Captor
+        private ArgumentCaptor<LinkedRequest> savedRequestCaptor;
+
+        @Test
+        void shouldAssignNextCaseWhenUnassignedRequestExists() {
+            String assigneeEmail = "test.user@example.com";
+            LinkedRequest unassignedRequest = createUnassignedRequest();
+            LinkedRequest assignedRequest = unassignedRequest.toBuilder()
+                    .laaAssignee(assigneeEmail)
+                    .assignedDate(LocalDateTime.now())
+                    .build();
+
+            when(linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN))
+                    .thenReturn(Optional.of(unassignedRequest));
+            when(linkedRequestRepository.save(any(LinkedRequest.class)))
+                    .thenReturn(assignedRequest);
+
+            Optional<LinkedRequest> result = linkedRequestService.assignNextCase(assigneeEmail);
+
+            assertThat(result).isPresent();
+            assertThat(result.get().getLaaAssignee()).isEqualTo(assigneeEmail);
+            assertThat(result.get().getAssignedDate()).isNotNull();
+
+            verify(linkedRequestRepository).findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN);
+            verify(linkedRequestRepository).save(savedRequestCaptor.capture());
+
+            LinkedRequest savedRequest = savedRequestCaptor.getValue();
+            assertThat(savedRequest.getLaaAssignee()).isEqualTo(assigneeEmail);
+            assertThat(savedRequest.getAssignedDate()).isNotNull();
+        }
+
+        @Test
+        void shouldReturnEmptyWhenNoUnassignedRequestExists() {
+            String assigneeEmail = "test.user@example.com";
+            when(linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN))
+                    .thenReturn(Optional.empty());
+
+            Optional<LinkedRequest> result = linkedRequestService.assignNextCase(assigneeEmail);
+
+            assertThat(result).isEmpty();
+
+            verify(linkedRequestRepository).findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN);
+            verify(linkedRequestRepository, org.mockito.Mockito.never()).save(any(LinkedRequest.class));
+        }
+
+        @Test
+        void shouldPreserveOriginalRequestDataWhenAssigning() {
+            // Given
+            String assigneeEmail = "test.user@example.com";
+            LinkedRequest originalRequest = createUnassignedRequest();
+            LinkedRequest assignedRequest = originalRequest.toBuilder()
+                    .laaAssignee(assigneeEmail)
+                    .assignedDate(LocalDateTime.now())
+                    .build();
+
+            when(linkedRequestRepository.findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN))
+                    .thenReturn(Optional.of(originalRequest));
+            when(linkedRequestRepository.save(any(LinkedRequest.class)))
+                    .thenReturn(assignedRequest);
+
+            Optional<LinkedRequest> result = linkedRequestService.assignNextCase(assigneeEmail);
+
+            assertThat(result).isPresent();
+            LinkedRequest resultRequest = result.get();
+
+            assertThat(resultRequest.getIdamFirstName()).isEqualTo(originalRequest.getIdamFirstName());
+            assertThat(resultRequest.getIdamLastName()).isEqualTo(originalRequest.getIdamLastName());
+            assertThat(resultRequest.getIdamEmail()).isEqualTo(originalRequest.getIdamEmail());
+            assertThat(resultRequest.getOldLoginId()).isEqualTo(originalRequest.getOldLoginId());
+            assertThat(resultRequest.getStatus()).isEqualTo(originalRequest.getStatus());
+            assertThat(resultRequest.getCreatedDate()).isEqualTo(originalRequest.getCreatedDate());
+
+            assertThat(resultRequest.getLaaAssignee()).isEqualTo(assigneeEmail);
+            assertThat(resultRequest.getAssignedDate()).isNotNull();
+        }
+
+        private LinkedRequest createUnassignedRequest() {
+            return LinkedRequest.builder()
+                    .id(UUID.randomUUID())
+                    .oldLoginId("unassigned_user")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Unassigned")
+                    .idamLastName("User")
+                    .idamFirmName("Unassigned Firm")
+                    .idamFirmCode("UF001")
+                    .idamEmail("unassigned.user@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(1))
+                    .status(Status.OPEN)
+                    .laaAssignee(null)
+                    .assignedDate(null)
+                    .build();
         }
     }
 }

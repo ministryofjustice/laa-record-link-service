@@ -8,15 +8,18 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.justice.record.link.dto.CcmsUserDto;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uk.gov.justice.record.link.constants.SilasConstants;
+import uk.gov.justice.record.link.dto.CcmsUserDto;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
+
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -47,7 +50,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
+        String userName = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
@@ -91,6 +94,21 @@ public class ManageLinkingAccountRequestsController {
         }
 
         return "check-user-details";
+    }
+
+    @PostMapping("/assign-next-case")
+    public String assignNextCase(@AuthenticationPrincipal OidcUser oidcUser, RedirectAttributes redirectAttributes) {
+        String assigneeEmail = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
+
+        Optional<LinkedRequest> assignedRequest = linkedRequestService.assignNextCase(assigneeEmail);
+        
+        if (assignedRequest.isPresent()) {
+            redirectAttributes.addFlashAttribute("assignmentSuccess", true);
+            return "redirect:/internal/manage-linking-account/check-user-details?id=" + assignedRequest.get().id;
+        } else {
+            redirectAttributes.addFlashAttribute("noRequestsAvailable", true);
+            return "redirect:/internal/manage-linking-account";
+        }
     }
 
 }

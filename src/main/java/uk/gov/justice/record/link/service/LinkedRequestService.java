@@ -6,8 +6,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.record.link.entity.LinkedRequest;
+import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,6 +44,24 @@ public class LinkedRequestService {
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    @Transactional
+    public Optional<LinkedRequest> assignNextCase(String assigneeEmail) {
+        Optional<LinkedRequest> nextRequest = linkedRequestRepository
+                .findFirstByLaaAssigneeIsNullAndStatusOrderByCreatedDateAsc(Status.OPEN);
+        
+        if (nextRequest.isPresent()) {
+            LinkedRequest request = nextRequest.get();
+            LinkedRequest updatedRequest = request.toBuilder()
+                    .laaAssignee(assigneeEmail)
+                    .assignedDate(LocalDateTime.now())
+                    .build();
+            
+            return Optional.of(linkedRequestRepository.save(updatedRequest));
+        }
+        
+        return Optional.empty();
     }
 
 }
