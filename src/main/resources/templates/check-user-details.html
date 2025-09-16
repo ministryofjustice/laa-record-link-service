@@ -110,6 +110,11 @@
                                 <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${ccmsuser != null ? ccmsuser.loginId : 'N/A'}">CCMS_USERNAME</td>
                                 <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.idamEmail}">Username</td>
                             </tr>
+                            <tr class="govuk-table__row">
+                                <th scope="row" class="govuk-table__header">Additional Information</th>
+                                <td class="govuk-table__cell govuk-table__cell--numeric">N/A</td>
+                                <td class="govuk-table__cell govuk-table__cell--numeric" th:text="${user.additionalInfo ?: 'No additional information provided'}">Additional Info</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
