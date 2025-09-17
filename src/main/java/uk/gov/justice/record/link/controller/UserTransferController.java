@@ -84,7 +84,8 @@ public class UserTransferController {
         final List<String> expectedErrorMessages = List.of(ValidationConstants.INVALID_LOGIN_ID_MESSAGE,
                                                            ValidationConstants.INVALID_STATUS_MESSAGE,
                                                            ValidationConstants.CCMS_ACCOUNT_CLOSED,
-                                                           ValidationConstants.INVALID_FIRM_ID_MESSAGE);
+                                                           ValidationConstants.INVALID_FIRM_ID_MESSAGE,
+                                                           ValidationConstants.ACCOUNT_ALREADY_ASSIGNED);
 
         final List<String> errors = result.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                 .filter(expectedErrorMessages::contains).toList();
@@ -92,6 +93,7 @@ public class UserTransferController {
         if (!errors.isEmpty()) {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
             userTransferService.rejectRequest(userTransferRequest, errors.getFirst());
+            model.addAttribute("userAssignedErrorExists", isAccountAlreadyAssignedError(result));
             return "request_rejected";
         }
 
@@ -114,5 +116,11 @@ public class UserTransferController {
         userTransferRequest.setFirmCode(oidcUser.getClaims().get(SilasConstants.FIRM_CODE).toString());
         userTransferRequest.setFirmName(oidcUser.getClaims().get(SilasConstants.FIRM_NAME).toString());
         userTransferRequest.setEmail(oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
+    }
+
+    private boolean isAccountAlreadyAssignedError(BindingResult result) {
+        return result.getAllErrors().stream()
+                .map(ObjectError::getDefaultMessage)
+                .anyMatch(ValidationConstants.ACCOUNT_ALREADY_ASSIGNED::equals);
     }
 }

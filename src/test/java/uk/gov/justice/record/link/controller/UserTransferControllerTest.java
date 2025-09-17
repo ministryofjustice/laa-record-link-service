@@ -305,6 +305,57 @@ public class UserTransferControllerTest {
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
         }
 
+        @DisplayName("Should return request rejected when login id is already linked to account")
+        @Test
+        void shouldReturnUserAssignedForLoginIdInApprovedStatusForSameFirm() throws Exception {
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+
+            mockMvc.perform(post("/external/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage.")
+                            .param("firmCode", "1234"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+
+            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
+        }
+
+        @DisplayName("Order Of Validation: User already assigned validation should take priority with invalid status")
+        @Test
+        void shouldReturnOrderedUserAssignedForLoginIdInApprovedStatusForSameFirm() throws Exception {
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+
+            mockMvc.perform(post("/external/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage.")
+                            .param("firmCode", "1234"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
+
+            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
+        }
+
         @DisplayName("Should return request rejected when login id does not exist in CCMS_USER")
         @Test
         void shouldReturnRequestRejectedWhenLoginIdIsNotValid() throws Exception {
@@ -516,6 +567,7 @@ public class UserTransferControllerTest {
         @Test
         void loginIdTakestPriorityOverStatusAndFirmCode() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
