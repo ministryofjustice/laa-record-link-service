@@ -255,4 +255,38 @@ public class LinkedRequestRepositoryTest {
         }
     }
 
+    @Nested
+    @Sql("classpath:test_data/insert_assigned_requests.sql")
+    @DisplayName("CountByOldLoginIdAndIdamFirmCodeAndStatusIn")
+    class CountByOldLoginIdAndIdamFirmCodeAndStatusIn {
+
+        @DisplayName("Should return count as 1 for already linked user with firm")
+        @Test
+        void shouldReturnCountOfUserAssignedToFirm() {
+            var count = linkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn("oldUser2", "TFB002", List.of(Status.APPROVED));
+            assertThat(count).isEqualTo(1);
+        }
+
+        @DisplayName("Should return zero count for non-existent assignee")
+        @Test
+        void shouldReturnZeroForNonExistentAssignee() {
+            var count = linkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn("noExist", "TFB002", List.of(Status.APPROVED));
+            assertThat(count).isEqualTo(0);
+        }
+
+        @DisplayName("Should return zero count for existing assignee and different firm code")
+        @Test
+        void shouldReturnZeroForExistentAssigneeOfDifferentFirm() {
+            var count = linkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn("oldUser2", "TFC003", List.of(Status.APPROVED));
+            assertThat(count).isEqualTo(0);
+        }
+
+        @DisplayName("Should return zero count for non-existent firm")
+        @Test
+        void shouldReturnZeroForAssigneeOfNonExistFirm() {
+            var count = linkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn("oldUser6", "noExist", List.of(Status.APPROVED));
+            assertThat(count).isEqualTo(0);
+        }
+    }
+
 }

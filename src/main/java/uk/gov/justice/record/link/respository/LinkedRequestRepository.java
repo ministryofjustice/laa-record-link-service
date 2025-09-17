@@ -9,11 +9,14 @@ import uk.gov.justice.record.link.entity.Status;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UUID> {
 
     int countByCcmsUser_LoginIdAndStatusIn(final String loginId, final Collection<Status> statuses);
+
+    int countByOldLoginIdAndIdamFirmCodeAndStatusIn(String oldLoginId, String idamFirmCode, List<Status> statuses);
 
     Page<LinkedRequest> findByOldLoginIdContainingAllIgnoreCase(@Nullable String oldLoginId, Pageable pageable);
     
