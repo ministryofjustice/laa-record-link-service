@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"
+      th:replace="~{layout :: layout(
+      title=~{::title},
+      mainContent=~{::#main-content},
+      pageCategory=${'manage-user'},
+      breadcrumbs=~{::#breadcrumbs})}"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Decision Reason</title>
+</head>
+
+<body>
+<nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link" th:href="@{/internal/manage-linking-account}">Home</a>
+        </li>
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link" 
+               th:href="@{'/internal/manage-linking-account/manage/' + ${user.id}}"
+               th:text="${user.idamFirstName + ' ' + user.idamLastName}"></a>
+        </li>
+        <li class="govuk-breadcrumbs__list-item">
+            Decision reason
+        </li>
+    </ol>
+</nav>
+
+<main class="govuk-main-wrapper" id="main-content">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <form th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/submit-decision'}" method="post">
+                <input type="hidden" name="decision" th:value="${decision}">
+                
+                <div class="govuk-form-group">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--l" for="decision-reason">
+                            Why is <span th:text="${user.idamFirstName + ' ' + user.idamLastName}"></span>'s transfer request being
+                            <span th:text="${decision == 'APPROVED' ? 'approved' : 'rejected'}"></span>?
+                        </label>
+                    </h1>
+                    <textarea class="govuk-textarea" 
+                              id="decision-reason" 
+                              name="decisionReason" 
+                              rows="5" 
+                              aria-describedby="decision-reason-hint"
+                              required></textarea>
+                </div>
+
+                <div class="govuk-button-group">
+                    <button class="govuk-button" data-module="govuk-button" type="submit">
+                        Continue
+                    </button>
+                    <a class="govuk-link" th:href="@{'/internal/manage-linking-account/manage/' + ${user.id}}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

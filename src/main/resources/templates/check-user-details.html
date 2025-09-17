@@ -155,12 +155,41 @@
         </div>
     </div>
 
-    <div class="govuk-grid-row">
+    <div class="govuk-grid-row" th:if="${user.status?.name() == 'OPEN' and user.laaAssignee == loggedinUserEmail}">
         <div class="govuk-grid-column-full">
-            <a class="govuk-button govuk-button--primary" data-module="govuk-button"
-               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
-                Return to manage transfer requests
-            </a>
+            <form th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/decision'}" method="post">
+                <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset" aria-describedby="decision-hint">
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                            <h2 class="govuk-fieldset__heading">
+                                Do you want to approve this transfer request?
+                            </h2>
+                        </legend>
+                        <div class="govuk-radios" data-module="govuk-radios">
+                            <div class="govuk-radios__item">
+                                <input class="govuk-radios__input" id="decision-yes" name="decision" type="radio" value="APPROVED" required>
+                                <label class="govuk-label govuk-radios__label" for="decision-yes">
+                                    Yes
+                                </label>
+                            </div>
+                            <div class="govuk-radios__item">
+                                <input class="govuk-radios__input" id="decision-no" name="decision" type="radio" value="REJECTED" required>
+                                <label class="govuk-label govuk-radios__label" for="decision-no">
+                                    No
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="govuk-button-group">
+                    <button class="govuk-button" data-module="govuk-button" type="submit">
+                        Continue
+                    </button>
+                    <a class="govuk-link" th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
+                        Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </main>

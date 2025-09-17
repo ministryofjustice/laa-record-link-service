@@ -64,4 +64,23 @@ public class LinkedRequestService {
         return Optional.empty();
     }
 
+    @Transactional
+    public void updateRequestDecision(String id, String decision, String decisionReason) {
+        UUID uuid = UUID.fromString(id);
+        Optional<LinkedRequest> requestOpt = linkedRequestRepository.findById(uuid);
+        
+        if (requestOpt.isPresent()) {
+            LinkedRequest request = requestOpt.get();
+            Status status = Status.valueOf(decision);
+            
+            LinkedRequest updatedRequest = request.toBuilder()
+                    .status(status)
+                    .decisionReason(decisionReason)
+                    .decisionDate(LocalDateTime.now())
+                    .build();
+            
+            linkedRequestRepository.save(updatedRequest);
+        }
+    }
+
 }
