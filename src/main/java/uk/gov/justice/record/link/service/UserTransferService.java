@@ -51,8 +51,7 @@ public class UserTransferService {
     }
 
     private Boolean isRequestAutoApproved(final UserTransferRequest userTransferRequest, final CcmsUser ccmsUser) {
-        return  StringUtils.equalsIgnoreCase(userTransferRequest.getFirmCode(), ccmsUser.getFirmCode())
-                && StringUtils.startsWithIgnoreCase(ccmsUser.getFirstName(), userTransferRequest.getFirstName())
+        return  StringUtils.startsWithIgnoreCase(ccmsUser.getFirstName(), userTransferRequest.getFirstName())
                 && StringUtils.equalsIgnoreCase(userTransferRequest.getLastName(), ccmsUser.getLastName());
     }
 

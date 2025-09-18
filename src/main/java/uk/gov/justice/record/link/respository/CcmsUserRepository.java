@@ -11,4 +11,8 @@ public interface CcmsUserRepository extends JpaRepository<CcmsUser, String> {
     Optional<CcmsUser> findByLoginId(String name);
 
     boolean existsByFirmCode(String firmCode);
+
+    boolean existsByLoginIdAndFirmCode(String loginId, String firmCode);
+
+
 }
