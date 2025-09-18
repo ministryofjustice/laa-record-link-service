@@ -111,4 +111,10 @@ public class ManageLinkingAccountRequestsController {
         }
     }
 
+    @GetMapping
+    public String redirectToManageLinkingAccount() {
+        return "redirect:/internal/manage-linking-account";
+    }
+
+
 }
