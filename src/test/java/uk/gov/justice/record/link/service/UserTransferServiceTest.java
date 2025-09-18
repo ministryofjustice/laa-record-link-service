@@ -65,7 +65,7 @@ public class UserTransferServiceTest {
         when(currentUserService.getUserName()).thenReturn("test-username");
         when(currentUserService.getEmail()).thenReturn("test@example.com");
 
-        UserTransferRequest transferRequest = createUserTransferRequestWithFirmId(
+        UserTransferRequest transferRequest = createUserTransferRequestForAutoApproval(
                 "loginId", "legacyUserId", "Christopher",
                 "James", "Firm 1", "Firm name", "test@example.com");
 
@@ -144,13 +144,13 @@ public class UserTransferServiceTest {
     class AutoApproveRequest {
         @DisplayName("Auto Approved Request: when exact match between CCMS and IDAM")
         @Test
-        void approveRequestWhenFirmIdFirstNameAndLastNameMatch() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+        void approveRequestWhenFirstNameAndLastNameMatch() {
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "Christopher",
                     "James", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "James", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Christopher", "James")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -176,12 +176,12 @@ public class UserTransferServiceTest {
         @Test
         void approveRequestWhenInitialMatchWithFullNames() {
 
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "Chris",
                     "James", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "James", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Christopher", "James")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -206,12 +206,12 @@ public class UserTransferServiceTest {
         @DisplayName("Auto Approved Request: when initial Match with initials")
         @Test
         void approveRequestWhenInitialMatchWithInitials() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "C",
                     "James", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("C", "James", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "C", "James")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -236,12 +236,12 @@ public class UserTransferServiceTest {
         @DisplayName("Auto Approved Request: when initial Match with combination")
         @Test
         void approveRequestWhenInitialMatchWithCombination() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "C",
                     "James", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "James", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Christopher", "James")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -266,12 +266,12 @@ public class UserTransferServiceTest {
         @DisplayName("Auto Approved Request: when Exact match (ignore case)")
         @Test
         void approveRequestWhenExactMatchIgnoreCase() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "CHRISTOPHER",
                     "JAMES", "FIRM 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "James", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Christopher", "James")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -296,11 +296,11 @@ public class UserTransferServiceTest {
         @DisplayName("Not Auto Approved Request: when no match on lastname")
         @Test
         void notAutoApprovedRequestWhenNoMatchOnLastName() {
-            var userTransferRequest = createUserTransferRequestWithFirmId("loginId", "legacyUserId", "CHRISTOPHER",
+            var userTransferRequest = createUserTransferRequestForAutoApproval("loginId", "legacyUserId", "CHRISTOPHER",
                     "James", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "John", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Christopher", "John")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -320,43 +320,16 @@ public class UserTransferServiceTest {
                             Status.OPEN));
         }
 
-        @DisplayName("Not Auto Approved Request: when no match on Firm")
-        @Test
-        void  firmsNotMatch() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
-                    "loginId", "legacyUserId", "CHRISTOPHER",
-                    "JAMES", "Firm 2", "Firm name", "test@example.com");
-
-            when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Christopher", "James", "Firm 1")));
-
-            userTransferService.createRequest(userTransferRequest);
-
-            verify(linkedRequestRepository).save(linkedRequestArgumentCaptor.capture());
-
-            assertThat(linkedRequestArgumentCaptor.getValue())
-                    .extracting("idamLegacyUserId", "idamFirstName", "idamLastName",
-                            "idamFirmName", "idamFirmCode",  "idamEmail", "createdDate",
-                            "status")
-                    .isEqualTo(Arrays.asList(userTransferRequest.getLegacyUserId(),
-                            userTransferRequest.getFirstName(),
-                            userTransferRequest.getLastName(),
-                            userTransferRequest.getFirmName(),
-                            userTransferRequest.getFirmCode(),
-                            userTransferRequest.getEmail(),
-                            LocalDateTime.now(),
-                            Status.OPEN));
-        }
 
         @DisplayName("Not Auto Approved Request: when no match on Initial")
         @Test
         void noMatchOnInitial() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "Christopher",
                     "John", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Kris", "John", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Kris", "John")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -379,12 +352,12 @@ public class UserTransferServiceTest {
         @DisplayName("Not Auto Approved Request: when special character missing")
         @Test
         void specialCharacterMissing() {
-            var userTransferRequest = createUserTransferRequestWithFirmId(
+            var userTransferRequest = createUserTransferRequestForAutoApproval(
                     "loginId", "legacyUserId", "Kris",
                     "O’Brien", "Firm 1", "Firm name", "test@example.com");
 
             when(ccmsUserRepository.findByLoginId(eq(userTransferRequest.getOldLogin()))).thenReturn(
-                    Optional.of(createCcmsUserWithFirmId("Kris", "OBrien", "Firm 1")));
+                    Optional.of(createCcmsUser("loginId", "Kris", "OBrien")));
 
             userTransferService.createRequest(userTransferRequest);
 
@@ -431,9 +404,9 @@ public class UserTransferServiceTest {
                 .build();
     }
 
-    private UserTransferRequest createUserTransferRequestWithFirmId(final String oldLogin, final String legacyUserId,
-                                                                     final String firstName, final String lastName,
-                                                                    final String firmId, final String firmName, final String email) {
+    private UserTransferRequest createUserTransferRequestForAutoApproval(final String oldLogin, final String legacyUserId,
+                                                                         final String firstName, final String lastName,
+                                                                         final String firmId, final String firmName, final String email) {
         UserTransferRequest transferRequest = new UserTransferRequest();
         transferRequest.setOldLogin(oldLogin);
         transferRequest.setLegacyUserId(legacyUserId);

@@ -20,15 +20,14 @@ import uk.gov.justice.record.link.validation.groups.OnSubmitUserTransferRequest;
 @Setter
 @NoArgsConstructor
 @ValidUserTransfer(groups = OnSubmitUserTransferRequest.class)
+@ValidFirmCode(groups = OnSubmitRequestFirmCode.class)
 public class UserTransferRequest {
-
     @ValidLoginId(groups = OnSubmitRequestLoginId.class)
     @ValidClosedAccount(groups = OnSubmitRequestClosedAccount.class)
     @ValidStatus(groups = OnSubmitRequestStatus.class)
     @NotEmpty(message = "Enter CCMS username", groups = OnCreateRequest.class)
     private String oldLogin;
     private String additionalInfo;
-    @ValidFirmCode(groups = OnSubmitRequestFirmCode.class)
     private String firmCode;
     private String legacyUserId;
     private String firstName;
