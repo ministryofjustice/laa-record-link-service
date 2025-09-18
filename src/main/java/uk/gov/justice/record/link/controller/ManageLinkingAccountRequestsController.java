@@ -154,8 +154,10 @@ public class ManageLinkingAccountRequestsController {
 
         return "request-decision-success";
     }
+
     @GetMapping
     public String redirectToManageLinkingAccount() {
         return "redirect:/internal/manage-linking-account";
     }
+    
 }
