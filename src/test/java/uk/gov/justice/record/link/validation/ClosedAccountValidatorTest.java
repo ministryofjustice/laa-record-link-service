@@ -25,7 +25,7 @@ public class ClosedAccountValidatorTest {
     @InjectMocks
     private ClosedAccountValidator closedAccountValidator;
 
-    private CcmsUser userWithClosedAccount() {
+    private CcmsUser userWithGovEmail() {
         return CcmsUser.builder()
                 .loginId("loginId")
                 .firstName("firstName")
@@ -51,7 +51,7 @@ public class ClosedAccountValidatorTest {
         @DisplayName("Should return false if the email on the CCMS account is an LAA email")
         @Test
         void loginInvalid() {
-            when(ccmsRepository.findByLoginId("loginId")).thenReturn(Optional.of(userWithClosedAccount()));
+            when(ccmsRepository.findByLoginId("loginId")).thenReturn(Optional.of(userWithGovEmail()));
 
             var actualResult = closedAccountValidator.isValid("loginId", mockConstraintValidatorContext);
 
