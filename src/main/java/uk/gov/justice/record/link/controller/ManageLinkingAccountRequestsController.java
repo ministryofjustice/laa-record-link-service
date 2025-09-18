@@ -115,6 +115,4 @@ public class ManageLinkingAccountRequestsController {
     public String redirectToManageLinkingAccount() {
         return "redirect:/internal/manage-linking-account";
     }
-
-
 }
