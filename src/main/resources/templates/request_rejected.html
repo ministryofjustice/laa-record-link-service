@@ -19,15 +19,23 @@
             </label>
         </h1>
         <div class="govuk-hint" id="event-name-hint">
-            Your request to transfer cases from CCMS has been rejected.<br><br>
+            <div th:if="${userAssignedErrorExists}">
+                Your request to transfer cases from CCMS has been rejected.<br><br>
 
-            This could be because the CCMS username you provided is:
-            <ul>
-                <li>not correct</li>
-                <li>linked to another user</li>
-                <li>for a firm you do not have access to</li>
-                <li>linked to an account that has been closed</li>
-            </ul>
+                This is because the CCMS username you provided is linked to another user in your firm please contact your firm administrator.
+            </div>
+            <div th:unless="${userAssignedErrorExists}">
+
+                Your request to transfer cases from CCMS has been rejected.<br><br>
+
+                This could be because the CCMS username you provided is:
+                <ul>
+                    <li>not correct</li>
+                    <li>linked to another user</li>
+                    <li>for a firm you do not have access to</li>
+                    <li>linked to an account that has been closed</li>
+                </ul>
+            </div>
         </div>
     </div>
 

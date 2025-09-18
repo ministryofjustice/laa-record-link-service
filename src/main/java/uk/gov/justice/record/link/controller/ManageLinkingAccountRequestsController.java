@@ -72,7 +72,8 @@ public class ManageLinkingAccountRequestsController {
     }
 
     @GetMapping("/manage-linking-account/check-user-details")
-    public String viewUserDetails(@RequestParam("id") String id, Model model) {
+    public String viewUserDetails(@RequestParam("id") String id, Model model,
+                                  @AuthenticationPrincipal OidcUser oidcUser) {
         LinkedRequest request = linkedRequestService.getRequestById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -92,6 +93,7 @@ public class ManageLinkingAccountRequestsController {
             model.addAttribute("user", request);
             model.addAttribute("ccmsuser", ccmsUserDto);
         }
+        model.addAttribute("loggedinUserEmail", oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
 
         return "check-user-details";
     }
@@ -111,6 +113,46 @@ public class ManageLinkingAccountRequestsController {
         }
     }
 
+    @PostMapping("/manage-linking-account/manage/{id}/decision")
+    public String processDecision(@PathVariable String id,
+                                @RequestParam String decision,
+                                Model model) {
+        LinkedRequest request = linkedRequestService.getRequestById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        model.addAttribute("user", request);
+        model.addAttribute("decision", decision);
+
+        return "decision-reason";
+    }
+
+    @PostMapping("/manage-linking-account/manage/{id}/submit-decision")
+    public String submitDecision(@PathVariable String id,
+                               @RequestParam String decision,
+                               @RequestParam String decisionReason,
+                               RedirectAttributes redirectAttributes) {
+
+        LinkedRequest request = linkedRequestService.getRequestById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        linkedRequestService.updateRequestDecision(id, decision, decisionReason);
+
+        redirectAttributes.addFlashAttribute("decision", decision);
+        redirectAttributes.addFlashAttribute("user", request);
+
+        return "redirect:/internal/manage-linking-account/decision-success/" + id;
+    }
+
+    @GetMapping("/manage-linking-account/decision-success/{id}")
+    public String decisionSuccess(@PathVariable String id, Model model) {
+        LinkedRequest request = linkedRequestService.getRequestById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        model.addAttribute("user", request);
+        model.addAttribute("decision", request.getStatus().name());
+
+        return "request-decision-success";
+    }
     @GetMapping
     public String redirectToManageLinkingAccount() {
         return "redirect:/internal/manage-linking-account";

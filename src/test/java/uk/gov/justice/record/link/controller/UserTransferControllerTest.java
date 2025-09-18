@@ -243,7 +243,7 @@ public class UserTransferControllerTest {
 
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "Alice")
@@ -262,7 +262,7 @@ public class UserTransferControllerTest {
         void shouldReturnRequestRejectedForLoginIdInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -286,7 +286,7 @@ public class UserTransferControllerTest {
         void shouldReturnSuccessForLoginIdNotInOpenOrApprovedStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -303,6 +303,57 @@ public class UserTransferControllerTest {
 
             assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
                     .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+        }
+
+        @DisplayName("Should return request rejected when login id is already linked to account")
+        @Test
+        void shouldReturnUserAssignedForLoginIdInApprovedStatusForSameFirm() throws Exception {
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+
+            mockMvc.perform(post("/external/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage.")
+                            .param("firmCode", "1234"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
+            assertThat(userTransferRequestCaptor.getValue()).extracting("oldLogin", "additionalInfo")
+                    .isEqualTo(Arrays.asList("Alice", "My surname has changed due to marriage."));
+
+            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
+        }
+
+        @DisplayName("Order Of Validation: User already assigned validation should take priority with invalid status")
+        @Test
+        void shouldReturnOrderedUserAssignedForLoginIdInApprovedStatusForSameFirm() throws Exception {
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
+            doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
+
+
+            mockMvc.perform(post("/external/request-confirmation")
+                            .param("oldLogin", "Alice")
+                            .param("additionalInfo", "My surname has changed due to marriage.")
+                            .param("firmCode", "1234"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("request_rejected"))
+                    .andReturn();
+
+            assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
+
+            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+
+            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
         }
 
         @DisplayName("Should return request rejected when login id does not exist in CCMS_USER")
@@ -331,7 +382,7 @@ public class UserTransferControllerTest {
         void shouldReturnRequestAcceptedWhenLoginIdIsValid() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -372,7 +423,7 @@ public class UserTransferControllerTest {
         void shouldValidateStatusOnlyAfterLoginIdIsValid() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -391,7 +442,7 @@ public class UserTransferControllerTest {
         void shouldReturnRequestCreatedWhenLoginIdIsValidAndAccountIsNotClosed() throws Exception {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -445,7 +496,7 @@ public class UserTransferControllerTest {
         void shouldRejectLinkRequestIfIdamFirmCodeDoesNotMatchCcmsFirmCode() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(true);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
 
             mockMvc.perform(post("/external/request-confirmation")
                             .param("oldLogin", "validLoginId")
@@ -468,7 +519,7 @@ public class UserTransferControllerTest {
         void shouldReturnRequestRejectedWhenIdamFirmCodeDoesNotMatchCcmsFirmCode() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -477,7 +528,7 @@ public class UserTransferControllerTest {
                             .param("firmCode", "invalidCode"))
                     .andExpect(status().isOk())
                     .andExpect(model().hasErrors())
-                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "firmCode"))
+                    .andExpect(model().attributeHasFieldErrors("userTransferRequest"))
                     .andExpect(view().name("request_rejected"));
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
@@ -493,7 +544,7 @@ public class UserTransferControllerTest {
         void firmCodeTakestPriorityOverStatus() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -501,12 +552,12 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "invalidCode"))
                     .andExpect(status().isOk())
-                    .andExpect(model().attributeHasFieldErrors("userTransferRequest", "firmCode"))
+                    .andExpect(model().attributeHasFieldErrors("userTransferRequest"))
                     .andExpect(view().name("request_rejected"));
 
-            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+            verify(userTransferService, times(1)).rejectRequest(userTransferRequestCaptor.capture(), anyString());
 
-            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_FIRM_ID_MESSAGE);
 
@@ -516,8 +567,9 @@ public class UserTransferControllerTest {
         @Test
         void loginIdTakestPriorityOverStatusAndFirmCode() throws Exception {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(1);
+            when(mockLinkedRequestRepository.countByOldLoginIdAndIdamFirmCodeAndStatusIn(anyString(), anyString(), anyList())).thenReturn(1);
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
-            when(mockCcmsUserRepository.existsByFirmCode(anyString())).thenReturn(false);
+            when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
             mockMvc.perform(post("/external/request-confirmation")
@@ -528,9 +580,9 @@ public class UserTransferControllerTest {
                     .andExpect(model().attributeHasFieldErrors("userTransferRequest", "oldLogin"))
                     .andExpect(view().name("request_rejected"));
 
-            verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
+            verify(userTransferService, times(1)).rejectRequest(userTransferRequestCaptor.capture(), anyString());
 
-            verify(userTransferService, times(0)).createRequest(userTransferRequestCaptor.capture());
+            verify(userTransferService, times(0)).createRequest(any(UserTransferRequest.class));
 
             assertThat(reasonCaptor.getValue()).isEqualTo(ValidationConstants.INVALID_LOGIN_ID_MESSAGE);
         }

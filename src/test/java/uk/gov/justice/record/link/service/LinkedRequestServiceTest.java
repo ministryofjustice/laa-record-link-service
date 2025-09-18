@@ -495,4 +495,116 @@ class LinkedRequestServiceTest {
                     .build();
         }
     }
+
+    @Nested
+    @DisplayName("UpdateRequestDecision")
+    class UpdateRequestDecision {
+
+        @Captor
+        private ArgumentCaptor<LinkedRequest> savedRequestCaptor;
+
+        @Test
+        void shouldUpdateRequestDecisionToApproved() {
+            String requestId = UUID.randomUUID().toString();
+            UUID uuid = UUID.fromString(requestId);
+            String decision = "APPROVED";
+            String decisionReason = "All requirements met";
+
+            LinkedRequest existingRequest = createExistingRequest();
+            LinkedRequest updatedRequest = existingRequest.toBuilder()
+                    .status(Status.APPROVED)
+                    .decisionReason(decisionReason)
+                    .decisionDate(LocalDateTime.now())
+                    .build();
+
+            when(linkedRequestRepository.findById(uuid)).thenReturn(Optional.of(existingRequest));
+            when(linkedRequestRepository.save(any(LinkedRequest.class))).thenReturn(updatedRequest);
+
+            linkedRequestService.updateRequestDecision(requestId, decision, decisionReason);
+
+            verify(linkedRequestRepository).findById(uuid);
+            verify(linkedRequestRepository).save(savedRequestCaptor.capture());
+
+            LinkedRequest savedRequest = savedRequestCaptor.getValue();
+            assertThat(savedRequest.getStatus()).isEqualTo(Status.APPROVED);
+            assertThat(savedRequest.getDecisionReason()).isEqualTo(decisionReason);
+            assertThat(savedRequest.getDecisionDate()).isNotNull();
+        }
+
+        @Test
+        void shouldUpdateRequestDecisionToRejected() {
+            String requestId = UUID.randomUUID().toString();
+            UUID uuid = UUID.fromString(requestId);
+            String decision = "REJECTED";
+            String decisionReason = "Documentation incomplete";
+
+            LinkedRequest existingRequest = createExistingRequest();
+            LinkedRequest updatedRequest = existingRequest.toBuilder()
+                    .status(Status.REJECTED)
+                    .decisionReason(decisionReason)
+                    .decisionDate(LocalDateTime.now())
+                    .build();
+
+            when(linkedRequestRepository.findById(uuid)).thenReturn(Optional.of(existingRequest));
+            when(linkedRequestRepository.save(any(LinkedRequest.class))).thenReturn(updatedRequest);
+
+            linkedRequestService.updateRequestDecision(requestId, decision, decisionReason);
+
+            verify(linkedRequestRepository).findById(uuid);
+            verify(linkedRequestRepository).save(savedRequestCaptor.capture());
+
+            LinkedRequest savedRequest = savedRequestCaptor.getValue();
+            assertThat(savedRequest.getStatus()).isEqualTo(Status.REJECTED);
+            assertThat(savedRequest.getDecisionReason()).isEqualTo(decisionReason);
+            assertThat(savedRequest.getDecisionDate()).isNotNull();
+        }
+
+        @Test
+        void shouldNotUpdateWhenRequestNotFound() {
+            String requestId = UUID.randomUUID().toString();
+            UUID uuid = UUID.fromString(requestId);
+            String decision = "APPROVED";
+            String decisionReason = "Test reason";
+
+            when(linkedRequestRepository.findById(uuid)).thenReturn(Optional.empty());
+
+            linkedRequestService.updateRequestDecision(requestId, decision, decisionReason);
+
+            verify(linkedRequestRepository).findById(uuid);
+            verify(linkedRequestRepository, never()).save(any(LinkedRequest.class));
+        }
+
+        @Test
+        void shouldHandleInvalidUuid() {
+            String invalidRequestId = "invalid-uuid";
+            String decision = "APPROVED";
+            String decisionReason = "Test reason";
+
+            try {
+                linkedRequestService.updateRequestDecision(invalidRequestId, decision, decisionReason);
+            } catch (IllegalArgumentException e) {
+                assertThat(e).isInstanceOf(IllegalArgumentException.class);
+            }
+
+            verify(linkedRequestRepository, never()).findById(any(UUID.class));
+            verify(linkedRequestRepository, never()).save(any(LinkedRequest.class));
+        }
+
+        private LinkedRequest createExistingRequest() {
+            return LinkedRequest.builder()
+                    .id(UUID.randomUUID())
+                    .oldLoginId("existing_user")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("John")
+                    .idamLastName("Doe")
+                    .idamFirmName("Doe Legal")
+                    .idamFirmCode("DL001")
+                    .idamEmail("john.doe@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(2))
+                    .assignedDate(LocalDateTime.now().minusDays(1))
+                    .laaAssignee("reviewer@example.com")
+                    .status(Status.OPEN)
+                    .build();
+        }
+    }
 }

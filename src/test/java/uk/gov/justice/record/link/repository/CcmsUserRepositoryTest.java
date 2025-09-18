@@ -63,4 +63,24 @@ public class CcmsUserRepositoryTest {
             assertThat(actualResult).isFalse();
         }
     }
+
+    @Nested
+    @Sql("classpath:test_data/insert_link_request.sql")
+    class ExistsByLoginIdAndFirmCode {
+        @DisplayName("Should return true for when firm code exits for a given login id")
+        @Test
+        void shouldReturnTrueForValidLoginIdAndFirmCode() {
+            var actualResult = ccmsUserRepository.existsByLoginIdAndFirmCode("123", "F123");
+
+            assertThat(actualResult).isTrue();
+        }
+
+        @DisplayName("Should return false when firm code does not exits for a given login id")
+        @Test
+        void shouldReturnFalseForInvalidLoginIdAndFirmCode() {
+            var actualResult = ccmsUserRepository.existsByLoginIdAndFirmCode("123", "invalid");
+
+            assertThat(actualResult).isFalse();
+        }
+    }
 }
