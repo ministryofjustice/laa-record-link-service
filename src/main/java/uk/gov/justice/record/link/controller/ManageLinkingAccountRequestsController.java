@@ -8,8 +8,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
@@ -115,7 +115,7 @@ public class ManageLinkingAccountRequestsController {
     }
 
     @PostMapping("/manage-linking-account/manage/{id}/decision")
-    public String processDecision(@PathVariable String id, 
+    public String processDecision(@PathVariable String id,
                                 @RequestParam String decision,
                                 Model model) {
         LinkedRequest request = linkedRequestService.getRequestById(id)
@@ -123,7 +123,7 @@ public class ManageLinkingAccountRequestsController {
 
         model.addAttribute("user", request);
         model.addAttribute("decision", decision);
-        
+
         return "decision-reason";
     }
 
@@ -132,7 +132,7 @@ public class ManageLinkingAccountRequestsController {
                                @RequestParam String decision,
                                @RequestParam String decisionReason,
                                RedirectAttributes redirectAttributes) {
-        
+
         LinkedRequest request = linkedRequestService.getRequestById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -140,7 +140,7 @@ public class ManageLinkingAccountRequestsController {
 
         redirectAttributes.addFlashAttribute("decision", decision);
         redirectAttributes.addFlashAttribute("user", request);
-        
+
         return "redirect:/internal/manage-linking-account/decision-success/" + id;
     }
 
@@ -151,7 +151,13 @@ public class ManageLinkingAccountRequestsController {
 
         model.addAttribute("user", request);
         model.addAttribute("decision", request.getStatus().name());
-        
+
         return "request-decision-success";
     }
+
+    @GetMapping({"", "/"})
+    public String redirectToManageLinkingAccount() {
+        return "redirect:/internal/manage-linking-account";
+    }
+    
 }
