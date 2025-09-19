@@ -40,7 +40,7 @@ public class UserTransferController {
 
     private final UserTransferService userTransferService;
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public String homepage(@RequestParam(defaultValue = "0") int page, Model model,  @AuthenticationPrincipal OidcUser oidcUser) {
         String currentUserId = oidcUser.getClaims().get(SilasConstants.SILAS_LOGIN_ID).toString();
 
