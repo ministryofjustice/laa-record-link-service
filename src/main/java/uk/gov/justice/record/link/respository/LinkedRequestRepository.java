@@ -23,10 +23,10 @@ public interface LinkedRequestRepository extends JpaRepository<LinkedRequest, UU
     Page<LinkedRequest> findByOldLoginIdContainingAllIgnoreCase(@Nullable String oldLoginId, Pageable pageable);
     
     @Query("SELECT lr FROM LinkedRequest lr WHERE " +
-           "LOWER(lr.oldLoginId) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(lr.idamFirstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(lr.idamLastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(lr.idamFirmName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+           "LOWER(lr.oldLoginId) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR "
+            + "LOWER(lr.idamFirstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR "
+            + "LOWER(lr.idamLastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR "
+            + "LOWER(lr.idamFirmName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<LinkedRequest> searchByMultipleFields(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     Page<LinkedRequest> findByIdamLegacyUserId(String idamLegacyUserId, Pageable pageable);
