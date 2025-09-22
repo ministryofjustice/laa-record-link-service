@@ -63,7 +63,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
             Page<LinkedRequest> mockAssignedPage = new PageImpl<>(mockAssignedRequests, PageRequest.of(0, 10), 5);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(mockAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -108,7 +108,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(1, 5), 25);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 5), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 2, 5)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 2, 5)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 5)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -148,7 +148,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(emptyPage);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(emptyPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -184,7 +184,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(2, 10), 23);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 3, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 3, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -219,7 +219,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -258,7 +258,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("testLogin", 1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("testLogin", 1, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -274,7 +274,7 @@ class ManageLinkingAccountRequestsControllerTest {
                                     .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")))
                             .param("page", "1")
                             .param("size", "10")
-                            .param("oldLoginId", "testLogin"))
+                            .param("searchTerm", "testLogin"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("manage-link-account-requests"))
                     .andExpect(model().attributeExists("pagedRequest"))
@@ -403,7 +403,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 20);
             Page<LinkedRequest> mockAssignedPage = new PageImpl<>(mockAssignedRequests, PageRequest.of(1, 10), 11);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 2, 10)).thenReturn(mockAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
@@ -440,7 +440,7 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
-            when(linkedRequestService.getLinkingRequestByOldLogin("", 1, 10)).thenReturn(mockPage);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
             when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
