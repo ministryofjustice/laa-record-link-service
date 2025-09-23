@@ -785,5 +785,35 @@ class ManageLinkingAccountRequestsControllerTest {
                     .andExpect(model().attribute("user", rejectedRequest))
                     .andExpect(model().attribute("decision", "REJECTED"));
         }
+
+        @Test
+        void shouldReturnToDecisionReasonPageWhenDecisionReasonIsWhitespaceOnly() throws Exception {
+            LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
+            when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
+
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+                            .param("decision", "APPROVED")
+                            .param("decisionReason", "   \t\n   "))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("decision-reason"))
+                    .andExpect(model().attribute("user", linkedRequest))
+                    .andExpect(model().attribute("decision", "APPROVED"))
+                    .andExpect(model().attribute("error", "Please provide a reason"));
+        }
+
+        @Test
+        void shouldReturnToDecisionReasonPageWhenDecisionReasonIsEmpty() throws Exception {
+            LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
+            when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
+
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+                            .param("decision", "REJECTED")
+                            .param("decisionReason", ""))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("decision-reason"))
+                    .andExpect(model().attribute("user", linkedRequest))
+                    .andExpect(model().attribute("decision", "REJECTED"))
+                    .andExpect(model().attribute("error", "Please provide a reason"));
+        }
     }
 }
