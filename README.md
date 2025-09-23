@@ -59,7 +59,11 @@ Once exported be sure to source your latest bash profile: `source ~/.bash_profil
     2. write:packages
     3. read:packages
 2. The token **must be authorised with (MoJ) SSO**.
-3. Add the following parameters to `~/.gradle/gradle.properties`
+
+#### Creating gradle properties file
+1. `cd ~/.gradle`
+2. `nano gradle.properties`
+3. Add the following parameters
 
 ```
 project.ext.gitPackageUser = <your GitHub username>
@@ -74,13 +78,6 @@ Using the `.env-template` file as a template, copy to a new .env file
 
 Be sure to fill out all values as they are required for pulling dependencies for the application to run
 
-### Build And Run Application
-Ensure that all environment variables from `.env` set
-
-`export $(grep -v '^#' .env | xargs)`
-
-Once the environment variables are set, you can run must first start the database:
-
 ### Starting the Database  
 1. Ensure Docker is installed, running & you are signed in with a **licensed** Docker account (see prerequisites above).
 2. Navigate to the root of the repository
@@ -90,12 +87,18 @@ Once the environment variables are set, you can run must first start the databas
    - update V5__insert_demo_data_local.sql to include your email 
    - run `INCLUDE_DEMO_DATA=true ./gradlew flywayMigrate` or set INCLUDE_DEMO_DATA to true in your .env file and run `./gradlew flywayMigrate`
 
+### Build And Run Application
+Ensure that all environment variables from `.env` set
+
+`export $(grep -v '^#' .env | xargs)`
+
+Once the environment variables are set, you can run the application. **Remember you must first start the database**
+
 ### Build application
 `./gradlew clean build`
 
 ### Run integration tests
 `./gradlew integrationTest`
-### Starting Databse
 ### Run application
 `./gradlew bootRun`
 
