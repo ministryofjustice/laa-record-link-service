@@ -33,12 +33,12 @@ public class ManageLinkingAccountRequestsController {
     public String manageRequests(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
+            @RequestParam(name = "searchTerm", required = false, defaultValue = "") String searchTerm,
             @RequestParam(defaultValue = "1") int assignedPage,
             @AuthenticationPrincipal OidcUser oidcUser,
             Model model) {
 
-        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
+        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.searchLinkingRequests(searchTerm, page, size);
 
         // Create paged request for all cases
         PagedUserRequest<LinkedRequest> pagedRequest = new PagedUserRequest<>(
