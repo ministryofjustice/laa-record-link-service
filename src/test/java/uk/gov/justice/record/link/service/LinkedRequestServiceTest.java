@@ -252,6 +252,111 @@ class LinkedRequestServiceTest {
     }
 
     @Nested
+    @DisplayName("SearchLinkingRequests")
+    class SearchLinkingRequests {
+
+        @Captor
+        private ArgumentCaptor<String> searchTermCaptor;
+
+        @DisplayName("Should call searchByMultipleFields with right param")
+        @Test
+        void shouldCallSearchByMultipleFieldsWithRightParam() {
+
+            linkedRequestService.searchLinkingRequests("searchTerm", 1, 10);
+
+            verify(linkedRequestRepository).searchByMultipleFields(searchTermCaptor.capture(), pageableCaptor.capture());
+
+            assertThat(searchTermCaptor.getValue()).isEqualTo("searchTerm");
+
+            Pageable capturedPageable = pageableCaptor.getValue();
+            assertThat(capturedPageable.getPageNumber()).isEqualTo(0);
+            assertThat(capturedPageable.getSort()).isEqualTo(Sort.by(Sort.Order.asc("createdDate")));
+            assertThat(capturedPageable.getPageSize()).isEqualTo(10);
+        }
+
+        @Test
+        void shouldReturnPagedResults() {
+            List<LinkedRequest> mockRequests = createMockLinkedRequests();
+            Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 25);
+            
+            when(linkedRequestRepository.searchByMultipleFields(any(String.class), any(Pageable.class))).thenReturn(mockPage);
+
+            Page<LinkedRequest> result = linkedRequestService.searchLinkingRequests("test", 1, 10);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(3);
+            assertThat(result.getTotalElements()).isEqualTo(25);
+            assertThat(result.getTotalPages()).isEqualTo(3);
+            assertThat(result.getNumber()).isEqualTo(0);
+            assertThat(result.getSize()).isEqualTo(10);
+        }
+
+        @Test
+        void shouldHandleEmptySearchTerm() {
+            List<LinkedRequest> mockRequests = createMockLinkedRequests();
+            Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 15);
+            
+            when(linkedRequestRepository.searchByMultipleFields(any(String.class), any(Pageable.class))).thenReturn(mockPage);
+
+            linkedRequestService.searchLinkingRequests("", 1, 10);
+
+            verify(linkedRequestRepository).searchByMultipleFields(searchTermCaptor.capture(), pageableCaptor.capture());
+            assertThat(searchTermCaptor.getValue()).isEqualTo("");
+        }
+
+        private List<LinkedRequest> createMockLinkedRequests() {
+            CcmsUser ccmsUser1 = CcmsUser.builder()
+                    .loginId("user1")
+                    .firstName("John")
+                    .lastName("Doe")
+                    .firmCode("FIRM001")
+                    .email("john.doe@example.com")
+                    .build();
+
+            LinkedRequest request1 = LinkedRequest.builder()
+                    .ccmsUser(ccmsUser1)
+                    .oldLoginId("oldLogin1")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Alice")
+                    .idamLastName("Johnson")
+                    .idamFirmName("Johnson & Associates")
+                    .idamFirmCode("JA001")
+                    .idamEmail("alice.johnson@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(5))
+                    .status(Status.OPEN)
+                    .build();
+
+            LinkedRequest request2 = LinkedRequest.builder()
+                    .ccmsUser(ccmsUser1)
+                    .oldLoginId("oldLogin2")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Bob")
+                    .idamLastName("Wilson")
+                    .idamFirmName("Wilson Legal")
+                    .idamFirmCode("WL001")
+                    .idamEmail("bob.wilson@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(3))
+                    .status(Status.APPROVED)
+                    .build();
+
+            LinkedRequest request3 = LinkedRequest.builder()
+                    .ccmsUser(ccmsUser1)
+                    .oldLoginId("oldLogin3")
+                    .idamLegacyUserId(UUID.randomUUID().toString())
+                    .idamFirstName("Carol")
+                    .idamLastName("Brown")
+                    .idamFirmName("Brown Law Firm")
+                    .idamFirmCode("BLF001")
+                    .idamEmail("carol.brown@example.com")
+                    .createdDate(LocalDateTime.now().minusDays(1))
+                    .status(Status.REJECTED)
+                    .build();
+
+            return Arrays.asList(request1, request2, request3);
+        }
+    }
+
+    @Nested
     @DisplayName("Should return request when valid UUID is provided")
     class GetRequestById {
 

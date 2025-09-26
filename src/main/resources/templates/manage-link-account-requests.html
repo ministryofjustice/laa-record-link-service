@@ -151,24 +151,23 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-one-half">
                     <form method="get" th:action="@{/internal/manage-linking-account#all-cases}" role="search">
-                        <div class="moj-search">
-                            <div class="govuk-form-group">
-                                <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
-                                    All cases
-                                </label>
-                                <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
-                                    Search requests by ID or firm
-                                </label>
-                                <input class="govuk-input govuk-!-width-full" id="oldLoginId" name="oldLoginId"
-                                       type="search" th:value="${param.oldLoginId}" autocomplete="off"/>
-                            </div>
-                            <button type="submit" class="govuk-button moj-search__button"
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="searchTerm">
+                                All cases
+                            </label>
+                            <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="searchTerm">
+                                Search requests by login ID, name, or firm
+                            </label>
+                            <input class="govuk-input govuk-!-width-two-thirds govuk-!-margin-bottom-3" id="searchTerm" name="searchTerm"
+                                   type="search" th:value="${param.searchTerm}" autocomplete="off"/>
+                            <br/>
+                            <button type="submit" class="govuk-button govuk-!-margin-bottom-3"
                                     data-module="govuk-button">
                                 Search
                             </button>
-                        </div> <br/>
+                        </div>
                         <div class="govuk-form-group">
-                            <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="oldLoginId">
+                            <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="searchTerm">
                                 <b th:text="${pagedRequest.totalItems}"> </b> <b>case results</b>
                             </label>
                         </div>

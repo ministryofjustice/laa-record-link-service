@@ -59,7 +59,7 @@ public class ManageLinkingAccountRequestsController {
     }
 
     private String formatLoginId(CcmsUser ccmsUser) {
-        return ccmsUser != null ? ccmsUser.getLoginId(): "";
+        return ccmsUser != null ? ccmsUser.getLoginId() : "";
     }
 
     private String fileNameDateFormatter(LocalDateTime dateTime, DateTimeFormatter formatter) {
@@ -102,12 +102,12 @@ public class ManageLinkingAccountRequestsController {
     public String manageRequests(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(name = "oldLoginId", required = false, defaultValue = "") String oldLoginId,
+            @RequestParam(name = "searchTerm", required = false, defaultValue = "") String searchTerm,
             @RequestParam(defaultValue = "1") int assignedPage,
             @AuthenticationPrincipal OidcUser oidcUser,
             Model model) {
 
-        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.getLinkingRequestByOldLogin(oldLoginId, page, size);
+        Page<LinkedRequest> linkedRequestsPage = linkedRequestService.searchLinkingRequests(searchTerm, page, size);
 
         // Create paged request for all cases
         PagedUserRequest<LinkedRequest> pagedRequest = new PagedUserRequest<>(
@@ -120,7 +120,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()"; // DO NOT COMMIT
+        String userName = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
@@ -163,14 +163,14 @@ public class ManageLinkingAccountRequestsController {
             model.addAttribute("user", request);
             model.addAttribute("ccmsuser", ccmsUserDto);
         }
-        model.addAttribute("loggedinUserEmail", "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()");// DO NOT COMMIT
+        model.addAttribute("loggedinUserEmail", oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
 
         return "check-user-details";
     }
 
     @PostMapping("/assign-next-case")
     public String assignNextCase(@AuthenticationPrincipal OidcUser oidcUser, RedirectAttributes redirectAttributes) {
-        String assigneeEmail = "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()";// DO NOT COMMIT
+        String assigneeEmail = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
 
         Optional<LinkedRequest> assignedRequest = linkedRequestService.assignNextCase(assigneeEmail);
         

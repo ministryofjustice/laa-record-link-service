@@ -41,6 +41,8 @@ public class StatusValidatorTest {
         void loginValid() {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(eq("user2"),  anyList()))
                     .thenReturn(0);
+            when(mockLinkedRequestRepository.countByOldLoginIdAndStatus(eq("user2"),  eq(Status.OPEN)))
+                    .thenReturn(0);
 
             var actualResult = statusValidator.isValid("user2", mockConstraintValidatorContext);
 
@@ -54,6 +56,24 @@ public class StatusValidatorTest {
         @Test
         void loginInvalid() {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(eq("user1"),  anyList()))
+                    .thenReturn(1);
+            when(mockLinkedRequestRepository.countByOldLoginIdAndStatus(eq("user1"),  eq(Status.OPEN)))
+                    .thenReturn(0);
+
+            var actualResult = statusValidator.isValid("user1", mockConstraintValidatorContext);
+
+            assertThat(actualResult).isFalse();
+            verify(mockLinkedRequestRepository).countByCcmsUser_LoginIdAndStatusIn(loginIdCaptor.capture(), statusCaptor.capture());
+            assertThat(statusCaptor.getValue()).containsExactlyInAnyOrder(Status.OPEN, Status.APPROVED);
+            assertThat(loginIdCaptor.getValue()).isEqualTo("user1");
+        }
+
+        @DisplayName("Should return false when request already exists for same login Id")
+        @Test
+        void loginInvalidRequestAlreadyExists() {
+            when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(eq("user1"),  anyList()))
+                    .thenReturn(0);
+            when(mockLinkedRequestRepository.countByOldLoginIdAndStatus(eq("user1"),  eq(Status.OPEN)))
                     .thenReturn(1);
 
             var actualResult = statusValidator.isValid("user1", mockConstraintValidatorContext);
