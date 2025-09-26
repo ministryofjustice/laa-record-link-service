@@ -74,12 +74,14 @@ public class ManageLinkingAccountRequestsController {
 
         String filename = "account_transfer_" + timestamp + ".csv";
 
+        String columns = "provided_old_login_id,firm_name,vendor_site_code,"
+                + "creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id";
+
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
         try (PrintWriter writer = response.getWriter()) {
-            writer.println("provided_old_login_id,firm_name,vendor_site_code,creation_date," +
-                    "assigned_date,decision_date,status,decision_reason,laa_assignee,login_id");
+            writer.println(columns);
 
             List<LinkedRequest> linkedRequests = linkedRequestService.getAllLinkedAccounts();
             for (LinkedRequest request : linkedRequests) {

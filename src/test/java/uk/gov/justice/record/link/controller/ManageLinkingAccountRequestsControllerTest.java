@@ -222,7 +222,8 @@ class ManageLinkingAccountRequestsControllerTest {
             Page<LinkedRequest> emptyAssignedPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
 
             when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
-            when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10)).thenReturn(emptyAssignedPage);
+            when(linkedRequestService.getAssignedRequests("janedoe@test.com", 1, 10))
+                    .thenReturn(emptyAssignedPage);
 
             mockMvc.perform(get("/internal/manage-linking-account")
                             .with(oidcLogin()
@@ -432,9 +433,14 @@ class ManageLinkingAccountRequestsControllerTest {
             mockMvc.perform(get("/internal/download-link-account-data"))
                     .andExpect(status().isOk())
                     .andExpect(header().string("Content-Type", "text/csv; charset=UTF-8"))
-                    .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.startsWith("attachment; filename=\"account_transfer_")))
-                    .andExpect(content().string(org.hamcrest.Matchers.containsString("provided_old_login_id,firm_name,vendor_site_code,creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id")))
-                    .andExpect(content().string(org.hamcrest.Matchers.containsString("old_login_1,Firm Name,Vendor123,2024-06-01,2024-06-02,2024-06-03,APPROVED,Valid,assignee1,login_1")));
+                    .andExpect(header().string("Content-Disposition",
+                            org.hamcrest.Matchers.startsWith("attachment; filename=\"account_transfer_")
+                    ))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                            "provided_old_login_id,firm_name,vendor_site_code,"
+                                    + "creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("old_login_1,Firm Name,Vendor123,"
+                            + "2024-06-01,2024-06-02,2024-06-03,APPROVED,Valid,assignee1,login_1")));
         }
     }
 
