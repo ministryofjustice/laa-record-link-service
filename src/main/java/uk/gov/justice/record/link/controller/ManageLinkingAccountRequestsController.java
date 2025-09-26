@@ -1,5 +1,6 @@
 package uk.gov.justice.record.link.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -16,10 +17,18 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.dto.CcmsUserDto;
+import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
+import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.PagedUserRequest;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Controller
@@ -28,6 +37,66 @@ import java.util.Optional;
 public class ManageLinkingAccountRequestsController {
 
     private final LinkedRequestService linkedRequestService;
+
+    private String escapeCsv(String input) {
+        if (input == null) {
+            return "";
+        }
+        if (input.contains(",") || input.contains("\"") || input.contains("\n") || input.contains("\r")) {
+            return "\"" + input.replace("\"", "\"\"") + "\"";
+        }
+        return input;
+    }
+
+    private String formatDate(LocalDateTime date, DateTimeFormatter formatter) {
+        return date != null ? date.format(formatter) : "";
+    }
+
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
+    private String formatStatus(Status status) {
+        return status != null ? status.name() : "";
+    }
+
+    private String formatLoginId(CcmsUser ccmsUser) {
+        return ccmsUser != null ? ccmsUser.getLoginId(): "";
+    }
+
+    private String fileNameDateFormatter(LocalDateTime dateTime, DateTimeFormatter formatter) {
+        return dateTime.format(formatter);
+    }
+
+    @GetMapping("/download-link-account-data")
+    public void downloadData(HttpServletResponse response) throws IOException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+
+        String timestamp = fileNameDateFormatter(LocalDateTime.now(), formatter);
+
+        String filename = "account_transfer_" + timestamp + ".csv";
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+        try (PrintWriter writer = response.getWriter()) {
+            writer.println("provided_old_login_id,firm_name,vendor_site_code,creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id");
+
+            List<LinkedRequest> linkedRequests = linkedRequestService.getAllLinkedAccounts();
+            for (LinkedRequest request : linkedRequests) {
+                String row = String.format(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                        request.getOldLoginId(), // Provided old login
+                        escapeCsv(request.getIdamFirmName()),
+                        escapeCsv(request.getAdditionalInfo()), // vendor site code?
+                        escapeCsv(formatDate(request.getCreatedDate(), dateFormatter)),
+                        escapeCsv(formatDate(request.getAssignedDate(), dateFormatter)),
+                        escapeCsv(formatDate(request.getDecisionDate(), dateFormatter)),
+                        escapeCsv(formatStatus(request.getStatus())),
+                        escapeCsv(request.getDecisionReason()),
+                        escapeCsv(request.getLaaAssignee()),
+                        escapeCsv(formatLoginId(request.getCcmsUser())));
+                writer.println(row);
+            }
+        }
+    }
 
     @GetMapping("/manage-linking-account")
     public String manageRequests(
@@ -51,7 +120,7 @@ public class ManageLinkingAccountRequestsController {
                 linkedRequestsPage.hasPrevious()
         );
 
-        String userName = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
+        String userName = "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()"; // DO NOT COMMIT
 
         // Get assigned requests for "Assigned cases" tab with separate pagination
         Page<LinkedRequest> assignedRequestsPage = linkedRequestService.getAssignedRequests(userName, assignedPage, size);
@@ -94,14 +163,14 @@ public class ManageLinkingAccountRequestsController {
             model.addAttribute("user", request);
             model.addAttribute("ccmsuser", ccmsUserDto);
         }
-        model.addAttribute("loggedinUserEmail", oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString());
+        model.addAttribute("loggedinUserEmail", "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()");// DO NOT COMMIT
 
         return "check-user-details";
     }
 
     @PostMapping("/assign-next-case")
     public String assignNextCase(@AuthenticationPrincipal OidcUser oidcUser, RedirectAttributes redirectAttributes) {
-        String assigneeEmail = oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString();
+        String assigneeEmail = "oidcUser.getClaims().get(SilasConstants.USER_EMAIL).toString()";// DO NOT COMMIT
 
         Optional<LinkedRequest> assignedRequest = linkedRequestService.assignNextCase(assigneeEmail);
         

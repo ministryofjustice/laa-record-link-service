@@ -11,6 +11,7 @@ import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.respository.LinkedRequestRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +20,10 @@ import java.util.UUID;
 public class LinkedRequestService {
 
     private final LinkedRequestRepository linkedRequestRepository;
+
+    public List<LinkedRequest> getAllLinkedAccounts() {
+        return linkedRequestRepository.findAll();
+    }
 
     public Page<LinkedRequest> getAllLinkingRequests(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Order.asc("createdDate")));

@@ -40,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @ActiveProfiles("local")
 @WebMvcTest(ManageLinkingAccountRequestsController.class)
@@ -389,6 +391,50 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
 
             return Arrays.asList(assignedRequest1, assignedRequest2);
+        }
+    }
+
+    @Nested
+    @DisplayName("CanDownloadLinkAccountData")
+    class DownloadLinkAccountData {
+
+        @Test
+        void shouldReturnAllLinkedAccounts() {
+            LinkedRequest request1 = LinkedRequest.builder().oldLoginId("login1").build();
+            LinkedRequest request2 = LinkedRequest.builder().oldLoginId("login2").build();
+            List<LinkedRequest> mockList = List.of(request1, request2);
+
+            when(linkedRequestService.getAllLinkedAccounts()).thenReturn(mockList);
+
+            List<LinkedRequest> result = linkedRequestService.getAllLinkedAccounts();
+
+            assertThat(result).containsExactlyElementsOf(mockList);
+            verify(linkedRequestService).getAllLinkedAccounts();
+        }
+
+        @Test
+        void shouldDownloadCsvWithAccountData() throws Exception {
+            LinkedRequest request = LinkedRequest.builder()
+                    .oldLoginId("old_login_1")
+                    .idamFirmName("Firm Name")
+                    .additionalInfo("Vendor123")
+                    .createdDate(LocalDateTime.of(2024, 6, 1, 0, 0))
+                    .assignedDate(LocalDateTime.of(2024, 6, 2, 0, 0))
+                    .decisionDate(LocalDateTime.of(2024, 6, 3, 0, 0))
+                    .status(Status.APPROVED)
+                    .decisionReason("Valid")
+                    .laaAssignee("assignee1")
+                    .ccmsUser(CcmsUser.builder().loginId("login_1").build())
+                    .build();
+
+            when(linkedRequestService.getAllLinkedAccounts()).thenReturn(List.of(request));
+
+            mockMvc.perform(get("/internal/download-link-account-data"))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type", "text/csv; charset=UTF-8"))
+                    .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.startsWith("attachment; filename=\"account_transfer_")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("provided_old_login_id,firm_name,vendor_site_code,creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("old_login_1,Firm Name,Vendor123,2024-06-01,2024-06-02,2024-06-03,APPROVED,Valid,assignee1,login_1")));
         }
     }
 
