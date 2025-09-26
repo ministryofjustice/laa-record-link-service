@@ -289,4 +289,38 @@ public class LinkedRequestRepositoryTest {
         }
     }
 
+    @Nested
+    @Sql("classpath:test_data/insert_unassigned_requests.sql")
+    @DisplayName("CountByOldLoginIdAndStatus")
+    class CountByOldLoginIdAndStatus {
+
+        @DisplayName("Should return count of 1 for existing OPEN request by oldLoginId")
+        @Test
+        void shouldReturnCountForExistingOpenRequest() {
+            var count = linkedRequestRepository.countByOldLoginIdAndStatus("oldest_unassigned", Status.OPEN);
+            assertThat(count).isEqualTo(1);
+        }
+
+        @DisplayName("Should return count of 0 for non-existent oldLoginId")
+        @Test
+        void shouldReturnZeroForNonExistentOldLoginId() {
+            var count = linkedRequestRepository.countByOldLoginIdAndStatus("non_existent_login", Status.OPEN);
+            assertThat(count).isEqualTo(0);
+        }
+
+        @DisplayName("Should return count of 0 for existing oldLoginId with different status")
+        @Test
+        void shouldReturnZeroForExistingOldLoginIdWithDifferentStatus() {
+            var count = linkedRequestRepository.countByOldLoginIdAndStatus("oldest_unassigned", Status.APPROVED);
+            assertThat(count).isEqualTo(0);
+        }
+
+        @DisplayName("Should return count of 0 for REJECTED status")
+        @Test
+        void shouldReturnZeroForRejectedStatus() {
+            var count = linkedRequestRepository.countByOldLoginIdAndStatus("oldest_unassigned", Status.REJECTED);
+            assertThat(count).isEqualTo(0);
+        }
+    }
+
 }
