@@ -203,12 +203,20 @@ public class ManageLinkingAccountRequestsController {
     public String submitDecision(@PathVariable String id,
                                @RequestParam String decision,
                                @RequestParam String decisionReason,
-                               RedirectAttributes redirectAttributes) {
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
 
         LinkedRequest request = linkedRequestService.getRequestById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        linkedRequestService.updateRequestDecision(id, decision, decisionReason);
+        if (decisionReason == null || decisionReason.trim().isEmpty()) {
+            model.addAttribute("user", request);
+            model.addAttribute("decision", decision);
+            model.addAttribute("error", "Please provide a reason");
+            return "decision-reason";
+        }
+
+        linkedRequestService.updateRequestDecision(id, decision, decisionReason.trim());
 
         redirectAttributes.addFlashAttribute("decision", decision);
         redirectAttributes.addFlashAttribute("user", request);

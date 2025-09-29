@@ -34,19 +34,24 @@
             <form th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/submit-decision'}" method="post">
                 <input type="hidden" name="decision" th:value="${decision}">
                 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group" th:classappend="${error} ? 'govuk-form-group--error' : ''">
                     <h1 class="govuk-label-wrapper">
                         <label class="govuk-label govuk-label--l" for="decision-reason">
                             Why is <span th:text="${user.idamFirstName + ' ' + user.idamLastName}"></span>'s transfer request being
                             <span th:text="${decision == 'APPROVED' ? 'approved' : 'rejected'}"></span>?
                         </label>
                     </h1>
+                    <p id="decision-reason-error" class="govuk-error-message" th:if="${error}">
+                        <span class="govuk-visually-hidden">Error:</span>
+                        <span th:text="${error}"></span>
+                    </p>
                     <textarea class="govuk-textarea" 
+                              th:classappend="${error} ? 'govuk-textarea--error' : ''"
                               id="decision-reason" 
                               name="decisionReason" 
                               rows="5" 
                               aria-describedby="decision-reason-hint"
-                              required></textarea>
+                              th:attr="aria-describedby=${error} ? 'decision-reason-hint decision-reason-error' : 'decision-reason-hint'"></textarea>
                 </div>
 
                 <div class="govuk-button-group">
