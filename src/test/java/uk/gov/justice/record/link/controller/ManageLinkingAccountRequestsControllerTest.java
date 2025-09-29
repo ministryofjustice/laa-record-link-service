@@ -18,9 +18,12 @@ import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.PagedUserRequest;
+import uk.gov.justice.record.link.service.DataDownloadService;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -28,10 +31,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,6 +60,9 @@ class ManageLinkingAccountRequestsControllerTest {
 
     @MockitoBean
     private LinkedRequestService linkedRequestService;
+
+    @MockitoBean
+    private DataDownloadService dataDownloadService;
 
     @Nested
     @DisplayName("ShouldReturnViewWithPaginatedData")
@@ -429,20 +439,49 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
 
             when(linkedRequestService.getAllLinkedAccounts()).thenReturn(List.of(request));
+            when(dataDownloadService.fileNameDateFormatter(any(LocalDateTime.class), any(DateTimeFormatter.class)))
+                    .thenReturn("20240603_120000");
+
+            // Mock the behavior of writeLinkedRequestsToWriter to actually write the content
+            doAnswer(invocation -> {
+                PrintWriter writer = invocation.getArgument(0);
+                String columns = invocation.getArgument(1);
+                List<LinkedRequest> requests = invocation.getArgument(2);
+
+                writer.println(columns);
+                for (LinkedRequest req : requests) {
+                    writer.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                            req.getOldLoginId(),
+                            req.getIdamFirmName(),
+                            req.getAdditionalInfo(),
+                            "2024-06-01",
+                            "2024-06-02",
+                            "2024-06-03",
+                            "APPROVED",
+                            req.getDecisionReason(),
+                            req.getLaaAssignee(),
+                            req.getCcmsUser().getLoginId()));
+                }
+                return null;
+            }).when(dataDownloadService).writeLinkedRequestsToWriter(any(PrintWriter.class), anyString(), anyList());
 
             mockMvc.perform(get("/internal/download-link-account-data"))
                     .andExpect(status().isOk())
                     .andExpect(header().string("Content-Type", "text/csv; charset=UTF-8"))
                     .andExpect(header().string("Content-Disposition",
-                            org.hamcrest.Matchers.startsWith("attachment; filename=\"account_transfer_")
-                    ))
-                    .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                            containsString("attachment; filename=\"account_transfer_20240603_120000.csv\"")))
+                    .andExpect(content().string(containsString(
                             "provided_old_login_id,firm_name,vendor_site_code,"
                                     + "creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id")))
-                    .andExpect(content().string(org.hamcrest.Matchers.containsString("old_login_1,Firm Name,Vendor123,"
-                            + "2024-06-01,2024-06-02,2024-06-03,APPROVED,Valid,assignee1,login_1")));
+                    .andExpect(content().string(containsString(
+                            "old_login_1,Firm Name,Vendor123,2024-06-01,2024-06-02,2024-06-03,APPROVED,Valid,assignee1,login_1")));
+
+            verify(linkedRequestService).getAllLinkedAccounts();
+            verify(dataDownloadService).writeLinkedRequestsToWriter(any(PrintWriter.class), anyString(), anyList());
         }
+
     }
+
 
     @Nested
     @DisplayName("AssignedRequestsAndPagination")

@@ -21,6 +21,7 @@ import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
 import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.PagedUserRequest;
+import uk.gov.justice.record.link.service.DataDownloadService;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
 import java.io.IOException;
@@ -38,39 +39,13 @@ public class ManageLinkingAccountRequestsController {
 
     private final LinkedRequestService linkedRequestService;
 
-    private String escapeCsv(String input) {
-        if (input == null) {
-            return "";
-        }
-        if (input.contains(",") || input.contains("\"") || input.contains("\n") || input.contains("\r")) {
-            return "\"" + input.replace("\"", "\"\"") + "\"";
-        }
-        return input;
-    }
-
-    private String formatDate(LocalDateTime date, DateTimeFormatter formatter) {
-        return date != null ? date.format(formatter) : "";
-    }
-
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
-
-    private String formatStatus(Status status) {
-        return status != null ? status.name() : "";
-    }
-
-    private String formatLoginId(CcmsUser ccmsUser) {
-        return ccmsUser != null ? ccmsUser.getLoginId() : "";
-    }
-
-    private String fileNameDateFormatter(LocalDateTime dateTime, DateTimeFormatter formatter) {
-        return dateTime.format(formatter);
-    }
+    private final DataDownloadService dataDownloadService;
 
     @GetMapping("/download-link-account-data")
     public void downloadData(HttpServletResponse response) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
-        String timestamp = fileNameDateFormatter(LocalDateTime.now(), formatter);
+        String timestamp = dataDownloadService.fileNameDateFormatter(LocalDateTime.now(), formatter);
 
         String filename = "account_transfer_" + timestamp + ".csv";
 
@@ -81,23 +56,8 @@ public class ManageLinkingAccountRequestsController {
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
         try (PrintWriter writer = response.getWriter()) {
-            writer.println(columns);
-
             List<LinkedRequest> linkedRequests = linkedRequestService.getAllLinkedAccounts();
-            for (LinkedRequest request : linkedRequests) {
-                String row = String.format(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
-                        request.getOldLoginId(), // Provided old login
-                        escapeCsv(request.getIdamFirmName()),
-                        escapeCsv(request.getAdditionalInfo()), // vendor site code?
-                        escapeCsv(formatDate(request.getCreatedDate(), dateFormatter)),
-                        escapeCsv(formatDate(request.getAssignedDate(), dateFormatter)),
-                        escapeCsv(formatDate(request.getDecisionDate(), dateFormatter)),
-                        escapeCsv(formatStatus(request.getStatus())),
-                        escapeCsv(request.getDecisionReason()),
-                        escapeCsv(request.getLaaAssignee()),
-                        escapeCsv(formatLoginId(request.getCcmsUser())));
-                writer.println(row);
-            }
+            dataDownloadService.writeLinkedRequestsToWriter(writer, columns, linkedRequests);
         }
     }
 
