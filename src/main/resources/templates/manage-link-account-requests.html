@@ -38,12 +38,6 @@
                 Assign next case
             </button>
         </form>
-        <form method="get" th:action="@{/internal/download-link-account-data}">
-            <button type="submit" class="govuk-button moj-search__button"
-                    data-module="govuk-button">
-                Download data
-            </button>
-        </form>
     </div>
     <div class="govuk-tabs" data-module="govuk-tabs">
         <h2 class="govuk-tabs__title">
@@ -165,6 +159,10 @@
                                     data-module="govuk-button">
                                 Search
                             </button>
+                            <a href="/internal/download-link-account-data"
+                               data-module="govuk-button" style="text-decoration: none; margin-bottom: 0;">
+                                Download real time data
+                            </a>
                         </div>
                         <div class="govuk-form-group">
                             <label class="govuk-label govuk-label--m moj-search__label govuk-!-font-weight-bold" for="searchTerm">
