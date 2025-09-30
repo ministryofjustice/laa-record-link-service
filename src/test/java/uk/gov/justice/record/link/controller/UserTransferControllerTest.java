@@ -271,6 +271,7 @@ public class UserTransferControllerTest {
                             .param("firmCode", "1234"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "Alice"))
                     .andReturn();
 
 
@@ -320,6 +321,7 @@ public class UserTransferControllerTest {
                             .param("firmCode", "1234"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "Alice"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
@@ -347,6 +349,7 @@ public class UserTransferControllerTest {
                             .param("firmCode", "1234"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "Alice"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("User already assigned");
@@ -368,6 +371,7 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "invalidLoginId"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
@@ -413,6 +417,7 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "invalidLoginId"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("No match found");
@@ -432,6 +437,7 @@ public class UserTransferControllerTest {
                             .param("firmCode", "1234"))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "invalidLoginId"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Login processed");
@@ -468,6 +474,7 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "invalidLoginId"))
                     .andReturn();
 
             assertThat(reasonCaptor.getValue()).isEqualTo("Account closed");
@@ -485,6 +492,7 @@ public class UserTransferControllerTest {
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "Mo"))
                     .andReturn();
 
             verify(mockCcmsUserRepository, times(1)).findByLoginId("Mo");
@@ -529,7 +537,8 @@ public class UserTransferControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(model().hasErrors())
                     .andExpect(model().attributeHasFieldErrors("userTransferRequest"))
-                    .andExpect(view().name("request_rejected"));
+                    .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "validLoginId"));
 
             verify(userTransferService, times(1)).rejectRequest(any(UserTransferRequest.class), anyString());
 
@@ -553,7 +562,8 @@ public class UserTransferControllerTest {
                             .param("firmCode", "invalidCode"))
                     .andExpect(status().isOk())
                     .andExpect(model().attributeHasFieldErrors("userTransferRequest"))
-                    .andExpect(view().name("request_rejected"));
+                    .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "validLoginId"));
 
             verify(userTransferService, times(1)).rejectRequest(userTransferRequestCaptor.capture(), anyString());
 
@@ -578,7 +588,8 @@ public class UserTransferControllerTest {
                             .param("firmCode", "invalidCode"))
                     .andExpect(status().isOk())
                     .andExpect(model().attributeHasFieldErrors("userTransferRequest", "oldLogin"))
-                    .andExpect(view().name("request_rejected"));
+                    .andExpect(view().name("request_rejected"))
+                    .andExpect(model().attribute("oldLogin", "invalidLoginId"));
 
             verify(userTransferService, times(1)).rejectRequest(userTransferRequestCaptor.capture(), anyString());
 
