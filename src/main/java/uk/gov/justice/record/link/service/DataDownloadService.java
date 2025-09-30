@@ -51,7 +51,7 @@ public class DataDownloadService {
             String row = String.format(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
                     request.getOldLoginId(),
                     escapeCsv(request.getIdamFirmName()),
-                    escapeCsv(request.getAdditionalInfo()),
+                    escapeCsv(request.getIdamFirmCode()),
                     escapeCsv(formatDate(request.getCreatedDate(), dateFormatter)),
                     escapeCsv(formatDate(request.getAssignedDate(), dateFormatter)),
                     escapeCsv(formatDate(request.getDecisionDate(), dateFormatter)),
