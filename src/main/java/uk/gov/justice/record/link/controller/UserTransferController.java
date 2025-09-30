@@ -94,6 +94,7 @@ public class UserTransferController {
             log.error("Invalid user transfer request with login id: {}", userTransferRequest.getOldLogin());
             userTransferService.rejectRequest(userTransferRequest, errors.getFirst());
             model.addAttribute("userAssignedErrorExists", isAccountAlreadyAssignedError(result));
+            model.addAttribute("oldLogin", userTransferRequest.getOldLogin());
             return "request_rejected";
         }
 
