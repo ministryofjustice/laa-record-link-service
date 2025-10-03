@@ -1,5 +1,6 @@
 package uk.gov.justice.record.link.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -16,10 +17,19 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uk.gov.justice.record.link.constants.SilasConstants;
 import uk.gov.justice.record.link.dto.CcmsUserDto;
+import uk.gov.justice.record.link.entity.CcmsUser;
 import uk.gov.justice.record.link.entity.LinkedRequest;
+import uk.gov.justice.record.link.entity.Status;
 import uk.gov.justice.record.link.model.PagedUserRequest;
+import uk.gov.justice.record.link.service.DataDownloadService;
 import uk.gov.justice.record.link.service.LinkedRequestService;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Controller
@@ -28,6 +38,28 @@ import java.util.Optional;
 public class ManageLinkingAccountRequestsController {
 
     private final LinkedRequestService linkedRequestService;
+
+    private final DataDownloadService dataDownloadService;
+
+    @GetMapping("/download-link-account-data")
+    public void downloadData(HttpServletResponse response) throws IOException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+
+        String timestamp = dataDownloadService.fileNameDateFormatter(LocalDateTime.now(), formatter);
+
+        String filename = "account_transfer_" + timestamp + ".csv";
+
+        String columns = "provided_old_login_id,firm_name,vendor_site_code,"
+                + "creation_date,assigned_date,decision_date,status,decision_reason,laa_assignee,login_id";
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+        try (PrintWriter writer = response.getWriter()) {
+            List<LinkedRequest> linkedRequests = linkedRequestService.getAllLinkedAccounts();
+            dataDownloadService.writeLinkedRequestsToWriter(writer, columns, linkedRequests);
+        }
+    }
 
     @GetMapping("/manage-linking-account")
     public String manageRequests(
