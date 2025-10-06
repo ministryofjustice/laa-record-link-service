@@ -30,6 +30,9 @@ jobs:
         run: |
           git remote set-url origin git@github.com:ministryofjustice/laa-record-link-service.git
 
+      - name: Test SSH connection
+        run: ssh -T git@github.com || true
+
       - name: Print changes between main and test
         run: |
           git fetch origin main
