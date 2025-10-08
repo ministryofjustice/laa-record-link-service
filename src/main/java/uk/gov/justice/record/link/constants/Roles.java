@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Roles {
-    INTERNAL("REQUESTS TO TRANSFER CCMS CASES_VIEWER_INTERN"),
-    EXTERNAL("REQUESTS TO TRANSFER CCMS CASES_VIEWER_EXTERN");
+    INTERNAL("CCMS case transfer requests - Internal"),
+    EXTERNAL("CCMS case transfer requests - External");
 
     private final String roleName;
 }
