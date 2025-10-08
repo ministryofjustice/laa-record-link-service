@@ -39,7 +39,7 @@ public class SecurityConfigTest {
 
     @Test
     void shouldRedirectToInternalPage() throws Exception {
-        Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("REQUESTS TO TRANSFER CCMS CASES_VIEWER_INTERN"));
+        Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("CCMS case transfer requests - Internal"));
 
         when(authentication.getPrincipal()).thenReturn(oidcUser);
         when(oidcUser.getAttributes()).thenReturn(attributes);
@@ -52,7 +52,7 @@ public class SecurityConfigTest {
 
     @Test
     void shouldRedirectToExternalPage() throws Exception {
-        Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("REQUESTS TO TRANSFER CCMS CASES_VIEWER_EXTERN"));
+        Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("CCMS case transfer requests - External"));
 
         when(authentication.getPrincipal()).thenReturn(oidcUser);
         when(oidcUser.getAttributes()).thenReturn(attributes);
