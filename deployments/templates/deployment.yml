@@ -53,6 +53,8 @@ spec:
               value: "${SENTRY_ENABLED}"
             - name: SENTRY_AUTH_TOKEN
               value: "${SENTRY_AUTH_TOKEN}"
+            - name: SENTRY_ENVIRONMENT
+              value: "${SENTRY_ENVIRONMENT}"
             - name: POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
