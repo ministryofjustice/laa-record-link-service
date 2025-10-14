@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: laa-record-link-service 
   labels:
-    app: laa-record-link-service 
+    app: laa-record-link-service
 spec:
   replicas: 3
   selector:
