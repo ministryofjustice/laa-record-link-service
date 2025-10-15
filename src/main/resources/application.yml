@@ -48,6 +48,12 @@ logging:
     org.apache.http.wire: DEBUG
     org.apache.http.headers: DEBUG
 
+sentry:
+  dsn: https://1dcf9f08fc9e223d9888695ff9201aaf@o345774.ingest.us.sentry.io/4510181920473088
+  send-default-pii: true
+  enabled: ${SENTRY_ENABLED:true}
+  environment: ${SENTRY_ENVIRONMENT:local}
+
 ---
 spring:
   config:

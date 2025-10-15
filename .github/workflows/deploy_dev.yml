@@ -68,7 +68,7 @@ jobs:
           NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
           KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ENABLED: ${{ secrets.SENTRY_ENABLED }}
+          SENTRY_ENABLED: ${{ vars.SENTRY_ENABLED }}
           SENTRY_ENVIRONMENT: ${{ vars.ENV_NAME }}
           SPRING_PROFILE: ${{ vars.SPRING_PROFILE }}
           INGRESS_CLASS_NAME: ${{ vars.INGRESS_CLASS_NAME }}
