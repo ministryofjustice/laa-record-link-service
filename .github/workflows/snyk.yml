@@ -84,12 +84,12 @@ jobs:
         with:
           sarif_file: sarif_files
 
-      # === Upload to Snyk Dashboard (monitor/report) ===
+  # === Upload to Snyk Dashboard (monitor/report) ===
 
       - name: Fix Gradle cache permissions
         run: |
-          sudo chown -R $USER:$USER laa-record-link-service/.gradle || true
-          chmod -R u+rwX laa-record-link-service/.gradle || true
+          sudo chown -R $USER:$USER /home/runner/work/laa-record-link-service/laa-record-link-service/.gradle || true
+          chmod -R u+rwX /home/runner/work/laa-record-link-service/laa-record-link-service/.gradle || true
 
       - name: Monitor Open Source Dependencies in Snyk Dashboard
         run: |
