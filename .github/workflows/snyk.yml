@@ -93,7 +93,7 @@ jobs:
 
       - name: Monitor Open Source Dependencies in Snyk Dashboard
         run: |
-          cd laa-record-link-service
+          cd /home/runner/work/laa-record-link-service/laa-record-link-service/
           snyk monitor --all-projects --org=${{ secrets.SNYK_ORG_ID }}
 
       - name: Upload Docker Image to Snyk Dashboard
