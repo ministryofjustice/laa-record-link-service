@@ -36,7 +36,7 @@ jobs:
         continue-on-error: true
         with:
           image: laa-record-link-service:latest
-          args: --org=${{ secrets.SNYK_ORG_ID }} --sarif --sarif-file-output=snyk_docker_test.sarif
+          args: --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk_docker_test.sarif --sarif
 
       - name: Replace null severities in Docker SARIF
         run: sed -i 's/"null"/"0"/g' snyk_docker_test.sarif || echo "No nulls to replace"
