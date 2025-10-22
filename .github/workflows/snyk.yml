@@ -77,72 +77,72 @@ jobs:
         with:
           sarif_file: sarif_files
 
-#      - name: Count vulnerabilities by severity
-#        run: |
-#          chmod +x ./count_snyk_vulns.sh
-#          ./count_snyk_vulns.sh sarif_files/*.sarif > severity_counts.txt
-#          cat severity_counts.txt
-#          grep CRITICAL severity_counts.txt >> $GITHUB_ENV || echo "CRITICAL=0" >> $GITHUB_ENV
-#          grep HIGH severity_counts.txt >> $GITHUB_ENV || echo "HIGH=0" >> $GITHUB_ENV
-#          grep MEDIUM severity_counts.txt >> $GITHUB_ENV || echo "MEDIUM=0" >> $GITHUB_ENV
-#          grep LOW severity_counts.txt >> $GITHUB_ENV || echo "LOW=0" >> $GITHUB_ENV
-#
-#      - name: Set notification flag
-#        run: |
-#          if [ "${CRITICAL:-0}" -ne 0 ] || [ "${HIGH:-0}" -ne 0 ] || [ "${MEDIUM:-0}" -ne 0 ] || [ "${LOW:-0}" -ne 0 ]; then
-#            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
-#          else
-#            echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
-#          fi
-#
-#      - name: Slack Notification (if enabled)
-#        if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-#        uses: slackapi/slack-github-action@v2.1.1
-#        with:
-#          payload: |
-#            {
-#              "blocks": [
-#                {
-#                  "type": "header",
-#                  "text": { "type": "plain_text", "text": "SNYK Vulnerability Scan Report: ${{ github.event.repository.name }}" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": { "type": "mrkdwn", "text": "*Scan Summary:*" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": { "type": "mrkdwn", "text": ":rotating_light: *CRITICAL:* ${{ env.CRITICAL }}" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": { "type": "mrkdwn", "text": ":sign-warning: *HIGH:* ${{ env.HIGH }}" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": { "type": "mrkdwn", "text": ":orange_heart: *MEDIUM:* ${{ env.MEDIUM }}" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": { "type": "mrkdwn", "text": ":yellow_heart: *LOW:* ${{ env.LOW }}" }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "Please review the results: https://github.com/${{ github.repository }}/security/code-scanning"
-#                  }
-#                }
-#              ]
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SNYK_SLACK_WEBHOOK_URL }}
-#
-#      - name: Fail the pipeline if vulnerabilities found
-#        run: |
-#          if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ] || [ "${MEDIUM:-0}" -gt 0 ] || [ "${LOW:-0}" -gt 0 ]; then
-#            echo "Vulnerabilities detected. Failing job."
-#            exit 1
-#          else
-#            echo "No vulnerabilities found."
-#          fi
+      - name: Count vulnerabilities by severity
+        run: |
+          chmod +x ./count_snyk_vulns.sh
+          ./count_snyk_vulns.sh sarif_files/*.sarif > severity_counts.txt
+          cat severity_counts.txt
+          grep CRITICAL severity_counts.txt >> $GITHUB_ENV || echo "CRITICAL=0" >> $GITHUB_ENV
+          grep HIGH severity_counts.txt >> $GITHUB_ENV || echo "HIGH=0" >> $GITHUB_ENV
+          grep MEDIUM severity_counts.txt >> $GITHUB_ENV || echo "MEDIUM=0" >> $GITHUB_ENV
+          grep LOW severity_counts.txt >> $GITHUB_ENV || echo "LOW=0" >> $GITHUB_ENV
+
+      - name: Set notification flag
+        run: |
+          if [ "${CRITICAL:-0}" -ne 0 ] || [ "${HIGH:-0}" -ne 0 ] || [ "${MEDIUM:-0}" -ne 0 ] || [ "${LOW:-0}" -ne 0 ]; then
+            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
+          else
+            echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
+          fi
+
+      - name: Slack Notification (if enabled)
+        if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": { "type": "plain_text", "text": "SNYK Vulnerability Scan Report: ${{ github.event.repository.name }}" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": "*Scan Summary:*" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": ":rotating_light: *CRITICAL:* ${{ env.CRITICAL }}" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": ":sign-warning: *HIGH:* ${{ env.HIGH }}" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": ":orange_heart: *MEDIUM:* ${{ env.MEDIUM }}" }
+                },
+                {
+                  "type": "section",
+                  "text": { "type": "mrkdwn", "text": ":yellow_heart: *LOW:* ${{ env.LOW }}" }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Please review the results: https://github.com/${{ github.repository }}/security/code-scanning"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SNYK_SLACK_WEBHOOK_URL }}
+
+      - name: Fail the pipeline if vulnerabilities found
+        run: |
+          if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ] || [ "${MEDIUM:-0}" -gt 0 ] || [ "${LOW:-0}" -gt 0 ]; then
+            echo "Vulnerabilities detected. Failing job."
+            exit 1
+          else
+            echo "No vulnerabilities found."
+          fi
