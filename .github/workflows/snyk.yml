@@ -77,6 +77,22 @@ jobs:
         with:
           sarif_file: sarif_files
 
+      # === Upload to Snyk Dashboard (monitor/report) ===
+
+      - name: Monitor Open Source Dependencies in Snyk Dashboard
+        run: snyk monitor --all-projects --org=${{ secrets.SNYK_ORG_ID }}
+
+      - name: Upload Docker Image to Snyk Dashboard
+        run: snyk container monitor laa-record-link-service:latest --file=Dockerfile-WorkFlow --org=${{ secrets.SNYK_ORG_ID }}
+
+      - name: Upload Snyk Code results to Dashboard
+        run: snyk code test --report --org=${{ secrets.SNYK_ORG_ID }}
+
+      - name: Upload IaC results to Snyk Dashboard
+        run: snyk iac test --report --org=${{ secrets.SNYK_ORG_ID }}
+
+      # === Slack Integration ===
+
       - name: Count vulnerabilities by severity
         run: |
           chmod +x ./count_snyk_vulns.sh
