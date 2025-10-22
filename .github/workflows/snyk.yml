@@ -32,60 +32,45 @@ jobs:
           docker build . --file Dockerfile-WorkFlow --tag laa-record-link-service:latest --progress=plain --no-cache
 
       - name: Snyk Docker Vulnerability Test
+        uses: snyk/actions/docker@master
         continue-on-error: true
-        run: |
-          npm install -g snyk
-          snyk test --docker laa-record-link-service:latest \
-            --org=${{ secrets.SNYK_ORG_ID }} \
-            --auth=${{ secrets.SNYK_TOKEN }} \
-            --sarif \
-            --sarif-file-output=snyk_docker_test.sarif \
-            --exit-code=0
+        with:
+          image: laa-record-link-service:latest
+          args: --org=${{ secrets.SNYK_ORG_ID }} --sarif --sarif-file-output=snyk_docker_test.sarif
 
-      - name: Debug SARIF File Creation
-        run: |
-          echo "==> List files in workspace:"
-          ls -lah
-          echo "==> Check if snyk_docker_test.sarif exists:"
-          if [ -f snyk_docker_test.sarif ]; then
-            echo "SARIF file created."
-          else
-            echo "SARIF file NOT created."
-          fi
+      - name: Replace null severities in Docker SARIF
+        run: sed -i 's/"null"/"0"/g' snyk_docker_test.sarif || echo "No nulls to replace"
 
-      - name: Replace null severities in SARIF
-        run: sed -i 's/"null"/"0"/g' snyk_docker_test.sarif || echo "No replacement needed"
-
-      - name: Run Snyk Gradle Test
+      - name: Snyk Gradle Dependency Scan
         uses: snyk/actions/gradle@master
         continue-on-error: true
         with:
           command: test --sarif
           args: --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk_test.sarif
 
-      - name: Replace undefined severities
-        run: sed -i 's/"undefined"/"0"/g' snyk_test.sarif || echo "No replacement needed"
+      - name: Replace undefined severities in Gradle SARIF
+        run: sed -i 's/"undefined"/"0"/g' snyk_test.sarif || echo "No undefineds to replace"
 
-      - name: Run Snyk Code Test
+      - name: Snyk Code Test
         uses: snyk/actions/gradle@master
         continue-on-error: true
         with:
           command: code test --sarif
           args: --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk_code_test.sarif
 
-      - name: Snyk IaC Scan
+      - name: Snyk Infrastructure-as-Code (IaC) Scan
         uses: snyk/actions/gradle@master
         continue-on-error: true
         with:
           command: iac test --sarif
           args: --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk_iac_test.sarif
 
-      - name: Collect SARIF Files
+      - name: Collect SARIF files
         run: |
           mkdir -p sarif_files
-          mv snyk_test.sarif snyk_code_test.sarif snyk_iac_test.sarif snyk_docker_test.sarif sarif_files/ || echo "Some SARIF files missing"
+          mv snyk_*.sarif sarif_files/ || echo "Some SARIF files missing"
 
-      - name: Upload results to GitHub Code Scanning
+      - name: Upload to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif_files
@@ -100,7 +85,7 @@ jobs:
           grep MEDIUM severity_counts.txt >> $GITHUB_ENV || echo "MEDIUM=0" >> $GITHUB_ENV
           grep LOW severity_counts.txt >> $GITHUB_ENV || echo "LOW=0" >> $GITHUB_ENV
 
-      - name: Set SHOULD_NOTIFY flag
+      - name: Set notification flag
         run: |
           if [ "${CRITICAL:-0}" -ne 0 ] || [ "${HIGH:-0}" -ne 0 ] || [ "${MEDIUM:-0}" -ne 0 ] || [ "${LOW:-0}" -ne 0 ]; then
             echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
@@ -108,8 +93,7 @@ jobs:
             echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
           fi
 
-      - name: Notify Slack (if enabled)
-        id: slack
+      - name: Slack Notification (if enabled)
         if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: slackapi/slack-github-action@v2.1.1
         with:
@@ -144,7 +128,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Please review the scan results. \n\nView on GitHub: https://github.com/${{ github.repository }}/security/code-scanning"
+                    "text": "Please review the results: https://github.com/${{ github.repository }}/security/code-scanning"
                   }
                 }
               ]
@@ -152,10 +136,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SNYK_SLACK_WEBHOOK_URL }}
 
-      - name: Fail build if vulnerabilities found
+      - name: Fail the pipeline if vulnerabilities found
         run: |
           if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ] || [ "${MEDIUM:-0}" -gt 0 ] || [ "${LOW:-0}" -gt 0 ]; then
-            echo "Vulnerabilities found — failing build."
+            echo "Vulnerabilities detected. Failing job."
             exit 1
           else
             echo "No vulnerabilities found."
