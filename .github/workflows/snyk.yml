@@ -29,6 +29,13 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v5
 
+      - name: Set up Snyk CLI
+        uses: snyk/actions/setup@master
+        with:
+          version: 'latest' # or specify a version like '1.1300.1'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       - name: Build Docker image
         run: |
           docker build . --file Dockerfile-WorkFlow --tag laa-record-link-service:latest --progress=plain --no-cache
