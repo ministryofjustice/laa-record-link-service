@@ -1,0 +1,271 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-custom-rules-${NAMESPACE}
+  namespace: ${NAMESPACE}
+  labels:
+    role: alert-rules
+    prometheus: prometheus-operator
+    release: prometheus-operator
+spec:
+  groups:
+    - name: meta-rules
+      rules:
+        - record: is_alert_hours
+          expr: hour() >= 6 and hour() < 20 #alerts are silenced between 20:00–05:59 UTC (which is 21:00–06:59 BST). Alerts fire between 06:00–19:59 UTC (07:00–20:59 BST).
+    - name: kubernetes-rules
+      rules:
+        - alert: KubePodNotReady
+          annotations:
+            message: Pod {{ $labels.namespace }}/{{ $labels.pod }} in ${ENV_NAME} has been in a non-ready
+              state for longer than fifteen minutes.
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: sum by (namespace, pod) (kube_pod_status_phase{job="kube-state-metrics",phase!~"Running|Succeeded", namespace="${NAMESPACE}"}) > 0
+          for: 15m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: KubePodCrashLooping
+          annotations:
+            message: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) in ${ENV_NAME} is restarting excessively
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodcrashlooping
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace="${NAMESPACE}"}[10m]) * 60 * 10 > 1
+          for: 5m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: KubeNamespaceQuotaNearing
+          annotations:
+            message: Namespace {{ $labels.namespace }} is using {{ printf "%0.0f" $value }}% of its {{ $labels.resource }} quota.
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaexceeded
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |-
+            100 * kube_resourcequota{job="kube-state-metrics", type="used", namespace="${NAMESPACE}"}
+              / ignoring(instance, job, type)
+            (kube_resourcequota{job="kube-state-metrics", type="hard", namespace="${NAMESPACE}"} > 0)
+              > 80
+          for: 5m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: KubeJobFailed
+          annotations:
+            message: Failed Cron Job in {{ $labels.namespace }}/{{ $labels.job_name }} in ${ENV_NAME}
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: kube_job_status_failed{job="kube-state-metrics", namespace="${NAMESPACE}"}  > 0
+          for: 1h
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: KubeDeploymentGenerationMismatch
+          annotations:
+            message: Deployment generation mismatch in {{ $labels.namespace }} due to possible roll-back.
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentgenerationmismatch
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: (kube_deployment_status_observed_generation{job="kube-state-metrics",namespace="${NAMESPACE}"} != kube_deployment_metadata_generation{job="kube-state-metrics",namespace="${NAMESPACE}"})
+          for: 15m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: KubeDeploymentReplicasMismatch
+          annotations:
+            message: Deployment in {{ $labels.namespace }} has not matched the expected number of replicas.
+            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/blob/master/runbook.md#alert-name-kubedeploymentreplicasmismatch
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: (kube_deployment_spec_replicas{job="kube-state-metrics",namespace="${NAMESPACE}"} != kube_deployment_status_replicas_available{job="kube-state-metrics",namespace="${NAMESPACE}"})
+          for: 15m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+    - name: application-rules
+      rules:
+        - alert: nginx-SlowResponses
+          annotations:
+            message: Ingress in ${ENV_NAME} is serving slow responses over 2 seconds.
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |-
+            avg(rate(nginx_ingress_controller_request_duration_seconds_sum{exported_namespace = "${NAMESPACE}"}[5m])
+            /
+            rate(nginx_ingress_controller_request_duration_seconds_count{exported_namespace = "${NAMESPACE}"}[5m]) > 0) by (ingress) >2
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: 5xxErrorResponses
+          annotations:
+            message: Ingress in ${ENV_NAME} is serving 5XX responses.
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: sum(rate(nginx_ingress_controller_requests{exported_namespace="${NAMESPACE}", status=~"5.*"}[5m]))*270 > 10
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: 4xxErrorResponses
+          annotations:
+            message: Ingress in ${ENV_NAME} is serving 4XX responses.
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: sum(rate(nginx_ingress_controller_requests{exported_namespace="${NAMESPACE}", status=~"4.*"}[5m]))*270 > 10
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: ContainerMemoryUsageHigh
+          annotations:
+            message: Memory usage compared to the memory limit on the container in ${ENV_NAME} is more than 85% for 5m
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |-
+            (sum(container_memory_working_set_bytes{namespace="${NAMESPACE}", container="laa-record-link-service", image!=""}) 
+            / 
+            sum(kube_pod_container_resource_limits{namespace="${NAMESPACE}", container="laa-record-link-service", unit="byte"})) * 100 > 85
+          for: 5m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+    - name: database-rules
+      rules:
+        - alert: RDSHighCPU
+          annotations:
+            message: CPU usage for the RDS instance in {{ $labels.namespace }} over 75%
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_cpuutilization_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 75
+            )
+            OR
+            (
+              aws_rds_cpuutilization_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 75
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSLowStorage
+          annotations:
+            message: Free storage space for the RDS instance in {{ $labels.namespace }} is less than 1GB
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_free_storage_space_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} < 1024*1024*1024
+            )
+            OR
+            (
+              aws_rds_free_storage_space_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} < 1024*1024*1024
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSHighReadLatency
+          annotations:
+            message: Read latency for the RDS instance in {{ $labels.namespace }} is over 0.5 seconds
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_read_latency_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 0.5
+            )
+            OR
+            (
+              aws_rds_read_latency_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 0.5
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSHighWriteLatency
+          annotations:
+            message: Write latency for the RDS instance in {{ $labels.namespace }} is over 0.5 seconds
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_write_latency_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 0.5
+            )
+            OR
+            (
+              aws_rds_write_latency_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 0.5
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSLowFreeableMemory
+          annotations:
+            message: Freeable memory for the RDS instance in {{ $labels.namespace }} is less than ${RDS_LOW_FREEABLE_MEMORY_TRIGGER}MB
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_freeable_memory_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} < ${RDS_LOW_FREEABLE_MEMORY_TRIGGER}*1024*1024
+            )
+            OR
+            (
+              aws_rds_freeable_memory_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} < ${RDS_LOW_FREEABLE_MEMORY_TRIGGER}*1024*1024
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSHighWriteIOPS
+          annotations:
+            message: Write operations for the RDS instance in {{ $labels.namespace }} are over 300 per second
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_write_iops_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 300
+            )
+            OR
+            (
+              aws_rds_write_iops_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 300
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSHighReadIOPS
+          annotations:
+            message: Read operations for the RDS instance in {{ $labels.namespace }} are over 900 per second
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_read_iops_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 900
+            )
+            OR
+            (
+              aws_rds_read_iops_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 900
+            )
+          for: 1m
+          labels:
+            severity: ${ALERT_SEVERITY}
+
+        - alert: RDSHighDatabaseConnections
+          annotations:
+            message: Database connection count for the RDS instance in {{ $labels.namespace }} is over 65
+            dashboard_url: "https://grafana.live.cloud-platform.service.justice.gov.uk/d/${NAMESPACE}"
+          expr: |
+            (
+              is_alert_hours
+              AND
+              aws_rds_database_connections_average{dbinstance_identifier="$RDS_DB_IDENTIFIER"} > 65
+            )
+            OR
+            (
+              aws_rds_database_connections_average{dbinstance_identifier="$RDS_DB_IDENTIFIER", environment="prod"} > 65
+            )
+          for: 5m
+          labels:
+            severity: ${ALERT_SEVERITY}
