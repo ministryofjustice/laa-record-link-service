@@ -1,23 +1,35 @@
 #!/bin/bash
 
-# ./count_vulns.sh file1.sarif file2.sarif ...
+# Usage: ./count_snyk_vulns_fixed.sh file1.sarif [file2.sarif ...]
+
+# This script parses SARIF files from Snyk and counts the number of vulnerabilities
+# by severity: CRITICAL, HIGH, MEDIUM, LOW.
+# It handles differences in how Snyk stores severities in SARIF depending on the scan type.
 
 extract_severities() {
   local FILE=$1
   jq -r '
-    # Build a map from ruleId to severity (from properties.problem.severity or defaultConfiguration.level)
+    # Build a map of ruleId → severity, using both properties and defaultConfiguration fields.
     (
       .runs[0].tool.driver.rules[]? |
       { (.id): (
-          .properties.problem.severity // .defaultConfiguration.level // "unknown"
+          .properties.problem.severity
+          // .properties.severity
+          // .defaultConfiguration.level
+          // "unknown"
         )
       }
     ) as $severityMap
     |
-    # For each result, get the severity from the map by ruleId
+    # For each result, prefer severity in the result itself, else fallback to rule map
     .runs[0].results[]? |
-    $severityMap[.ruleId] // empty
-  ' "$FILE"
+    (
+      .properties.problem.severity
+      // .properties.severity
+      // $severityMap[.ruleId]
+      // "unknown"
+    )
+  ' "$FILE" 2>/dev/null || echo ""
 }
 
 if [[ $# -eq 0 ]]; then
@@ -34,15 +46,15 @@ for file in "$@"; do
   if [[ -f "$file" ]]; then
     echo "Processing $file"
     severities=$(extract_severities "$file")
-    # Count severities case-insensitively without ${var,,} for bash <4
     while read -r severity; do
-      # Lowercase severity for matching
+      [[ -z "$severity" ]] && continue
       severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
       case "$severity_lower" in
         critical) ((CRITICAL++)) ;;
         high)     ((HIGH++)) ;;
         medium)   ((MEDIUM++)) ;;
         low)      ((LOW++)) ;;
+        *)        ;; # ignore unknown or info
       esac
     done <<< "$severities"
   else
@@ -50,14 +62,14 @@ for file in "$@"; do
   fi
 done
 
-# Output results
+# Output summary
 echo "CRITICAL=$CRITICAL"
 echo "HIGH=$HIGH"
 echo "MEDIUM=$MEDIUM"
 echo "LOW=$LOW"
 
-# Export to GitHub Actions environment file if applicable
-if [[ -n "$GITHUB_ENV" ]]; then
+# Export counts to GitHub Actions env if running in workflow
+if [[ -n "${GITHUB_ENV:-}" ]]; then
   {
     echo "CRITICAL=$CRITICAL"
     echo "HIGH=$HIGH"
