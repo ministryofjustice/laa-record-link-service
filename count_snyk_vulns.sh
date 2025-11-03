@@ -4,30 +4,19 @@
 
 extract_severities() {
   local FILE=$1
+  # Simplified jq: only trusts severity fields directly on the result object (.results[]?)
+  # This prevents double-counting caused by the script finding severity both
+  # on the result and through the rule map lookup.
   jq -r '
-    # 1. Build a map from ruleId to severity (from rule definition) - useful for SnykCode
-    (
-      .runs[0].tool.driver.rules[]? |
-      { (.id): (
-          .properties.problem.severity // .defaultConfiguration.level // "unknown"
-        )
-      }
-    ) as $severityMap
-    |
-    # 2. Iterate through results and try to get severity from the result itself first,
-    #    then fall back to the rule map
     .runs[0].results[]? |
     (
-      # Check Snyk-specific property first (most reliable for Snyk)
+      # 1. High priority: Snyk-specific property (most reliable)
       .properties.snyk.severity?
       //
-      # Check SARIF "level" property on the result
+      # 2. Second priority: Standard SARIF "level" on the result object
       .level?
       //
-      # Fallback to the severity map created in step 1
-      $severityMap[.ruleId]?
-      //
-      # Final fallback if none of the above are present
+      # 3. Final fallback
       "unknown"
     )
   ' "$FILE"
@@ -59,7 +48,7 @@ for file in "$@"; do
       severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
       case "$severity_lower" in
         critical) ((CRITICAL++)) ;;
-        high|error) ((HIGH++)) ;;     # Map 'error' to HIGH (common Snyk/SARIF level)
+        high|error) ((HIGH++)) ;;     # Map 'error' to HIGH
         medium|warning) ((MEDIUM++)) ;; # Map 'warning' to MEDIUM
         low|note)      ((LOW++)) ;;
       esac
