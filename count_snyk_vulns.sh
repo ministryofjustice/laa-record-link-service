@@ -7,13 +7,13 @@
 #
 # It:
 #  - Handles differences in how Snyk stores severities in SARIF depending on scan type
-#  - Deduplicates repeated results (same ruleId regardless of location)
+#  - Deduplicates repeated results (same ruleId + first location URI)
 #  - Exports results for GitHub Actions
 
 extract_severities() {
   local FILE=$1
   jq -r '
-    # Map ruleId → severity
+    # Build a map of ruleId → severity from rules
     ( .runs[].tool.driver.rules[]? |
       { (.id): (
           .properties.problem.severity
@@ -24,15 +24,11 @@ extract_severities() {
       }
     ) as $severityMap
     |
-    # Collect results across all runs with deduplication key: ruleId + severity
+    # Collect results across all runs with deduplication key: ruleId + first location URI
     [ .runs[].results[]? |
       {
         key: (.ruleId // "") + ":" +
-             (.properties.problem.severity
-              // .properties.severity
-              // .level
-              // $severityMap[.ruleId]
-              // "unknown"),
+             (.locations[0].physicalLocation.artifactLocation.uri // ""),
         severity: (
           .properties.problem.severity
           // .properties.severity
