@@ -80,7 +80,7 @@ jobs:
           mv snyk_*.sarif sarif_files/ || echo "Some SARIF files missing"
 
       - name: Upload to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: sarif_files
 
