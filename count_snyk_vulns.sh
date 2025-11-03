@@ -7,7 +7,8 @@
 #
 # It:
 #  - Handles differences in how Snyk stores severities in SARIF depending on scan type
-#  - Deduplicates repeated results (same ruleId/message/location)
+#  - Deduplicates repeated results (same ruleId + file location)
+#  - Exports results for GitHub Actions
 
 extract_severities() {
   local FILE=$1
@@ -23,12 +24,11 @@ extract_severities() {
       }
     ) as $severityMap
     |
-    # Collect results across all runs, include a unique key to deduplicate
+    # Collect results across all runs, include a simplified unique key to deduplicate
     [ .runs[].results[]? |
       {
         key: (
           (.ruleId // "") + ":" +
-          (.message.text // "") + ":" +
           (.locations[0].physicalLocation.artifactLocation.uri // "")
         ),
         severity: (
