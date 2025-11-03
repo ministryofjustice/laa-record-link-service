@@ -18,10 +18,10 @@ extract_severities() {
     #    then fall back to the rule map
     .runs[0].results[]? |
     (
-      # Check Snyk-specific property first
+      # Check Snyk-specific property first (most reliable for Snyk)
       .properties.snyk.severity?
       //
-      # Check SARIF "level" property
+      # Check SARIF "level" property on the result
       .level?
       //
       # Fallback to the severity map created in step 1
@@ -53,15 +53,15 @@ for file in "$@"; do
       continue
     fi
 
-    # Count severities case-insensitively without ${var,,} for bash <4
+    # Count severities case-insensitively, handling common SARIF/Snyk levels
     while read -r severity; do
       # Lowercase severity for matching
       severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
       case "$severity_lower" in
         critical) ((CRITICAL++)) ;;
-        high)     ((HIGH++)) ;;
-        medium)   ((MEDIUM++)) ;;
-        low)      ((LOW++)) ;;
+        high|error) ((HIGH++)) ;;     # Map 'error' to HIGH (common Snyk/SARIF level)
+        medium|warning) ((MEDIUM++)) ;; # Map 'warning' to MEDIUM
+        low|note)      ((LOW++)) ;;
       esac
     done <<< "$severities"
   else
