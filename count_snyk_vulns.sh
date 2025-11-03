@@ -1,17 +1,19 @@
 #!/bin/bash
 
 # Usage: ./count_snyk_vulns_fixed.sh file1.sarif [file2.sarif ...]
-
+#
 # This script parses SARIF files from Snyk and counts the number of vulnerabilities
 # by severity: CRITICAL, HIGH, MEDIUM, LOW.
-# It handles differences in how Snyk stores severities in SARIF depending on the scan type.
+#
+# It:
+#  - Handles differences in how Snyk stores severities in SARIF depending on scan type
+#  - Deduplicates repeated results (same ruleId/message/location)
 
 extract_severities() {
   local FILE=$1
   jq -r '
     # Build a map of ruleId → severity from the rules section
-    (
-      .runs[0].tool.driver.rules[]? |
+    ( .runs[].tool.driver.rules[]? |
       { (.id): (
           .properties.problem.severity
           // .properties.severity
@@ -21,15 +23,25 @@ extract_severities() {
       }
     ) as $severityMap
     |
-    # For each result, pick the most specific severity source
-    .runs[0].results[]? |
-    (
-      .properties.problem.severity
-      // .properties.severity
-      // .level
-      // $severityMap[.ruleId]
-      // "unknown"
-    )
+    # Collect results across all runs, include a unique key to deduplicate
+    [ .runs[].results[]? |
+      {
+        key: (
+          (.ruleId // "") + ":" +
+          (.message.text // "") + ":" +
+          (.locations[0].physicalLocation.artifactLocation.uri // "")
+        ),
+        severity: (
+          .properties.problem.severity
+          // .properties.severity
+          // .level
+          // $severityMap[.ruleId]
+          // "unknown"
+        )
+      }
+    ]
+    | unique_by(.key)
+    | .[].severity
   ' "$FILE" 2>/dev/null || echo ""
 }
 
@@ -47,9 +59,6 @@ for file in "$@"; do
   if [[ -f "$file" ]]; then
     echo "Processing $file"
     severities=$(extract_severities "$file")
-
-    # Debug (uncomment to inspect)
-    # echo "$severities"
 
     while read -r severity; do
       [[ -z "$severity" ]] && continue
