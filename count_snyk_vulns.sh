@@ -1,48 +1,43 @@
 #!/bin/bash
 
-# count_snyk_vulns_fixed.sh
-# Usage: ./count_snyk_vulns_fixed.sh file1.sarif [file2.sarif ...]
+# ./count_vulns.sh file1.sarif file2.sarif ...
 
-if [[ $# -eq 0 ]]; then
-  echo "Usage: $0 <sarif_file1> [<sarif_file2> ...]"
-  exit 1
-fi
-
-# Extract severities from a SARIF file, handling empty results gracefully
 extract_severities() {
   local FILE=$1
   jq -r '
-    # Build ruleId → severity map with fallbacks
-    ( .runs[].tool.driver.rules[]? |
+    # 1. Build a map from ruleId to severity (from rule definition) - useful for SnykCode
+    (
+      .runs[0].tool.driver.rules[]? |
       { (.id): (
-          .properties.problem.severity
-          // .properties.severity
-          // .defaultConfiguration.level
-          // "unknown"
+          .properties.problem.severity // .defaultConfiguration.level // "unknown"
         )
       }
     ) as $severityMap
     |
-    # Collect results with a unique key: ruleId + first location URI or message
-    [ .runs[].results[]? |
-      {
-        key: (.ruleId // "") + ":" +
-             (.locations[0].physicalLocation.artifactLocation.uri // (.message.text // "")),
-        severity: (
-          .properties.problem.severity
-          // .properties.severity
-          // .level
-          // $severityMap[.ruleId]
-          // "unknown"
-        )
-      }
-    ]
-    | unique_by(.key)
-    | .[].severity
-  ' "$FILE" 2>/dev/null || echo ""
+    # 2. Iterate through results and try to get severity from the result itself first,
+    #    then fall back to the rule map
+    .runs[0].results[]? |
+    (
+      # Check Snyk-specific property first
+      .properties.snyk.severity?
+      //
+      # Check SARIF "level" property
+      .level?
+      //
+      # Fallback to the severity map created in step 1
+      $severityMap[.ruleId]?
+      //
+      # Final fallback if none of the above are present
+      "unknown"
+    )
+  ' "$FILE"
 }
 
-# Initialize counts
+if [[ $# -eq 0 ]]; then
+  echo "Usage: $0 file1.sarif [file2.sarif ...]"
+  exit 1
+fi
+
 CRITICAL=0
 HIGH=0
 MEDIUM=0
@@ -51,15 +46,22 @@ LOW=0
 for file in "$@"; do
   if [[ -f "$file" ]]; then
     echo "Processing $file"
+    # Safely call the function and check if output is empty
     severities=$(extract_severities "$file")
+    if [[ -z "$severities" ]]; then
+      echo "  No results or severity data extracted from $file."
+      continue
+    fi
+
+    # Count severities case-insensitively without ${var,,} for bash <4
     while read -r severity; do
-      [[ -z "$severity" ]] && continue
+      # Lowercase severity for matching
       severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
       case "$severity_lower" in
         critical) ((CRITICAL++)) ;;
-        high|error) ((HIGH++)) ;;
-        medium|warning) ((MEDIUM++)) ;;
-        low|note|info) ((LOW++)) ;;
+        high)     ((HIGH++)) ;;
+        medium)   ((MEDIUM++)) ;;
+        low)      ((LOW++)) ;;
       esac
     done <<< "$severities"
   else
@@ -67,14 +69,13 @@ for file in "$@"; do
   fi
 done
 
-echo "================================="
+# Output results
 echo "CRITICAL=$CRITICAL"
 echo "HIGH=$HIGH"
 echo "MEDIUM=$MEDIUM"
 echo "LOW=$LOW"
-echo "================================="
 
-# Export to GitHub Actions environment if applicable
+# Export to GitHub Actions environment file if applicable
 if [[ -n "$GITHUB_ENV" ]]; then
   {
     echo "CRITICAL=$CRITICAL"
