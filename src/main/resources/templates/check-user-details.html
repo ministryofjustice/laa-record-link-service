@@ -16,7 +16,7 @@
     <ol class="govuk-breadcrumbs__list">
         <li class="govuk-breadcrumbs__list-item">
             <a class="govuk-breadcrumbs__link"
-               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}"
+               th:href="${homeUrl}"
                th:text="${hasFilters} ? 'Back to search results' : 'Home'"></a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
@@ -185,7 +185,7 @@
                     <button class="govuk-button" data-module="govuk-button" type="submit">
                         Continue
                     </button>
-                    <a class="govuk-link" th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
+                    <a class="govuk-link" th:href="${homeUrl}">
                         Cancel
                     </a>
                 </div>

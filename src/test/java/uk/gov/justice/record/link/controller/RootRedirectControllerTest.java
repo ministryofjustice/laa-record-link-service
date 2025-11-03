@@ -51,6 +51,19 @@ class RootRedirectControllerTest {
     }
 
     @Test
+    void shouldRedirectToInternalViewerPageForViewerUser() throws Exception {
+        mockMvc.perform(get("/")
+                        .with(oidcLogin()
+                                .idToken(token -> token.claims(claims -> {
+                                    claims.put(SilasConstants.APP_ROLES, List.of("viewer"));
+                                    claims.put(SilasConstants.SILAS_LOGIN_ID, "viewerUser");
+                                }))
+                        ))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/internal/viewer"));
+    }
+
+    @Test
     void shouldRedirectToUnauthorizedPageWhenRoleIsMissing() throws Exception {
         mockMvc.perform(get("/")
                         .with(oidcLogin()

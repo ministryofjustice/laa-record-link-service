@@ -64,6 +64,19 @@ public class SecurityConfigTest {
     }
 
     @Test
+    void shouldRedirectToInternalViewerPage() throws Exception {
+        Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("CCMS case transfer requests - Viewer"));
+
+        when(authentication.getPrincipal()).thenReturn(oidcUser);
+        when(oidcUser.getAttributes()).thenReturn(attributes);
+
+        AuthenticationSuccessHandler handler = securityConfig.customSuccessHandler();
+        handler.onAuthenticationSuccess(request, response, authentication);
+
+        verify(response).sendRedirect("/internal/viewer");
+    }
+
+    @Test
     void shouldRedirectToUnauthorisedPage() throws Exception {
         Map<String, Object> attributes = Map.of("LAA_APP_ROLES", List.of("UNAUTHORIZED"));
 

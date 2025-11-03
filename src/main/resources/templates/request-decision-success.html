@@ -15,12 +15,15 @@
 <nav aria-label="Breadcrumb" class="govuk-breadcrumbs" id="breadcrumbs">
     <ol class="govuk-breadcrumbs__list">
         <li class="govuk-breadcrumbs__list-item">
-            <a class="govuk-breadcrumbs__link" th:href="@{/internal/manage-linking-account}">Home</a>
+            <a class="govuk-breadcrumbs__link" th:href="${homeUrl}">Home</a>
         </li>
     </ol>
 </nav>
 
 <main class="govuk-main-wrapper" id="main-content">
+    <a class="govuk-back-link"
+       th:if="${isInternalAdmin}"
+       th:href="@{'/internal/manage-linking-account/check-user-details'(id=${user.id})}">Back</a>
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <!-- Success panel -->
@@ -55,7 +58,7 @@
             </script>
 
             <div class="govuk-button-group">
-                <a class="govuk-button" th:href="@{/internal/manage-linking-account}" role="button">
+                <a class="govuk-button" th:href="${homeUrl}" role="button">
                     Return to manage transfer requests
                 </a>
             </div>

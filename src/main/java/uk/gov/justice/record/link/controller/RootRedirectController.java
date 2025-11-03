@@ -2,7 +2,6 @@ package uk.gov.justice.record.link.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
@@ -12,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import uk.gov.justice.record.link.service.OidcTokenClaimsExtractor;
 
 import java.util.List;
+
+import static uk.gov.justice.record.link.util.UserRoleIdentifier.isExternalUser;
+import static uk.gov.justice.record.link.util.UserRoleIdentifier.isInternalAdmin;
+import static uk.gov.justice.record.link.util.UserRoleIdentifier.isInternalViewer;
 
 @Controller
 public class RootRedirectController {
@@ -28,21 +31,21 @@ public class RootRedirectController {
 
             log.info("Extracted Roles: {}", roles);
 
-            boolean isInternal = roles.stream()
-                    .anyMatch(role -> role.toLowerCase().contains("intern"));
+            boolean isInternal = isInternalAdmin(roles);
             log.info("Internal Roles: {}", isInternal);
 
-            boolean isExternal = roles.stream()
-                    .anyMatch(role -> {
-                        String r = role.toLowerCase();
-                        return r.contains("external") || r.contains("extern");
-                    });
+            boolean isInternalViewer = isInternalViewer(roles);
+            log.info("Internal viewer role: {}", isInternalViewer);
+
+            boolean isExternal = isExternalUser(roles);
             log.info("External Roles: {}", isExternal);
 
             if (isInternal) {
                 return "redirect:/internal/manage-linking-account";
             } else if (isExternal) {
                 return "redirect:/external/";
+            } else if (isInternalViewer) {
+                return "redirect:/internal/viewer";
             }
 
         }
