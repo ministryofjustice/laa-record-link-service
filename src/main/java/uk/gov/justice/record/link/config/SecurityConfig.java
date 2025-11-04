@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.sendRedirect("/not-authorised");
                         }))
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.deny()));
         return http.build();
     }
