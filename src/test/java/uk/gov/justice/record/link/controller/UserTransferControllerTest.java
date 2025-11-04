@@ -48,6 +48,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -110,7 +111,7 @@ public class UserTransferControllerTest {
         @DisplayName("Should render preview with user data")
         @Test
         void shouldRenderPreviewPageWithUserData() throws Exception {
-            MvcResult result = mockMvc.perform(post("/external/check-answers")
+            MvcResult result = mockMvc.perform(post("/external/check-answers").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -137,7 +138,7 @@ public class UserTransferControllerTest {
         @DisplayName("User transfer form with empty CCMS login id")
         @Test
         void givenEmptyUsername_shouldTriggerPatternViolation() throws Exception {
-            MvcResult result = mockMvc.perform(post("/external/check-answers")
+            MvcResult result = mockMvc.perform(post("/external/check-answers").with(csrf())
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
                     .andExpect(view().name("user-transfer-request"))
@@ -152,7 +153,7 @@ public class UserTransferControllerTest {
         @DisplayName("Should not trigger any other validation from check answer page")
         @Test
         void shouldNotTriggerAnyOtherValidationFromCheckAnswerPage() throws Exception {
-            mockMvc.perform(post("/external/check-answers")
+            mockMvc.perform(post("/external/check-answers").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -176,7 +177,7 @@ public class UserTransferControllerTest {
         @DisplayName("Should add firm id claim to user transfer request")
         @Test
         void addsClaimsToRequest() throws Exception {
-            var result = mockMvc.perform(post("/external/check-answers")
+            var result = mockMvc.perform(post("/external/check-answers").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -245,7 +246,7 @@ public class UserTransferControllerTest {
             when(mockLinkedRequestRepository.countByCcmsUser_LoginIdAndStatusIn(anyString(), anyList())).thenReturn(0);
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -265,7 +266,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -290,7 +291,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -315,7 +316,7 @@ public class UserTransferControllerTest {
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -343,7 +344,7 @@ public class UserTransferControllerTest {
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -366,7 +367,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -389,7 +390,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(any(UserTransferRequest.class), anyString());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -412,7 +413,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -431,7 +432,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -451,7 +452,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Alice")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -469,7 +470,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(user2));
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -487,7 +488,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId("Mo")).thenReturn(Optional.empty());
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "Mo")
                             .param("additionalInfo", "My surname has changed due to marriage."))
                     .andExpect(status().isOk())
@@ -506,7 +507,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.findByLoginId(anyString())).thenReturn(Optional.of(ccmsUser));
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(true);
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "validLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "1234"))
@@ -530,7 +531,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "validLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "invalidCode"))
@@ -556,7 +557,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "validLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "invalidCode"))
@@ -582,7 +583,7 @@ public class UserTransferControllerTest {
             when(mockCcmsUserRepository.existsByLoginIdAndFirmCode(anyString(), anyString())).thenReturn(false);
             doNothing().when(userTransferService).rejectRequest(userTransferRequestCaptor.capture(), reasonCaptor.capture());
 
-            mockMvc.perform(post("/external/request-confirmation")
+            mockMvc.perform(post("/external/request-confirmation").with(csrf())
                             .param("oldLogin", "invalidLoginId")
                             .param("additionalInfo", "My surname has changed due to marriage.")
                             .param("firmCode", "invalidCode"))

@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -767,7 +768,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest assignedRequest = createMockAssignedRequest();
             when(linkedRequestService.assignNextCase("test.user@example.com")).thenReturn(Optional.of(assignedRequest));
 
-            mockMvc.perform(post("/internal/assign-next-case")
+            mockMvc.perform(post("/internal/assign-next-case").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -787,7 +788,7 @@ class ManageLinkingAccountRequestsControllerTest {
         void shouldRedirectToManagePageWhenNoRequestsAvailable() throws Exception {
             when(linkedRequestService.assignNextCase("asdasdasd")).thenReturn(Optional.empty());
 
-            mockMvc.perform(post("/internal/assign-next-case")
+            mockMvc.perform(post("/internal/assign-next-case").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -838,7 +839,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
@@ -858,7 +859,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
@@ -882,7 +883,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
                             .param("decisionReason", "Request meets all criteria")
                             .with(oidcLogin()
@@ -903,7 +904,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
                             .param("decisionReason", "Insufficient documentation provided")
                             .with(oidcLogin()
@@ -962,7 +963,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
                             .param("decisionReason", "   \t\n   ")
                             .with(oidcLogin()
@@ -982,7 +983,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
                             .param("decisionReason", "")
                             .with(oidcLogin()
