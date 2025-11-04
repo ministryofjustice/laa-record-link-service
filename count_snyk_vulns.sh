@@ -50,10 +50,10 @@ for file in "$@"; do
       [[ -z "$severity" ]] && continue
       severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
       case "$severity_lower" in
-        critical) ((CRITICAL++)) ;;
-        high)     ((HIGH++)) ;;
-        medium)   ((MEDIUM++)) ;;
-        low)      ((LOW++)) ;;
+        critical|fatal|severe) ((CRITICAL++)) ;;
+        high|error)     ((HIGH++)) ;;
+        medium|warning)   ((MEDIUM++)) ;;
+        low|note|info)      ((LOW++)) ;;
         *)        ;; # ignore unknown or info
       esac
     done <<< "$severities"
