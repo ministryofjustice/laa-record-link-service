@@ -24,6 +24,7 @@
         Create a transfer request
     </div>
     <form th:action="@{/external/check-answers}" th:method="post" th:object="${userTransferRequest}">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         <div th:if="${#fields.hasErrors()}">
             <div class="govuk-error-summary" data-module="govuk-error-summary"
                  role="alert">
