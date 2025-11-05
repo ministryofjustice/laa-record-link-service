@@ -105,7 +105,7 @@ jobs:
           fi
 
       - name: Slack Notification (if enabled)
-        if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')
         uses: slackapi/slack-github-action@v2.1.1
         with:
           payload: |
