@@ -108,6 +108,7 @@ jobs:
         if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')
         uses: slackapi/slack-github-action@v2.1.1
         with:
+          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
