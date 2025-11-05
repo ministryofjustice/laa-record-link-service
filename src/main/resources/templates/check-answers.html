@@ -21,6 +21,7 @@
 </nav>
 <main class="govuk-main-wrapper" id="main-content">
     <form th:action="@{/external/request-confirmation}" th:method="post" th:object="${userTransferRequest}">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         <div class="govuk-hint govuk-heading-l">
             Create a transfer request
         </div>

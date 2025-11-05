@@ -33,6 +33,7 @@
             <h3 class="govuk-heading-xl">Manage transfer request</h3>
         </div>
         <form method="post" th:action="@{/internal/assign-next-case}">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
             <button type="submit" class="govuk-button moj-search__button"
                     data-module="govuk-button">
                 Assign next case

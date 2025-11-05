@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.eq;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -406,6 +407,66 @@ class ManageLinkingAccountRequestsControllerTest {
     }
 
     @Nested
+    @DisplayName("viewerEndpoints")
+    class ViewerEndpoints {
+
+        @Test
+        void shouldRenderViewerListWithPagedRequest() throws Exception {
+            List<LinkedRequest> mockRequests = List.of(
+                    LinkedRequest.builder()
+                            .id(UUID.randomUUID())
+                            .idamFirstName("First")
+                            .idamLastName("Last")
+                            .idamFirmName("Firm")
+                            .oldLoginId("OLD1")
+                            .createdDate(LocalDateTime.now().minusDays(1))
+                            .status(Status.OPEN)
+                            .build()
+            );
+
+            Page<LinkedRequest> mockPage = new PageImpl<>(mockRequests, PageRequest.of(0, 10), 1);
+            when(linkedRequestService.searchLinkingRequests("", 1, 10)).thenReturn(mockPage);
+
+            mockMvc.perform(get("/internal/viewer")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "viewer.user@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("viewer"))
+                    .andExpect(model().attributeExists("pagedRequest"));
+        }
+
+        @Test
+        void shouldShowRequestDetailsFromViewerPath() throws Exception {
+            LinkedRequest request = LinkedRequest.builder()
+                    .id(UUID.randomUUID())
+                    .idamFirstName("Alice")
+                    .idamLastName("Johnson")
+                    .idamFirmName("Firm A")
+                    .status(Status.OPEN)
+                    .build();
+
+            when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(request));
+
+            mockMvc.perform(get("/internal/viewer/check-user-details")
+                            .param("id", "abc-123")
+                            .with(oidcLogin().idToken(token -> token.claims(claims -> {
+                                claims.put(SilasConstants.USER_EMAIL, "viewer.user@example.com");
+                            }))))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("check-user-details"))
+                    .andExpect(model().attributeExists("user"))
+                    .andExpect(result -> {
+                        CcmsUser ccmsuser = (CcmsUser) result.getModelAndView().getModel().get("ccmsuser");
+                        assertThat(ccmsuser).isNull();
+                    })
+                    .andExpect(model().attributeExists("loggedinUserEmail"));
+        }
+    }
+
+    @Nested
     @DisplayName("CanDownloadLinkAccountData")
     class DownloadLinkAccountData {
 
@@ -707,7 +768,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest assignedRequest = createMockAssignedRequest();
             when(linkedRequestService.assignNextCase("test.user@example.com")).thenReturn(Optional.of(assignedRequest));
 
-            mockMvc.perform(post("/internal/assign-next-case")
+            mockMvc.perform(post("/internal/assign-next-case").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -727,7 +788,7 @@ class ManageLinkingAccountRequestsControllerTest {
         void shouldRedirectToManagePageWhenNoRequestsAvailable() throws Exception {
             when(linkedRequestService.assignNextCase("asdasdasd")).thenReturn(Optional.empty());
 
-            mockMvc.perform(post("/internal/assign-next-case")
+            mockMvc.perform(post("/internal/assign-next-case").with(csrf())
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
                                             claim -> {
@@ -778,7 +839,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
@@ -798,7 +859,7 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
                             .with(oidcLogin()
                                     .idToken(token -> token.claims(
@@ -822,9 +883,14 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
-                            .param("decisionReason", "Request meets all criteria"))
+                            .param("decisionReason", "Request meets all criteria")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/internal/manage-linking-account/decision-success/" + linkedRequest.id))
                     .andExpect(flash().attribute("decision", "APPROVED"))
@@ -838,9 +904,14 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
-                            .param("decisionReason", "Insufficient documentation provided"))
+                            .param("decisionReason", "Insufficient documentation provided")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/internal/manage-linking-account/decision-success/" + linkedRequest.id))
                     .andExpect(flash().attribute("decision", "REJECTED"))
@@ -856,7 +927,12 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(approvedRequest));
 
-            mockMvc.perform(get("/internal/manage-linking-account/decision-success/{id}", approvedRequest.id))
+            mockMvc.perform(get("/internal/manage-linking-account/decision-success/{id}", approvedRequest.id)
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-decision-success"))
                     .andExpect(model().attribute("user", approvedRequest))
@@ -870,7 +946,12 @@ class ManageLinkingAccountRequestsControllerTest {
                     .build();
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(rejectedRequest));
 
-            mockMvc.perform(get("/internal/manage-linking-account/decision-success/{id}", rejectedRequest.id))
+            mockMvc.perform(get("/internal/manage-linking-account/decision-success/{id}", rejectedRequest.id)
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("request-decision-success"))
                     .andExpect(model().attribute("user", rejectedRequest))
@@ -882,9 +963,14 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "APPROVED")
-                            .param("decisionReason", "   \t\n   "))
+                            .param("decisionReason", "   \t\n   ")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("decision-reason"))
                     .andExpect(model().attribute("user", linkedRequest))
@@ -897,9 +983,14 @@ class ManageLinkingAccountRequestsControllerTest {
             LinkedRequest linkedRequest = createMockLinkedRequests().get(0);
             when(linkedRequestService.getRequestById(anyString())).thenReturn(Optional.of(linkedRequest));
 
-            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id)
+            mockMvc.perform(post("/internal/manage-linking-account/manage/{id}/submit-decision", linkedRequest.id).with(csrf())
                             .param("decision", "REJECTED")
-                            .param("decisionReason", ""))
+                            .param("decisionReason", "")
+                            .with(oidcLogin()
+                                    .idToken(token -> token.claims(claims -> {
+                                        claims.put(SilasConstants.USER_EMAIL, "test@example.com");
+                                    }))
+                                    .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"))))
                     .andExpect(status().isOk())
                     .andExpect(view().name("decision-reason"))
                     .andExpect(model().attribute("user", linkedRequest))

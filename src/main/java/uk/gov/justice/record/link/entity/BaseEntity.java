@@ -7,7 +7,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 
@@ -15,6 +17,8 @@ import lombok.experimental.SuperBuilder;
 @MappedSuperclass
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)

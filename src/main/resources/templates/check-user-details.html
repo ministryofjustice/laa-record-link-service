@@ -16,7 +16,7 @@
     <ol class="govuk-breadcrumbs__list">
         <li class="govuk-breadcrumbs__list-item">
             <a class="govuk-breadcrumbs__link"
-               th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}"
+               th:href="${homeUrl}"
                th:text="${hasFilters} ? 'Back to search results' : 'Home'"></a>
         </li>
         <li class="govuk-breadcrumbs__list-item">
@@ -61,6 +61,7 @@
                 <form class="form" th:if="${!(isAccessGranted ?: false)}"
                       th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/grant-access'}"
                       method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                     <div class="moj-page-header-actions__actions">
                         <!-- Possibly grant access button here -->
                     </div>
@@ -158,6 +159,7 @@
     <div class="govuk-grid-row" th:if="${user.status?.name() == 'OPEN' and user.laaAssignee == loggedinUserEmail}">
         <div class="govuk-grid-column-full">
             <form th:action="@{'/internal/manage-linking-account/manage/' + ${user.id} + '/decision'}" method="post">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <div class="govuk-form-group">
                     <fieldset class="govuk-fieldset" aria-describedby="decision-hint">
                         <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
@@ -185,7 +187,7 @@
                     <button class="govuk-button" data-module="govuk-button" type="submit">
                         Continue
                     </button>
-                    <a class="govuk-link" th:href="${hasFilters} ? @{/internal/manage-linking-account(backButton=true)} : @{/internal/manage-linking-account}">
+                    <a class="govuk-link" th:href="${homeUrl}">
                         Cancel
                     </a>
                 </div>

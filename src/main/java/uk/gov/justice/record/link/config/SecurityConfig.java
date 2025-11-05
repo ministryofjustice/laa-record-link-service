@@ -33,6 +33,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**", "/health/**").permitAll()
                         .requestMatchers("/external/**").hasRole(Roles.EXTERNAL.getRoleName())
+                        .requestMatchers("/internal/viewer/**").hasRole(Roles.INTERNAL_VIEWER.getRoleName())
                         .requestMatchers("/internal/**").hasRole(Roles.INTERNAL.getRoleName())
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
@@ -43,7 +44,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.sendRedirect("/not-authorised");
                         }))
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.deny()));
         return http.build();
     }
@@ -91,6 +92,8 @@ public class SecurityConfig {
                     redirectUrl = "/internal/manage-linking-account";
                 } else if (roles.stream().anyMatch(r -> r.equalsIgnoreCase(Roles.EXTERNAL.getRoleName()))) {
                     redirectUrl = "/external/";
+                } else if (roles.stream().anyMatch(r -> r.equalsIgnoreCase(Roles.INTERNAL_VIEWER.getRoleName()))) {
+                    redirectUrl = "/internal/viewer";
                 } else {
                     redirectUrl = "/not-authorised";
                 }

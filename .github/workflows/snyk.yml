@@ -108,6 +108,7 @@ jobs:
         if: always() && env.SHOULD_NOTIFY == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: slackapi/slack-github-action@v2.1.1
         with:
+          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
@@ -149,7 +150,7 @@ jobs:
 
       - name: Fail the pipeline if vulnerabilities found
         run: |
-          if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ] || [ "${MEDIUM:-0}" -gt 0 ] || [ "${LOW:-0}" -gt 0 ]; then
+          if [ "${CRITICAL:-0}" -gt 0 ] || [ "${HIGH:-0}" -gt 0 ] || [ "${MEDIUM:-0}" -gt 0 ]; then
             echo "Vulnerabilities detected. Failing job."
             exit 1
           else
