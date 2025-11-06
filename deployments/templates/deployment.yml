@@ -14,6 +14,9 @@ spec:
       labels:
         app: laa-record-link-service  # this should match the selector in service.yml
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
       containers:
         - name: laa-record-link-service
           image: ${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}
