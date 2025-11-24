@@ -18,7 +18,7 @@ jobs:
       contents: read 
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v4.2.2
       
       - name: Configure AWS Credentials (Assume Role)
         uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8 #v5.1.0
